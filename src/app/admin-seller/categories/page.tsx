@@ -77,12 +77,11 @@ export default function AdminCategories() {
     }
   }, [categoriesData]);
 
-
-
   const [data, setData] = useState(categories);
   const [editMode, setEditMode] = useState(false);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Classification | null>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<Classification | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [open, setOpen] = useState(false);
@@ -91,33 +90,45 @@ export default function AdminCategories() {
   const [createCategory] = useAddClassificationMutation();
   const [updateCategory] = useUpdateClassificationMutation();
 
-
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Creating category with title:", title, "and description:", description);
-  
+    console.log(
+      "Creating category with title:",
+      title,
+      "and description:",
+      description,
+    );
+
     try {
-      const newCategory = await createCategory({ name: title, desc: description }).unwrap();
+      const newCategory = await createCategory({
+        name: title,
+        desc: description,
+      }).unwrap();
       setData((prev) => [...prev, newCategory]);
       toast.success("Category created successfully");
       setOpen(false);
       setTitle("");
       setDescription("");
     } catch (error: unknown) {
-      toast.error((error)?.data?.message);
+      toast.error(error?.data?.message);
     }
   };
 
-  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>, id: string) => {
-
-
+  const handleUpdate = async (
+    e: React.FormEvent<HTMLFormElement>,
+    id: string,
+  ) => {
     e.preventDefault();
-     if (!selectedCategory) return;
+    if (!selectedCategory) return;
 
-    try{
-      console.log("updated data is " , title , description);
-      
-      const updated = await updateCategory({ id: selectedCategory.id, name: title, desc: description }).unwrap();
+    try {
+      console.log("updated data is ", title, description);
+
+      const updated = await updateCategory({
+        id: selectedCategory.id,
+        name: title,
+        desc: description,
+      }).unwrap();
 
       setData((prev) =>
         prev.map((category) =>
@@ -131,7 +142,6 @@ export default function AdminCategories() {
       setSelectedCategory(null);
       setEditSheetOpen(false);
       setEditMode(false);
-
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to update category");
     }
@@ -157,10 +167,7 @@ export default function AdminCategories() {
     {
       id: "select",
       header: ({ table }) => (
-        <Checkbox
-          className="cursor-pointer"
-          aria-label="Select all"
-        />
+        <Checkbox className="cursor-pointer" aria-label="Select all" />
       ),
       cell: ({ row }) => (
         <Checkbox
@@ -173,7 +180,7 @@ export default function AdminCategories() {
       enableSorting: false,
       enableHiding: false,
     },
-   
+
     {
       accessorKey: "name",
       header: "Name",
@@ -199,7 +206,11 @@ export default function AdminCategories() {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="lg" className="h-8 w-8 p-0 cursor-pointer">
+              <Button
+                variant="ghost"
+                size="lg"
+                className="h-8 w-8 p-0 cursor-pointer"
+              >
                 <span className="sr-only">Open menu</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>

@@ -1,17 +1,18 @@
-'use client';
+import type { Metadata } from 'next';
 
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { EmployerAppSidebar } from './employer-app-sidebar';
+export const metadata: Metadata = {
+  title: 'Employer Dashboard',
+  description: 'Manage your job listings and applications.',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function EmployerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <SidebarProvider>
-      <EmployerAppSidebar />
-      {children}
-    </SidebarProvider>
-  );
+  return <>{children}</>;
 }

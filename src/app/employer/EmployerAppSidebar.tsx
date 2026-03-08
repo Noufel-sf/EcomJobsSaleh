@@ -14,14 +14,14 @@ import {
 import Link from 'next/link';
 
 const data = {
-  versions: ['1.0.1', '1.1.0-alpha', '2.0.0-beta1'],
+  versions: ['1.0.0'],
   navMain: [
     {
       title: 'Employer Dashboard',
       url: '#',
       items: [
         {
-          title: 'Dashboard',
+          title: 'Overview',
           url: '/employer',
         },
         {
@@ -54,7 +54,7 @@ export function EmployerAppSidebar({ ...props }) {
               <SidebarMenu>
                 {item.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive} className="cursor-pointer">
+                    <SidebarMenuButton asChild className="cursor-pointer">
                       <Link href={item.url}>{item.title}</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

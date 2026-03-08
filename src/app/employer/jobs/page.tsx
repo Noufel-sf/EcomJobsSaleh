@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   getCoreRowModel,
   getPaginationRowModel,
@@ -8,10 +8,6 @@ import {
   getFilteredRowModel,
   useReactTable,
   flexRender,
-  ColumnDef,
-  SortingState,
-  ColumnFiltersState,
-  VisibilityState,
 } from "@tanstack/react-table";
 
 import {
@@ -22,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -32,239 +27,321 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, MoreHorizontal, Edit, Trash } from "lucide-react";
-import toast from "react-hot-toast";
-import { Badge } from "@/components/ui/badge";
-import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
-import EmployerSidebarLayout from "@/components/EmployerSidebarLayout";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-
+import { MoreHorizontal, ChevronDown, Eye } from "lucide-react";
+import EmployerSidebarLayout from "@/components/EmployerSidebarLayout";
+import toast from "react-hot-toast";
+import { ButtonLoading } from "@/components/ui/ButtonLoading";
+import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
+import Link from "next/link";
 import {
   useGetAllJobsQuery,
   useCreateJobMutation,
   useUpdateJobMutation,
   useDeleteJobMutation,
 } from "@/Redux/Services/JobApi";
-
 import { Job } from "@/lib/DatabaseTypes";
 
-interface JobFormData {
-  title: string;
-  company: string;
-  location: string;
-  type: string;
-  experience: string;
-  salary: string;
-  description: string;
-  responsibilities: string;
-  whoYouAre: string;
-  niceToHaves: string;
-  categories: string;
-  requiredSkills: string;
-  totalCapacity: string;
-  applyBefore: string;
-}
+// ─── Mock Data (fallback until backend is ready) ──────────────────────────────
 
-const initialFormData: JobFormData = {
-  title: "",
-  company: "",
-  location: "",
-  type: "Full-time",
-  experience: "",
-  salary: "",
-  description: "",
-  responsibilities: "",
-  whoYouAre: "",
-  niceToHaves: "",
-  categories: "",
-  requiredSkills: "",
-  totalCapacity: "",
-  applyBefore: "",
+const MOCK_JOBS: Job[] = [
+  { 
+    id: "1", 
+    title: "Frontend Developer", 
+    company: "TechCo",
+    companyLogo: "",
+    location: "Remote", 
+    type: "full-time", 
+    experience: "3-5 years",
+    salary: "$80,000 - $120,000",
+    description: "Build awesome UIs with React and TypeScript.", 
+    responsibilities: ["Lead frontend development", "Code reviews", "Mentor junior developers"],
+    whoYouAre: ["Experienced with React", "Strong TypeScript skills"],
+    niceToHaves: ["Next.js experience", "UI/UX design skills"],
+    categories: ["Engineering", "Frontend"],
+    requiredSkills: ["React", "TypeScript", "CSS"],
+    appliedCount: 14,
+    totalCapacity: 20,
+    applyBefore: "2025-03-30",
+    jobPostedOn: "2025-01-10",
+  },
+  { 
+    id: "2", 
+    title: "Backend Engineer", 
+    company: "StartupCo",
+    companyLogo: "",
+    location: "Algiers", 
+    type: "full-time", 
+    experience: "3-5 years",
+    salary: "$70,000 - $100,000",
+    description: "Build scalable APIs with Node.js and PostgreSQL.", 
+    responsibilities: ["Design and build backend services", "Database optimization", "API development"],
+    whoYouAre: ["Strong Node.js developer", "Database expert"],
+    niceToHaves: ["Docker experience", "AWS knowledge"],
+    categories: ["Engineering", "Backend"],
+    requiredSkills: ["Node.js", "PostgreSQL", "REST APIs"],
+    appliedCount: 9,
+    totalCapacity: 15,
+    applyBefore: "2025-04-15",
+    jobPostedOn: "2025-01-15",
+  },
+  { 
+    id: "3", 
+    title: "UI/UX Designer", 
+    company: "DesignCo",
+    companyLogo: "",
+    location: "Remote", 
+    type: "part-time", 
+    experience: "2-4 years",
+    salary: "$50,000 - $70,000",
+    description: "Design beautiful interfaces for web and mobile.", 
+    responsibilities: ["Create user-centered designs", "Conduct user research", "Prototype interfaces"],
+    whoYouAre: ["Creative designer", "User-focused"],
+    niceToHaves: ["Figma expert", "Animation skills"],
+    categories: ["Design", "UX"],
+    requiredSkills: ["Figma", "UI Design", "User Research"],
+    appliedCount: 22,
+    totalCapacity: 25,
+    applyBefore: "2025-02-28",
+    jobPostedOn: "2024-12-01",
+  },
+];
+
+// ─── Status Badge ─────────────────────────────────────────────────────────────
+
+const statusStyles: Record<string, string> = {
+  open: "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400",
+  closed: "bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400",
 };
 
+const typeStyles: Record<string, string> = {
+  "full-time": "bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400",
+  "part-time": "bg-yellow-500/10 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400",
+  "remote": "bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400",
+  "internship": "bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400",
+};
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function EmployerJobs() {
+  // API hooks with mock data fallback
+  const { data: jobsData, isLoading } = useGetAllJobsQuery();
   const [createJob, { isLoading: isCreating }] = useCreateJobMutation();
   const [updateJob, { isLoading: isUpdating }] = useUpdateJobMutation();
   const [deleteJob] = useDeleteJobMutation();
 
-  const { data: jobsData, isLoading } = useGetAllJobsQuery(undefined);
-  const jobs = jobsData?.content || [];
+  // Use API data or fallback to mock data
+  const jobs = jobsData?.content || MOCK_JOBS;
 
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
-
-  const [openCreate, setOpenCreate] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [formData, setFormData] = useState<JobFormData>(initialFormData);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  // Form state
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [type, setType] = useState<Job["type"]>("full-time");
 
-  const handleCreate = async () => {
+  const resetForm = useCallback(() => {
+    setTitle("");
+    setDescription("");
+    setLocation("");
+    setType("full-time");
+  }, []);
+
+  const handleCreate = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const jobData = {
-        ...formData,
-        responsibilities: formData.responsibilities.split("\n").filter(Boolean),
-        whoYouAre: formData.whoYouAre.split("\n").filter(Boolean),
-        niceToHaves: formData.niceToHaves.split("\n").filter(Boolean),
-        categories: formData.categories.split(",").map((c) => c.trim()).filter(Boolean),
-        requiredSkills: formData.requiredSkills.split(",").map((s) => s.trim()).filter(Boolean),
-        totalCapacity: parseInt(formData.totalCapacity) || 1,
-        appliedCount: 0,
-        jobPostedOn: new Date().toLocaleDateString(),
-      };
-
-      await createJob(jobData).unwrap();
+      await createJob({ 
+        title, 
+        description, 
+        location, 
+        type, 
+        status: "open",
+        salary: "",
+        requirements: "",
+        responsibilities: "",
+        benefits: "",
+        company: { name: "Company", logo: "" }
+      }).unwrap();
       toast.success("Job created successfully");
-      setOpenCreate(false);
-      setFormData(initialFormData);
+      setOpen(false);
+      resetForm();
     } catch (error: unknown) {
-      toast.error((error as { data?: { message?: string } })?.data?.message || "Failed to create job");
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || "Failed to create job");
     }
-  };
+  }, [title, description, location, type, createJob, resetForm]);
 
-  const handleUpdate = async () => {
+  const handleUpdate = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!selectedJob) return;
-
     try {
-      const jobData = {
-        ...formData,
-        responsibilities: formData.responsibilities.split("\n").filter(Boolean),
-        whoYouAre: formData.whoYouAre.split("\n").filter(Boolean),
-        niceToHaves: formData.niceToHaves.split("\n").filter(Boolean),
-        categories: formData.categories.split(",").map((c) => c.trim()).filter(Boolean),
-        requiredSkills: formData.requiredSkills.split(",").map((s) => s.trim()).filter(Boolean),
-        totalCapacity: parseInt(formData.totalCapacity) || 1,
-      };
-
-      await updateJob({ id: selectedJob.id, jobData }).unwrap();
+      await updateJob({ 
+        id: selectedJob.id, 
+        jobData: { title, description, location, type }
+      }).unwrap();
       toast.success("Job updated successfully");
-      setOpenEdit(false);
+      setEditSheetOpen(false);
       setSelectedJob(null);
-      setFormData(initialFormData);
+      resetForm();
     } catch (error: unknown) {
-      toast.error((error as { data?: { message?: string } })?.data?.message || "Failed to update job");
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || "Failed to update job");
     }
-  };
+  }, [selectedJob, title, description, location, type, updateJob, resetForm]);
 
-  const handleDelete = async (jobId: string) => {
+  const handleDelete = useCallback(async (jobId: string) => {
     if (!confirm("Are you sure you want to delete this job?")) return;
 
     try {
       await deleteJob(jobId).unwrap();
       toast.success("Job deleted successfully");
     } catch (error: unknown) {
-      toast.error((error as { data?: { message?: string } })?.data?.message || "Failed to delete job");
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || "Failed to delete job");
     }
-  };
+  }, [deleteJob]);
 
-  const openEditDialog = (job: Job) => {
-    setSelectedJob(job);
-    setFormData({
-      title: job.title,
-      company: job.company,
-      location: job.location,
-      type: job.type,
-      experience: job.experience,
-      salary: job.salary,
-      description: job.description,
-      responsibilities: job.responsibilities.join("\n"),
-      whoYouAre: job.whoYouAre.join("\n"),
-      niceToHaves: job.niceToHaves?.join("\n") || "",
-      categories: job.categories.join(", "),
-      requiredSkills: job.requiredSkills.join(", "),
-      totalCapacity: job.totalCapacity.toString(),
-      applyBefore: job.applyBefore,
-    });
-    setOpenEdit(true);
-  };
+  // Note: Status toggle removed - Job interface doesn't include status field
+  // Can be re-added when backend supports job status management
 
-  const columns: ColumnDef<Job>[] = [
+  const [sorting, setSorting] = useState<any[]>([]);
+  const [columnFilters, setColumnFilters] = useState<any[]>([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
+
+  const columns = useMemo(() => [
+    {
+      id: "select",
+      header: () => <Checkbox className="cursor-pointer" aria-label="Select all" />,
+      cell: ({ row }: any) => (
+        <Checkbox
+          className="cursor-pointer"
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
     {
       accessorKey: "title",
       header: "Job Title",
-      cell: ({ row }) => <div className="font-medium">{row.getValue("title")}</div>,
+      cell: ({ row }: any) => <div className="font-medium">{row.getValue("title")}</div>,
     },
     {
       accessorKey: "location",
       header: "Location",
+      cell: ({ row }: any) => <div className="text-sm text-muted-foreground">{row.getValue("location")}</div>,
     },
     {
       accessorKey: "type",
       header: "Type",
-      cell: ({ row }) => (
-        <Badge className={""} variant="secondary">{row.getValue("type")}</Badge>
+      cell: ({ row }: any) => (
+        <span className={`text-xs px-2 py-1 rounded-full font-medium ${typeStyles[row.getValue("type")] || ""}`}>
+          {row.getValue("type")}
+        </span>
       ),
     },
     {
-      accessorKey: "appliedCount",
-      header: "Applications",
-      cell: ({ row }) => {
-        const applied = row.getValue("appliedCount") as number;
-        const total = row.original.totalCapacity;
-        return (
-          <span className="text-sm">
-            {applied}/{total}
-          </span>
-        );
-      },
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }: any) => (
+        <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusStyles[row.getValue("status")] || ""}`}>
+          {row.getValue("status")}
+        </span>
+      ),
     },
     {
-      accessorKey: "jobPostedOn",
-      header: "Posted On",
+      accessorKey: "applicationsCount",
+      header: "Applications",
+      cell: ({ row }: any) => (
+        <div className="font-semibold text-center">{row.getValue("applicationsCount") ?? 0}</div>
+      ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Posted",
+      cell: ({ row }: any) => (
+        <div className="text-sm text-muted-foreground">{row.getValue("createdAt")}</div>
+      ),
     },
     {
       id: "actions",
-      cell: ({ row }) => {
-        const job = row.original;
-
+      enableHiding: false,
+      cell: ({ row }: any) => {
+        const job = row.original as Job;
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="" align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer" onClick={() => openEditDialog(job)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleDelete(job.id)}
-                className="text-destructive cursor-pointer"
-              >
-                <Trash className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" asChild className="cursor-pointer">
+              <Link href={`/employer/applications?jobId=${job.id}`}>
+                <Eye className="h-4 w-4 mr-1" />
+                View Apps
+              </Link>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setSelectedJob(job);
+                    setTitle(job.title);
+                    setDescription(job.description);
+                    setLocation(job.location);
+                    setType(job.type);
+                    setEditSheetOpen(true);
+                  }}
+                >
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="cursor-pointer text-red-600"
+                  onClick={() => handleDelete(job.id)}
+                >
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         );
       },
     },
-  ];
+  ], [handleDelete]);
 
   const table = useReactTable({
     data: jobs,
@@ -277,355 +354,191 @@ export default function EmployerJobs() {
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
     },
+    state: { sorting, columnFilters, columnVisibility, rowSelection },
   });
 
+  const JobFormFields = useMemo(() => (
+    <div className="grid gap-4">
+      <div className="grid gap-3">
+        <Label htmlFor="job-title">Job Title</Label>
+        <Input id="job-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Senior Frontend Developer" required />
+      </div>
+      <div className="grid gap-3">
+        <Label htmlFor="job-description">Description</Label>
+        <Textarea id="job-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the role..." rows={4} required />
+      </div>
+      <div className="grid gap-3">
+        <Label htmlFor="job-location">Location</Label>
+        <Input id="job-location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Remote, Algiers..." required />
+      </div>
+      <div className="grid gap-3">
+        <Label htmlFor="job-type">Job Type</Label>
+        <select
+          id="job-type"
+          value={type}
+          onChange={(e) => setType(e.target.value as Job["type"])}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <option value="full-time">Full-time</option>
+          <option value="part-time">Part-time</option>
+          <option value="remote">Remote</option>
+          <option value="internship">Internship</option>
+        </select>
+      </div>
+    </div>
+  ), [title, description, location, type]);
+
   return (
-    <>
-      <EmployerSidebarLayout breadcrumbTitle="Jobs">
-        <h1 className="text-2xl font-bold">Manage Jobs</h1>
-        <p className="text-gray-700 dark:text-gray-400 mb-4">
-          Create, view, and manage your job postings.
-        </p>
+    <EmployerSidebarLayout breadcrumbTitle="Jobs">
+      <h1 className="text-2xl font-bold">Jobs</h1>
+      <p className="text-gray-700 dark:text-gray-400 mb-4">
+        Manage all your job listings.
+      </p>
 
-        <div className="w-full">
-            {/* Top Controls */}
-            <div className="flex items-center justify-between py-4">
-              <Input
-                type="text"
-                placeholder="Search by job title..."
-                value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                  table.getColumn("title")?.setFilterValue(event.target.value)
-                }
-                className="max-w-sm"
-              />
-
-              <div className="flex items-center gap-3">
-                <Button onClick={() => setOpenCreate(true)} variant="default">
-                  Create Job
-                </Button>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
-                      Columns <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="" align="end">
-                    {table
-                      .getAllColumns()
-                      .filter((column) => column.getCanHide())
-                      .map((column) => (
-                        <DropdownMenuCheckboxItem
-                          key={column.id}
-                          className="capitalize cursor-pointer"
-                          checked={column.getIsVisible()}
-                          onCheckedChange={(value: boolean) =>
-                            column.toggleVisibility(!!value)
-                          }
-                        >
-                          {column.id}
-                        </DropdownMenuCheckboxItem>
-                      ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-
-            {/* Table */}
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {isLoading ? (
-                    <AdminDataTableSkeleton />
-                  ) : table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() && "selected"}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
+      <div className="w-full">
+        <div className="flex items-center py-4 gap-3">
+          {/* Create Dialog */}
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button variant="primary" size="lg">Post a New Job</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <form onSubmit={handleCreate}>
+                <DialogHeader>
+                  <DialogTitle>Post a New Job</DialogTitle>
+                  <DialogDescription className="mb-3">
+                    Fill in the details below. Click save when you're done.
+                  </DialogDescription>
+                </DialogHeader>
+                {JobFormFields}
+                <DialogFooter className="mt-5">
+                  <DialogClose asChild>
+                    <Button variant="outline" size="lg">Cancel</Button>
+                  </DialogClose>
+                  {isCreating ? (
+                    <ButtonLoading />
                   ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={columns.length}
-                        className="h-24 text-center"
-                      >
-                        No jobs found.
-                      </TableCell>
-                    </TableRow>
+                    <Button type="submit" variant="primary" size="lg">Post Job</Button>
                   )}
-                </TableBody>
-              </Table>
-            </div>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-end space-x-2 py-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                Previous
+          {/* Search */}
+          <Input
+            placeholder="Search by title..."
+            value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+            onChange={(e) => table.getColumn("title")?.setFilterValue(e.target.value)}
+            className="max-w-sm"
+          />
+
+          {/* Column toggle */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="lg" className="ml-auto cursor-pointer">
+                Columns <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-      </EmployerSidebarLayout>
-
-      {/* Create/Edit Dialog */}
-      <Dialog open={openCreate || openEdit} onOpenChange={(open: boolean) => {
-        if (!open) {
-          setOpenCreate(false);
-          setOpenEdit(false);
-          setFormData(initialFormData);
-          setSelectedJob(null);
-        }
-      }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{openEdit ? "Edit Job" : "Create New Job"}</DialogTitle>
-            <DialogDescription>
-              {openEdit ? "Update job details" : "Fill in the job details"}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="title">Job Title *</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Senior Developer"
-                />
-              </div>
-              <div>
-                <Label htmlFor="company">Company *</Label>
-                <Input
-                  id="company"
-                  name="company"
-                  value={formData.company}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Tech Corp"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="location">Location *</Label>
-                <Input
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  placeholder="e.g., New York"
-                />
-              </div>
-              <div>
-                <Label htmlFor="type">Job Type *</Label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleInputChange}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="">
+              {table.getAllColumns().filter((col) => col.getCanHide()).map((col) => (
+                <DropdownMenuCheckboxItem
+                  key={col.id}
+                  className="capitalize cursor-pointer"
+                  checked={col.getIsVisible()}
+                  onCheckedChange={(value) => col.toggleVisibility(!!value)}
                 >
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Contract">Contract</option>
-                  <option value="Freelance">Freelance</option>
-                  <option value="Internship">Internship</option>
-                  <option value="Remote">Remote</option>
-                </select>
+                  {col.id}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Edit Sheet */}
+        <Sheet open={editSheetOpen} onOpenChange={setEditSheetOpen}>
+          <SheetContent className="">
+            <form onSubmit={handleUpdate}>
+              <SheetHeader className="">
+                <SheetTitle className="">Edit Job</SheetTitle>
+                <SheetDescription className="">Update the job details. Click save when done.</SheetDescription>
+              </SheetHeader>
+              <div className="px-6 py-4">
+                {JobFormFields}
               </div>
-            </div>
+              <SheetFooter className="space-y-2">
+                <SheetClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </SheetClose>
+                {isUpdating ? (
+                  <ButtonLoading />
+                ) : (
+                  <Button type="submit" size="lg" variant="primary">Save Changes</Button>
+                )}
+              </SheetFooter>
+            </form>
+          </SheetContent>
+        </Sheet>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="experience">Experience *</Label>
-                <Input
-                  id="experience"
-                  name="experience"
-                  value={formData.experience}
-                  onChange={handleInputChange}
-                  placeholder="e.g., 3-5 years"
-                />
-              </div>
-              <div>
-                <Label htmlFor="salary">Salary *</Label>
-                <Input
-                  id="salary"
-                  name="salary"
-                  value={formData.salary}
-                  onChange={handleInputChange}
-                  placeholder="e.g., $75k-$85k USD"
-                />
-              </div>
-            </div>
+        {/* Table */}
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((hg) => (
+                <TableRow key={hg.id}>
+                  {hg.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <AdminDataTableSkeleton />
+              ) : table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                    No jobs found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="totalCapacity">Total Capacity *</Label>
-                <Input
-                  id="totalCapacity"
-                  name="totalCapacity"
-                  type="number"
-                  value={formData.totalCapacity}
-                  onChange={handleInputChange}
-                  placeholder="e.g., 10"
-                />
-              </div>
-              <div>
-                <Label htmlFor="applyBefore">Apply Before *</Label>
-                <Input
-                  id="applyBefore"
-                  name="applyBefore"
-                  type="date"
-                  value={formData.applyBefore}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="description">Description *</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Job description..."
-                rows={4}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="responsibilities">Responsibilities (one per line) *</Label>
-              <Textarea
-                id="responsibilities"
-                name="responsibilities"
-                value={formData.responsibilities}
-                onChange={handleInputChange}
-                placeholder="Responsibility 1&#10;Responsibility 2"
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="whoYouAre">Requirements (one per line) *</Label>
-              <Textarea
-                id="whoYouAre"
-                name="whoYouAre"
-                value={formData.whoYouAre}
-                onChange={handleInputChange}
-                placeholder="Requirement 1&#10;Requirement 2"
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="niceToHaves">Nice-to-Haves (one per line)</Label>
-              <Textarea
-                id="niceToHaves"
-                name="niceToHaves"
-                value={formData.niceToHaves}
-                onChange={handleInputChange}
-                placeholder="Nice to have 1&#10;Nice to have 2"
-                rows={2}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="categories">Categories (comma-separated) *</Label>
-              <Input
-                id="categories"
-                name="categories"
-                value={formData.categories}
-                onChange={handleInputChange}
-                placeholder="e.g., Marketing, Design"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="requiredSkills">Required Skills (comma-separated) *</Label>
-              <Input
-                id="requiredSkills"
-                name="requiredSkills"
-                value={formData.requiredSkills}
-                onChange={handleInputChange}
-                placeholder="e.g., React, Node.js, TypeScript"
-              />
-            </div>
+        {/* Pagination */}
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="text-muted-foreground flex-1 text-sm">
+            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s) selected.
           </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setOpenCreate(false);
-                setOpenEdit(false);
-                setFormData(initialFormData);
-                setSelectedJob(null);
-              }}
-            >
-              Cancel
+          <div className="space-x-2">
+            <Button variant="primary" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="cursor-pointer">
+              Previous
             </Button>
-            <Button
-              onClick={openEdit ? handleUpdate : handleCreate}
-              disabled={isCreating || isUpdating}
-            >
-              {isCreating || isUpdating
-                ? "Saving..."
-                : openEdit
-                ? "Update Job"
-                : "Create Job"}
+            <Button variant="primary" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="cursor-pointer">
+              Next
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+          </div>
+        </div>
+      </div>
+    </EmployerSidebarLayout>
   );
 }
