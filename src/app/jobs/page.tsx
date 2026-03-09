@@ -15,7 +15,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useGetAllJobsQuery } from "@/Redux/Services/JobApi";
+// import { useGetAllJobsQuery } from "@/Redux/Services/JobApi";
+import { mockJobs } from "@/lib/mockData/jobs";
 
 import { Separator } from "@/components/ui/separator";
 import {
@@ -204,8 +205,12 @@ function AllJobsPage() {
 
   const heroImages = [hero1, hero2, hero3, hero4];
 
-  // RTK Query hooks
-  const { data: jobsData, isLoading } = useGetAllJobsQuery(undefined);
+  // Using mock data instead of API
+  const jobsData = { content: mockJobs };
+  const isLoading = false;
+
+  // Uncomment below to use real API instead of mock data
+  // const { data: jobsData, isLoading } = useGetAllJobsQuery(undefined);
 
   const filteredJobs = useMemo(() => {
     const jobs = jobsData?.content || [];

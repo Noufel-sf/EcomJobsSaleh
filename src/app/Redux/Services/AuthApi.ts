@@ -21,6 +21,28 @@ interface RegisterRequest {
   password: string;
 }
 
+interface SellerRegisterRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone: string;
+  description?: string;
+  storeName?: string;
+}
+
+interface EmployerRegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+  companyName: string;
+  description: string;
+  website?: string;
+  location: string;
+  industry: string;
+  companyLogo?: string;
+}
+
 interface AuthResponse {
   user: User;
 }
@@ -52,6 +74,26 @@ export const authApi = createApi({
       invalidatesTags: ["Auth"],
     }),
 
+    // Seller Register mutation
+    registerSeller: builder.mutation<AuthResponse, SellerRegisterRequest>({
+      query: (sellerData) => ({
+        url: "/auth/seller/register",
+        method: "POST",
+        body: sellerData,
+      }),
+      invalidatesTags: ["Auth"],
+    }),
+
+    // Employer Register mutation
+    registerEmployer: builder.mutation<AuthResponse, EmployerRegisterRequest>({
+      query: (employerData) => ({
+        url: "/auth/employer/register",
+        method: "POST",
+        body: employerData,
+      }),
+      invalidatesTags: ["Auth"],
+    }),
+
     // Get current user profile
     getProfile: builder.query<AuthResponse, void>({
       query: () => "/user/showMe",
@@ -72,6 +114,8 @@ export const authApi = createApi({
 export const {
   useLoginMutation,
   useRegisterMutation,
+  useRegisterSellerMutation,
+  useRegisterEmployerMutation,
   useGetProfileQuery,
   useLogoutMutation,
 } = authApi;

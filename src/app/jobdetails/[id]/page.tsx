@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,44 +9,61 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   MapPin,
-  Share2,
   CheckCircle2,
   Building2,
 } from "lucide-react";
-import { useGetJobByIdQuery } from "@/Redux/Services/JobApi";
+import { getJobById } from "@/lib/mockData/jobs";
+import { Job } from "@/lib/DatabaseTypes";
 import Image from "next/image";
-import toast from "react-hot-toast";
+import { JobApplicationModal } from "@/components/JobApplicationModal";
+// import { useGetJobByIdQuery } from "@/Redux/Services/JobApi";
 
 const JobDetailsPage = () => {
   const { id } = useParams();
+  const [job, setJob] = useState<Job | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
 
-  const {
-    data: job,
-    isLoading,
-    isError,
-  } = useGetJobByIdQuery(id as string, {
-    skip: !id,
-  });
+  // Using mock data instead of API
+  useEffect(() => {
+    if (!id) return;
+    
+    // Simulate API delay
+    const timer = setTimeout(() => {
+      const foundJob = getJobById(id as string);
+      if (foundJob) {
+        setJob(foundJob);
+        setIsError(false);
+      } else {
+        setJob(null);
+        setIsError(true);
+      }
+      setIsLoading(false);
+    }, 500);
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: job?.title,
-          text: `Check out this job: ${job?.title} at ${job?.company}`,
-          url: window.location.href,
-        })
-        .then(() => toast.success("Shared successfully"))
-        .catch(() => toast.error("Failed to share"));
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard");
-    }
-  };
+    return () => clearTimeout(timer);
+  }, [id]);
+
+  // Uncomment below to use real API instead of mock data
+  // const {
+  //   data: job,
+  //   isLoading,
+  //   isError,
+  // } = useGetJobByIdQuery(id as string, {
+  //   skip: !id,
+  // });
+
+
 
   const handleApply = () => {
-    toast.success("Application form will open soon!");
+    setIsApplicationModalOpen(true);
   };
+
+  const handleCloseModal = () => {
+    setIsApplicationModalOpen(false);
+  };
+
 
   if (isError) {
     return (
@@ -161,15 +178,7 @@ const JobDetailsPage = () => {
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 self-start shrink-0">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleShare}
-                    className="shrink-0"
-                    aria-label="Share job"
-                  >
-                    <Share2 className="w-4 h-4" />
-                  </Button>
+                
                   <Button
                     onClick={handleApply}
                     size="default"
@@ -248,7 +257,7 @@ const JobDetailsPage = () => {
         {/* Right Column - Sidebar */}
         <div className="space-y-6">
           {/* About This Role */}
-          <Card className="sticky top-4">
+          <Card className="">
             <CardContent className="p-6">
               <h3 className="text-xl font-bold mb-6">About this role</h3>
 
@@ -366,6 +375,17 @@ const JobDetailsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Application Modal */}
+      {job && (
+        <JobApplicationModal
+          isOpen={isApplicationModalOpen}
+          onClose={handleCloseModal}
+          jobId={job.id}
+          jobTitle={job.title}
+          company={job.company}
+        />
+      )}
     </main>
   );
 };

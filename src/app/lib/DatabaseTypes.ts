@@ -1,3 +1,4 @@
+import { Seller } from './DatabaseTypes';
 // Database Types - Generated from actual database schema
 
 import type { Dispatch, ReactNode, SetStateAction } from "react";
@@ -212,6 +213,27 @@ export interface JobApplication {
   status: "pending" | "reviewing" | "shortlisted" | "rejected" | "accepted";
   appliedDate: string;
   lastUpdated?: string;
+}
+
+
+export interface EmployerProfile {
+  id: string;
+  companyName: string;
+  companyLogo?: string;
+  description: string;
+  website?: string;
+  location: string;
+  industry: string;
+}
+
+export interface SellerProfile {
+  id: string;
+  companyName: string;
+  companyLogo?: string;
+  description: string;
+  website?: string;
+  location: string;
+  industry: string;
 }
 
 export interface AuthContextType {
