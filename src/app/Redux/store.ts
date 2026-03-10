@@ -6,6 +6,7 @@ import { authApi } from "./Services/AuthApi";
 import { classificationApi } from "./Services/ClassificationApi";
 import { shippingApi } from "./Services/ShippingApi";
 import { jobApi } from "./Services/JobApi";
+import { sellerApi } from "./Services/SellerApi";
 import authReducer from "./Slices/AuthSlice";
 
 
@@ -19,6 +20,7 @@ export const store = configureStore({
     [classificationApi.reducerPath]: classificationApi.reducer,
     [shippingApi.reducerPath]: shippingApi.reducer,
     [jobApi.reducerPath]: jobApi.reducer,
+    [sellerApi.reducerPath]: sellerApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -29,7 +31,8 @@ export const store = configureStore({
       authApi.middleware,
       classificationApi.middleware,
       shippingApi.middleware,
-      jobApi.middleware
+      jobApi.middleware,
+      sellerApi.middleware
     ),
 });
 

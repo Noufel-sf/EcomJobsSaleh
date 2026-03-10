@@ -157,7 +157,7 @@ export default function AdminLayout({ children }) {
                     {stat.change}
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className={""}>
                   <div className="text-2xl font-bold">{stat.value}</div>
                   <div className="flex items-center gap-2 mt-3">
                     <p className="text-xs text-muted-foreground flex items-center gap-1">

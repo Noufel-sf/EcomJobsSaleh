@@ -41,6 +41,10 @@ const data = {
           title: 'Shipping',
           url: '/admin-seller/shipping',
         },
+        {
+          title: 'store settings',
+          url: '/admin-seller/store',
+        },
       ],
     },
   ],
