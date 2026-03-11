@@ -1,7 +1,7 @@
 'use client';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Autoplay, Navigation } from 'swiper/modules';
@@ -13,7 +13,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 
 const Hero = () => {
-  const heroImages = [hero1, hero2, hero3, hero4];
+  // Memoize hero images array to prevent recreation on every render
+  const heroImages = useMemo(() => [hero1, hero2, hero3, hero4], []);
 
   return (
     <>

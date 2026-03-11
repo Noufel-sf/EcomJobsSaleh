@@ -14,7 +14,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Sun, Moon, TrendingUp, TrendingDown } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import {
   DropdownMenu,
@@ -26,20 +26,30 @@ import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/Redux/hooks';
 import { AdminAppSidebar } from './admin-app-sidebar';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartAreaInteractive } from './chart-area-interactive';
+import { useMemo } from 'react';
+import dynamic from 'next/dynamic';
 
-export default function AdminLayout({ children }) {
+// Dynamic imports for better code splitting
+const DashboardStats = dynamic(() => import('./components/DashboardStats'), {
+  loading: () => <div className="h-32 animate-pulse bg-muted rounded-lg" />,
+});
+
+const ChartAreaInteractive = dynamic(() => import('./chart-area-interactive').then(mod => ({ default: mod.ChartAreaInteractive })), {
+  loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
+  ssr: false, // Disable SSR to prevent hydration errors from Radix UI Select components
+});
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { setTheme } = useTheme();
   const user = useAppSelector((state) => state.auth.user);
 
-  // Stats data
-  const stats = [
+  // Memoize stats data to prevent unnecessary re-renders
+  const stats = useMemo(() => [
     {
       title: 'Total Revenue',
       value: '$1,250.00',
       change: '+12.5%',
-      trend: 'up',
+      trend: 'up' as const,
       description: 'Trending up this month',
       subtitle: 'Visitors for the last 6 months',
     },
@@ -47,7 +57,7 @@ export default function AdminLayout({ children }) {
       title: 'New Customers',
       value: '1,234',
       change: '-20%',
-      trend: 'down',
+      trend: 'down' as const,
       description: 'Down 20% this period',
       subtitle: 'Acquisition needs attention',
     },
@@ -55,7 +65,7 @@ export default function AdminLayout({ children }) {
       title: 'Active Accounts',
       value: '45,678',
       change: '+12.5%',
-      trend: 'up',
+      trend: 'up' as const,
       description: 'Strong user retention',
       subtitle: 'Engagement exceed targets',
     },
@@ -63,11 +73,11 @@ export default function AdminLayout({ children }) {
       title: 'Growth Rate',
       value: '4.5%',
       change: '+4.5%',
-      trend: 'up',
+      trend: 'up' as const,
       description: 'Steady performance increase',
       subtitle: 'Meets growth projections',
     },
-  ];
+  ], []);
 
   return (
     <SidebarProvider>
@@ -134,48 +144,8 @@ export default function AdminLayout({ children }) {
             </span>
           </h1>
 
-          {/* Stats Grid */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-            {stats.map((stat, index) => (
-              <Card key={index} className="bg-card border-border cursor-pointer hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {stat.title}
-                  </CardTitle>
-                  <div
-                    className={`text-xs font-medium flex items-center gap-1 ${
-                      stat.trend === 'up'
-                        ? 'text-green-600 dark:text-green-500'
-                        : 'text-red-600 dark:text-red-500'
-                    }`}
-                  >
-                    {stat.trend === 'up' ? (
-                      <TrendingUp className="w-3 h-3" />
-                    ) : (
-                      <TrendingDown className="w-3 h-3" />
-                    )}
-                    {stat.change}
-                  </div>
-                </CardHeader>
-                <CardContent className={""}>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <div className="flex items-center gap-2 mt-3">
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      {stat.description}
-                      {stat.trend === 'up' ? (
-                        <TrendingUp className="w-3 h-3" />
-                      ) : (
-                        <TrendingDown className="w-3 h-3" />
-                      )}
-                    </p>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stat.subtitle}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {/* Stats Grid - Using memoized component */}
+          <DashboardStats stats={stats} />
 
           {/* Chart Section */}
           <div className="mb-8">

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useRef, memo } from "react";
+import { useRef, memo, useCallback } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
@@ -11,10 +11,8 @@ import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { SkeletonCard } from "./SkeletonCard";
-import { useAddToCartMutation } from "@/Redux/Services/CartApi";
 import { useGetAllProductsQuery } from "@/Redux/Services/ProductsApi";
 import ProductCard from "./ProductCard";
-import toast from "react-hot-toast";
 
 const BestSellingSection = memo(function BestSellingSection() {
   const swiperRef = useRef<SwiperType | null>(null);
@@ -28,27 +26,16 @@ const BestSellingSection = memo(function BestSellingSection() {
 
   const products = productsData?.content || [];
 
-
-  const [addToCartMutation] = useAddToCartMutation();
-
-  const addToCart = async (product: { id: string; name: string; image: string; price: number }) => {
-    try {
-      await addToCartMutation({
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        quantity: 1,
-      }).unwrap();
-      toast.success("Added to cart");
-    } catch (error: unknown) {
-      const err = error as { data?: { message?: string } };
-      toast.error(err?.data?.message || "Failed to add to cart");
-    }
-  };
+  // Memoize refetch handler to prevent recreation on every render
+  const handleRetry = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   return (
-    <section className="mx-auto container px-6 py-12" aria-labelledby="best-selling-heading">
+    <section
+      className="mx-auto container px-6 py-12"
+      aria-labelledby="best-selling-heading"
+    >
       <div className="heading mb-6 flex items-center justify-between">
         <h2 id="best-selling-heading" className="capitalize text-2xl font-bold">
           Best Selling Products
@@ -74,7 +61,12 @@ const BestSellingSection = memo(function BestSellingSection() {
       {isError ? (
         <div className="text-center py-8 text-red-500">
           <p>Failed to load best selling products.</p>
-          <Button onClick={refetch} className="mt-4" variant="default" size="default">
+          <Button
+            onClick={handleRetry}
+            className="mt-4"
+            variant="default"
+            size="default"
+          >
             Try Again
           </Button>
         </div>
@@ -107,14 +99,19 @@ const BestSellingSection = memo(function BestSellingSection() {
                     <SkeletonCard />
                   </SwiperSlide>
                 ))
-              : products.map((product: { id: string; name: string; main_img?: string; image?: string; price: number }) => (
-                  <SwiperSlide key={product.id}>
-                    <ProductCard
-                      product={product}
-                      addToCart={addToCart}
-                    />
-                  </SwiperSlide>
-                ))}
+              : products.map(
+                  (product: {
+                    id: string;
+                    name: string;
+                    main_img?: string;
+                    image?: string;
+                    price: number;
+                  }) => (
+                    <SwiperSlide key={product.id}>
+                      <ProductCard product={product} />
+                    </SwiperSlide>
+                  ),
+                )}
           </Swiper>
 
           {!isLoading && products.length === 0 && (

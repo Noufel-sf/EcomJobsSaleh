@@ -1,4 +1,5 @@
 import { memo } from "react";
+import Image from "next/image";
 
 const SponsoredJobsBanner = () => {
   return (
@@ -11,16 +12,16 @@ const SponsoredJobsBanner = () => {
       </h2>
       
       <article 
-        className="w-full container mx-auto rounded-2xl overflow-hidden shadow-lg"
+        className="w-full container mx-auto rounded-2xl overflow-hidden shadow-lg relative h-[400px]"
         aria-label="Sponsored job opportunities banner"
       >
-        <img
+        <Image
           src="/job.PNG"
           alt="Sponsored job opportunities - Find your next career opportunity"
-          className="w-full h-auto object-cover rounded-2xl hover:scale-105 transition-transform duration-300"
-          loading="lazy"
-          width="1200"
-          height="400"
+          className="object-cover rounded-2xl hover:scale-105 transition-transform duration-300"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+          quality={85}
         />
       </article>
     </section>

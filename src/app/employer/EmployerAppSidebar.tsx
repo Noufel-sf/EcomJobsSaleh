@@ -46,12 +46,12 @@ export function EmployerAppSidebar({ ...props }) {
           defaultVersion={data.versions[0]}
         />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className={""}>
         {data.navMain.map((item) => (
-          <SidebarGroup key={item.title}>
-            <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
+          <SidebarGroup className={""} key={item.title}>
+            <SidebarGroupLabel className={""}> {item.title}</SidebarGroupLabel>
+            <SidebarGroupContent className={""}>
+              <SidebarMenu className={""}>
                 {item.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild className="cursor-pointer">

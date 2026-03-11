@@ -14,7 +14,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Sun, Moon, TrendingUp, TrendingDown, Briefcase, Users, CheckCircle, Clock } from 'lucide-react';
+import { Sun, Moon, Briefcase, Users, CheckCircle, Clock } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import {
   DropdownMenu,
@@ -26,18 +26,29 @@ import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/Redux/hooks';
 import { EmployerAppSidebar } from './EmployerAppSidebar';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useMemo } from 'react';
+import dynamic from 'next/dynamic';
+
+// Dynamic imports for better code splitting
+const EmployerDashboardStats = dynamic(() => import('./components/EmployerDashboardStats'), {
+  loading: () => <div className="h-32 animate-pulse bg-muted rounded-lg" />,
+});
+
+const QuickLinks = dynamic(() => import('./components/QuickLinks'), {
+  loading: () => <div className="h-48 animate-pulse bg-muted rounded-lg" />,
+});
 
 export default function EmployerOverview() {
   const { setTheme } = useTheme();
   const user = useAppSelector((state) => state.auth.user);
 
-  const stats = [
+  // Memoize stats data to prevent unnecessary re-renders
+  const stats = useMemo(() => [
     {
       title: 'Total Jobs Posted',
       value: '12',
       change: '+3',
-      trend: 'up',
+      trend: 'up' as const,
       description: '3 new this month',
       subtitle: 'Active listings',
       icon: Briefcase,
@@ -46,7 +57,7 @@ export default function EmployerOverview() {
       title: 'Total Applications',
       value: '148',
       change: '+24',
-      trend: 'up',
+      trend: 'up' as const,
       description: 'Up this week',
       subtitle: 'Across all jobs',
       icon: Users,
@@ -55,7 +66,7 @@ export default function EmployerOverview() {
       title: 'Accepted',
       value: '18',
       change: '+5',
-      trend: 'up',
+      trend: 'up' as const,
       description: 'Candidates hired',
       subtitle: 'This quarter',
       icon: CheckCircle,
@@ -64,12 +75,12 @@ export default function EmployerOverview() {
       title: 'Pending Review',
       value: '43',
       change: '-2',
-      trend: 'down',
+      trend: 'down' as const,
       description: 'Awaiting decision',
       subtitle: 'Action required',
       icon: Clock,
     },
-  ];
+  ], []);
 
   return (
     <SidebarProvider>
@@ -103,7 +114,7 @@ export default function EmployerOverview() {
                   <span className="sr-only">Toggle theme</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="">
                 <DropdownMenuItem className="cursor-pointer" onClick={() => setTheme('light')}>Light</DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer" onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer" onClick={() => setTheme('system')}>System</DropdownMenuItem>
@@ -121,69 +132,11 @@ export default function EmployerOverview() {
             </span>
           </h1>
 
-          {/* Stats Grid */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <Card key={index} className="bg-card border-border cursor-pointer hover:shadow-lg transition-shadow">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                    <div className={`text-xs font-medium flex items-center gap-1 ${
-                      stat.trend === 'up' ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'
-                    }`}>
-                      {stat.trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                      {stat.change}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold">{stat.value}</div>
-                      <Icon className="h-8 w-8 text-muted-foreground opacity-40" />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                      {stat.description}
-                      {stat.trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">{stat.subtitle}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+          {/* Stats Grid - Using memoized component */}
+          <EmployerDashboardStats stats={stats} />
 
-          {/* Quick Links */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Briefcase className="h-5 w-5" />
-                  Manage Jobs
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">Create and manage your job listings.</p>
-                <Button variant="primary" asChild>
-                  <Link href="/employer/jobs">Go to Jobs</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Review Applications
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">View and manage all incoming applications.</p>
-                <Button variant="primary" asChild>
-                  <Link href="/employer/applications">Go to Applications</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Quick Links - Using memoized component */}
+          <QuickLinks />
         </div>
       </SidebarInset>
     </SidebarProvider>

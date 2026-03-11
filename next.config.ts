@@ -32,6 +32,7 @@ const nextConfig: NextConfig = {
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: ['lucide-react'],
+    // optimizeCss: true, // Enable CSS optimization for production
   },
 };
 

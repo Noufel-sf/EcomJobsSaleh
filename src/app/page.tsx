@@ -1,19 +1,28 @@
-import Hero from '@/components/Hero';
-import BestSellingSection from '@/components/BestSellingSection';
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 
-// Lazy load below-the-fold components for better initial load performance
-const SponsoredSection = dynamic(() => import('@/components/SponsoredSection'), {
-  loading: () => <div className="h-64 animate-pulse bg-muted" />,
+// Dynamically import Hero component to reduce initial bundle size
+const Hero = dynamic(() => import('@/components/Hero'), {
+  loading: () => <div className="h-[500px] animate-pulse bg-muted rounded-lg" />,
 });
 
+// Best selling and sponsored sections - load with priority
+const SponsoredSection = dynamic(() => import('@/components/SponsoredSection'), {
+  loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
+});
+
+const BestSellingSection = dynamic(() => import('@/components/BestSellingSection'), {
+  loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
+});
+
+// Below-the-fold sections - code splitting for better performance
 const JobsSponsor = dynamic(() => import('@/components/JobsSponsor'), {
-  loading: () => <div className="h-64 animate-pulse bg-muted" />,
+  loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
 });
 
 const JobsSection = dynamic(() => import('@/components/JobsSection'), {
-  loading: () => <div className="h-64 animate-pulse bg-muted" />,
+  loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
 });
 
 export const metadata: Metadata = {
@@ -41,12 +50,26 @@ export const metadata: Metadata = {
 const HomePage = () => {
   return (
     <div>
-      <h1 className="sr-only">Saleh Store - Your Trusted Online Marketplace for Quality Products</h1>
-      <Hero />
-      <BestSellingSection />
-      <SponsoredSection />
-      <JobsSponsor />
-      <JobsSection />
+      {/* <h1 className="sr-only">Saleh Store - Your Trusted Online Marketplace for Quality Products</h1> */}
+      <Suspense fallback={<div className="h-[500px] animate-pulse bg-muted rounded-lg" />}>
+        <Hero />
+      </Suspense>
+      
+      <Suspense fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}>
+        <BestSellingSection />
+      </Suspense>
+      
+      <Suspense fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}>
+        <SponsoredSection />
+      </Suspense>
+      
+      <Suspense fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}>
+        <JobsSponsor />
+      </Suspense>
+      
+      <Suspense fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}>
+        <JobsSection />
+      </Suspense>
     </div>
   );
 };
