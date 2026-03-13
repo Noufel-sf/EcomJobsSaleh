@@ -32,6 +32,10 @@ const data = {
           title: 'Applications',
           url: '/employer/applications',
         },
+        {
+          title: 'Profile',
+          url: '/employer/profile',
+        },
       ],
     },
   ],
@@ -39,8 +43,8 @@ const data = {
 
 export function EmployerAppSidebar({ ...props }) {
   return (
-    <Sidebar {...props}>
-      <SidebarHeader>
+    <Sidebar className="" {...props}>
+      <SidebarHeader className="">
         <VersionSwitcher
           versions={data.versions}
           defaultVersion={data.versions[0]}
@@ -53,8 +57,8 @@ export function EmployerAppSidebar({ ...props }) {
             <SidebarGroupContent className={""}>
               <SidebarMenu className={""}>
                 {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild className="cursor-pointer">
+                  <SidebarMenuItem className="" key={item.title}>
+                    <SidebarMenuButton asChild tooltip={item.title} className="cursor-pointer">
                       <Link href={item.url}>{item.title}</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -64,7 +68,7 @@ export function EmployerAppSidebar({ ...props }) {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarRail />
+      <SidebarRail className="" />
     </Sidebar>
   );
 }

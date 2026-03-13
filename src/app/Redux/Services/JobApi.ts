@@ -28,18 +28,34 @@ export interface GetAllApplicationsResponse {
   totalPages: number;
 }
 
+export interface UpdateEmployerProfilePayload {
+  name: string;
+  email: string;
+  companyName?: string;
+  description?: string;
+  website?: string;
+  location?: string;
+  industry?: string;
+}
+
+export interface UpdateEmployerPasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export const jobApi = createApi({
   reducerPath: "jobApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_URL}/jobs`,
+    baseUrl: `${API_URL}`,
+    credentials: "include",
   }),
 
-  tagTypes: ["Jobs", "Job", "Applications", "Application"],
+  tagTypes: ["Jobs", "Job", "Applications", "Application", "Profile"],
 
   endpoints: (builder) => ({
     getAllJobs: builder.query<GetAllJobsResponse, GetAllJobsParams | void>({
       query: (params) => ({
-        url: "",
+        url: "/jobs",
         params: params
           ? {
               ...(params.page && { page: params.page }),
@@ -55,13 +71,13 @@ export const jobApi = createApi({
     }),
 
     getJobById: builder.query<Job, string>({
-      query: (id) => `/${id}`,
+      query: (id) => `/jobs/${id}`,
       providesTags: (result, error, id) => [{ type: "Job", id }],
     }),
 
     searchJobs: builder.query({
       query: ({ query, title, location, type }) => ({
-        url: "/search",
+        url: "/jobs/search",
         params: {
           query: query,
           ...(title && { title }),
@@ -74,7 +90,7 @@ export const jobApi = createApi({
 
     createJob: builder.mutation({
       query: (jobData) => ({
-        url: "",
+        url: "/jobs",
         method: "POST",
         body: jobData,
       }),
@@ -83,7 +99,7 @@ export const jobApi = createApi({
 
     updateJob: builder.mutation({
       query: ({ id, jobData }) => ({
-        url: `/${id}`,
+        url: `/jobs/${id}`,
         method: "PUT",
         body: jobData,
       }),
@@ -95,7 +111,7 @@ export const jobApi = createApi({
 
     deleteJob: builder.mutation({
       query: (id) => ({
-        url: `/${id}`,
+        url: `/jobs/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Jobs"],
@@ -103,23 +119,23 @@ export const jobApi = createApi({
 
     // Application endpoints
     getAllApplications: builder.query<GetAllApplicationsResponse, void>({
-      query: () => "/applications",
+      query: () => "/jobs/applications",
       providesTags: ["Applications"],
     }),
 
     getApplicationsByJobId: builder.query<JobApplication[], string>({
-      query: (jobId) => `/applications/job/${jobId}`,
+      query: (jobId) => `/jobs/applications/job/${jobId}`,
       providesTags: ["Applications"],
     }),
 
     getApplicationById: builder.query<JobApplication, string>({
-      query: (id) => `/applications/${id}`,
+      query: (id) => `/jobs/applications/${id}`,
       providesTags: (result, error, id) => [{ type: "Application", id }],
     }),
 
     createApplication: builder.mutation({
       query: (applicationData) => ({
-        url: "/applications",
+        url: "/jobs/applications",
         method: "POST",
         body: applicationData,
       }),
@@ -128,7 +144,7 @@ export const jobApi = createApi({
 
     updateApplicationStatus: builder.mutation({
       query: ({ id, status }) => ({
-        url: `/applications/${id}/status`,
+        url: `/jobs/applications/${id}/status`,
         method: "PATCH",
         body: { status },
       }),
@@ -140,10 +156,33 @@ export const jobApi = createApi({
 
     deleteApplication: builder.mutation({
       query: (id) => ({
-        url: `/applications/${id}`,
+        url: `/jobs/applications/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Applications"],
+    }),
+
+    updateEmployerProfile: builder.mutation<
+      { message?: string },
+      UpdateEmployerProfilePayload
+    >({
+      query: (payload) => ({
+        url: "/user/updateInfo",
+        method: "PATCH",
+        body: payload,
+      }),
+      invalidatesTags: ["Profile"],
+    }),
+
+    updateEmployerPassword: builder.mutation<
+      { message?: string },
+      UpdateEmployerPasswordPayload
+    >({
+      query: (payload) => ({
+        url: "/user/updatePassword",
+        method: "PATCH",
+        body: payload,
+      }),
     }),
   }),
 });
@@ -161,4 +200,6 @@ export const {
   useCreateApplicationMutation,
   useUpdateApplicationStatusMutation,
   useDeleteApplicationMutation,
+  useUpdateEmployerProfileMutation,
+  useUpdateEmployerPasswordMutation,
 } = jobApi;
