@@ -37,11 +37,8 @@ type EmployerProfileFields = {
   id?: string;
   name?: string;
   logo?: string;
-  companyName?: string;
   description?: string;
-  website?: string;
   location?: string;
-  industry?: string;
   specialization?: string;
   jobs?: Array<{ id?: string }>;
 };
@@ -63,11 +60,8 @@ export default function EmployerProfilePage() {
     defaultValues: {
       name: "",
       email: "",
-      companyId: "",
-      companyName: "",
       logo: "",
       description: "",
-      website: "",
       location: "",
       specialization: "",
     },
@@ -93,25 +87,19 @@ export default function EmployerProfilePage() {
     profileForm.reset({
       name: user.name ?? "",
       email: user.email ?? "",
-      companyId: companyData.id ?? "",
-      companyName: companyData.name ?? companyData.companyName ?? "",
       logo: companyData.logo ?? "",
       description: companyData.description ?? "",
-      website: companyData.website ?? "",
       location: companyData.location ?? "",
-      specialization: companyData.specialization ?? companyData.industry ?? "",
+      specialization: companyData.specialization ?? "",
     });
   }, [
     user,
     companyData.id,
     companyData.name,
-    companyData.companyName,
     companyData.logo,
     companyData.description,
-    companyData.website,
     companyData.location,
     companyData.specialization,
-    companyData.industry,
     profileForm,
   ]);
 
@@ -221,9 +209,10 @@ export default function EmployerProfilePage() {
 
                 <CardContent className="grid mt-2 grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="employer-name">Contact Name</Label>
+                    <Label htmlFor="employer-name">Company Name</Label>
                     <Input
                       id="employer-name"
+                      placeholder="Your company name"
                       {...profileForm.register("name")}
                       required
                     />
@@ -234,7 +223,7 @@ export default function EmployerProfilePage() {
                     )}
                   </div>
 
-                  <div className="grid gap-2">
+                <div className="grid gap-2">
                     <Label htmlFor="company-name">Company Name</Label>
                     <Input
                       id="company-name"
@@ -253,6 +242,7 @@ export default function EmployerProfilePage() {
                     <Input
                       id="employer-email"
                       type="email"
+                      placeholder="you@example.com"
                       {...profileForm.register("email")}
                       required
                     />
@@ -279,20 +269,7 @@ export default function EmployerProfilePage() {
                     )}
                   </div>
 
-                  <div className="grid gap-2">
-                    <Label htmlFor="company-logo">Logo URL</Label>
-                    <Input
-                      id="company-logo"
-                      type="url"
-                      {...profileForm.register("logo")}
-                      placeholder="https://example.com/logo.png"
-                    />
-                    {profileForm.formState.errors.logo && (
-                      <p className="text-sm text-red-500">
-                        {profileForm.formState.errors.logo.message}
-                      </p>
-                    )}
-                  </div>
+                
 
                   <div className="grid gap-2 md:col-span-2">
                     <Label>Company Logo Image</Label>

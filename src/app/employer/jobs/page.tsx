@@ -49,9 +49,7 @@ import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
 import Link from "next/link";
 import { useAppSelector } from "@/Redux/hooks";
 import {
-  type CreateJobPayload,
   useGetAllJobsQuery,
-  useCreateJobMutation,
   useUpdateJobMutation,
   useDeleteJobMutation,
 } from "@/Redux/Services/JobApi";
@@ -161,7 +159,6 @@ export default function EmployerJobs() {
 
   // API hooks with mock data fallback
   const { data: jobsData, isLoading } = useGetAllJobsQuery();
-  const [createJob, { isLoading: isCreating }] = useCreateJobMutation();
   const [updateJob, { isLoading: isUpdating }] = useUpdateJobMutation();
   const [deleteJob] = useDeleteJobMutation();
 
@@ -184,20 +181,6 @@ export default function EmployerJobs() {
     setLocation("");
     setType("full-time");
   }, []);
-
-  const handleCreate = useCallback(
-    async (payload: CreateJobPayload) => {
-      try {
-        await createJob(payload).unwrap();
-        toast.success("Job created successfully");
-        setOpen(false);
-      } catch (error: unknown) {
-        const err = error as { data?: { message?: string } };
-        toast.error(err?.data?.message || "Failed to create job");
-      }
-    },
-    [createJob],
-  );
 
   const handleUpdate = useCallback(
     async (e: React.FormEvent) => {
@@ -457,12 +440,12 @@ export default function EmployerJobs() {
 
       <div className="w-full">
         <div className="flex items-center py-4 gap-3">
+
+          {/* create job dialog */}
           <CreateJobDialog
             open={open}
             onOpenChange={setOpen}
-            isCreating={isCreating}
             defaultCompanyId={companyId}
-            onSubmit={handleCreate}
           />
 
           {/* Search */}

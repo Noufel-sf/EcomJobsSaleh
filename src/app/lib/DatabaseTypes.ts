@@ -130,10 +130,7 @@ export interface Size {
 export interface State {
   id: number;
   name: string | null; // varchar(255)
-  // ⚠️ MISSING ATTRIBUTES:
-  // - country: string
-  // - code: string (e.g., "CA" for California)
-  // - is_active: boolean
+ 
 }
 
 export interface Type {

@@ -35,12 +35,10 @@ interface EmployerRegisterRequest {
   name: string;
   email: string;
   password: string;
-  companyName: string;
   description: string;
-  website?: string;
   location: string;
-  industry: string;
-  companyLogo?: string;
+  specialization: string;
+  logo?: string;
 }
 
 interface AuthResponse {

@@ -42,12 +42,9 @@ export interface UpdateEmployerProfilePayload {
   email: string;
   id?: string;
   logo?: string;
-  specialization?: string;
-  companyName?: string;
   description?: string;
-  website?: string;
   location?: string;
-  industry?: string;
+  specialization?: string;
 }
 
 export interface UpdateEmployerPasswordPayload {

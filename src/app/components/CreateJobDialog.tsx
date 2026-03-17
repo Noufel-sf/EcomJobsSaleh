@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ButtonLoading } from "@/components/ui/ButtonLoading";
 import {
   type CreateJobPayload,
+  useCreateJobMutation,
   useGetAllCategoriesQuery,
 } from "@/Redux/Services/JobApi";
 import toast from "react-hot-toast";
@@ -25,9 +26,7 @@ import toast from "react-hot-toast";
 type CreateJobDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  isCreating: boolean;
   defaultCompanyId?: string;
-  onSubmit: (payload: CreateJobPayload) => Promise<void>;
 };
 
 type PointListInputProps = {
@@ -92,9 +91,7 @@ function PointListInput({
 export default function CreateJobDialog({
   open,
   onOpenChange,
-  isCreating,
   defaultCompanyId = "",
-  onSubmit,
 }: CreateJobDialogProps) {
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
 
@@ -125,6 +122,8 @@ export default function CreateJobDialog({
   const { data: categoriesData, isLoading: isCategoriesLoading } =
     useGetAllCategoriesQuery();
   const categories = categoriesData?.content ?? [];
+
+  const [createJob, { isLoading: isCreating }] = useCreateJobMutation();
 
   const resetForm = () => {
     setTitle("");
@@ -199,7 +198,7 @@ export default function CreateJobDialog({
       return;
     }
 
-    await onSubmit({
+    const payload: CreateJobPayload = {
       title,
       company: company || defaultCompanyId,
       location,
@@ -216,7 +215,17 @@ export default function CreateJobDialog({
       totalCapacity: Number.isFinite(totalCapacity) ? totalCapacity : 0,
       applyBefore,
       jobPostedOn,
-    });
+    };
+
+    try {
+      await createJob(payload).unwrap();
+      toast.success("Job created successfully");
+      onOpenChange(false);
+      resetForm();
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || "Failed to create job");
+    }
   };
 
   return (

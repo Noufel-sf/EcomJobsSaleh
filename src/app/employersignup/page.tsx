@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +32,8 @@ import {
   CheckCircle2,
   MapPin,
   Briefcase,
+  Image as ImageIcon,
+  Upload,
 } from "lucide-react";
 
 interface EmployerSignupPageProps {
@@ -51,8 +54,33 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [logoUrl, setLogoUrl] = useState("");
+  const [logoPreview, setLogoPreview] = useState("");
+  const [logoFileName, setLogoFileName] = useState("");
   const [registerEmployer, { isLoading: isPending }] =
     useRegisterEmployerMutation();
+
+  const handleLogoFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setLogoPreview((reader.result as string) || "");
+      setLogoFileName(file.name);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -62,12 +90,10 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
-    const companyName = formData.get("companyName") as string;
     const description = formData.get("description") as string;
-    const website = formData.get("website") as string;
     const location = formData.get("location") as string;
-    const industry = formData.get("industry") as string;
-    const companyLogo = formData.get("companyLogo") as string;
+    const specialization = formData.get("specialization") as string;
+    const logo = (logoPreview || logoUrl || "").trim();
 
     // Client-side validation
     if (password !== confirmPassword) {
@@ -85,12 +111,10 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
         name,
         email,
         password,
-        companyName,
         description,
-        website: website || undefined,
         location,
-        industry,
-        companyLogo: companyLogo || undefined,
+        specialization,
+        logo,
       }).unwrap();
 
       dispatch(setCredentials({ user: result.user }));
@@ -349,8 +373,8 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                           <span className="text-destructive">*</span>
                         </Label>
                         <Input
-                          id="companyName"
-                          name="companyName"
+                          id="name"
+                          name="name"
                           type="text"
                           className="h-11"
                           placeholder="Acme Corporation"
@@ -362,7 +386,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                         />
                       </div>
 
-                      {/* Location and Industry */}
+                      {/* Location and Specialization */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Location */}
                         <div className="grid gap-3">
@@ -389,60 +413,82 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                           />
                         </div>
 
-                        {/* Industry */}
+                        {/* Specialization */}
                         <div className="grid gap-3">
                           <Label
-                            htmlFor="industry"
+                            htmlFor="specialization"
                             className="text-sm font-medium"
                           >
                             <Briefcase
                               className="w-4 h-4 inline mr-2"
                               aria-hidden="true"
                             />
-                            Industry <span className="text-destructive">*</span>
+                            Specialization{" "}
+                            <span className="text-destructive">*</span>
                           </Label>
                           <Input
-                            id="industry"
-                            name="industry"
+                            id="specialization"
+                            name="specialization"
                             type="text"
                             className="h-11"
-                            placeholder="Technology"
+                            placeholder="Fintech, E-commerce"
                             required
                             aria-required="true"
-                            aria-label="Industry"
+                            aria-label="Company specialization"
                             disabled={isPending}
                           />
                         </div>
                       </div>
 
-                      {/* Company Logo URL */}
-                      {/* <div className="grid gap-3">
-                        <Label
-                          htmlFor="companyLogo"
-                          className="text-sm font-medium"
-                        >
-                          <ImageIcon
-                            className="w-4 h-4 inline mr-2"
-                            aria-hidden="true"
-                          />
-                          Company Logo URL{" "}
-                          <span className="text-muted-foreground">
-                            (Optional)
-                          </span>
-                        </Label>
-                        <Input
-                          id="companyLogo"
-                          name="companyLogo"
-                          type="url"
-                          className="h-11"
-                          placeholder="https://example.com/logo.png"
-                          aria-label="Company logo URL"
-                          disabled={isPending}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Enter a public URL to your company logo
-                        </p>
-                      </div> */}
+                      {/* Website and Logo */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label>Logo Preview</Label>
+                          <div className="flex items-center gap-3">
+                            <div className="relative h-20 w-20 overflow-hidden rounded-lg border-2 border-dashed border-border bg-muted">
+                              {logoPreview || logoUrl ? (
+                                <Image
+                                  src={logoPreview || logoUrl}
+                                  alt="Company logo preview"
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-full w-full flex-col items-center justify-center text-muted-foreground">
+                                  <ImageIcon className="h-5 w-5" />
+                                  <span className="mt-1 text-[10px]">
+                                    No logo
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="grid gap-2">
+                              <Label
+                                htmlFor="company-logo-file"
+                                className="cursor-pointer"
+                              >
+                                <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm hover:bg-accent transition-colors">
+                                  <Upload className="h-4 w-4" />
+                                  <span>Choose Image</span>
+                                </div>
+                              </Label>
+                              <Input
+                                id="company-logo-file"
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleLogoFileChange}
+                                disabled={isPending}
+                              />
+                              {logoFileName && (
+                                <p className="max-w-44 truncate text-xs text-muted-foreground">
+                                  {logoFileName}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
 
                       {/* Company Description */}
                       <div className="grid gap-3">
