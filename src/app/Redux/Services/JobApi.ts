@@ -1,5 +1,6 @@
 import { Job, JobApplication } from "@/lib/DatabaseTypes";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { JobCategory } from "@/lib/DatabaseTypes";
 
 const API_URL = "https://wadkniss.onrender.com/api/v1";
 
@@ -10,6 +11,14 @@ export interface GetAllJobsParams {
   location?: string;
   minSalary?: number;
   maxSalary?: number;
+}
+
+export interface GetAllCategoriesResponse {
+  content: JobCategory[];
+  page : number;
+  size : number;
+  totalPages : number;
+  totalCategories : number;
 }
 
 export interface GetAllJobsResponse {
@@ -31,6 +40,9 @@ export interface GetAllApplicationsResponse {
 export interface UpdateEmployerProfilePayload {
   name: string;
   email: string;
+  id?: string;
+  logo?: string;
+  specialization?: string;
   companyName?: string;
   description?: string;
   website?: string;
@@ -47,10 +59,9 @@ export const jobApi = createApi({
   reducerPath: "jobApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_URL}`,
-    credentials: "include",
   }),
 
-  tagTypes: ["Jobs", "Job", "Applications", "Application", "Profile"],
+  tagTypes: ["Jobs", "Job", "Applications", "Application", "Profile", "JobsCategories"],
 
   endpoints: (builder) => ({
     getAllJobs: builder.query<GetAllJobsResponse, GetAllJobsParams | void>({
@@ -69,6 +80,12 @@ export const jobApi = createApi({
       }),
       providesTags: ["Jobs"],
     }),
+
+    getAllCategories: builder.query<GetAllCategoriesResponse, void>({
+      query: () => "/categoriess",
+      providesTags: ["JobsCategories"],
+    }),
+
 
     getJobById: builder.query<Job, string>({
       query: (id) => `/jobs/${id}`,
@@ -164,11 +181,11 @@ export const jobApi = createApi({
 
     updateEmployerProfile: builder.mutation<
       { message?: string },
-      UpdateEmployerProfilePayload
+      UpdateEmployerProfilePayload | FormData
     >({
       query: (payload) => ({
-        url: "/user/updateInfo",
-        method: "PATCH",
+        url: "/company",
+        method: "PUT",
         body: payload,
       }),
       invalidatesTags: ["Profile"],
@@ -196,6 +213,7 @@ export const {
   useDeleteJobMutation,
   useGetAllApplicationsQuery,
   useGetApplicationsByJobIdQuery,
+  useGetAllCategoriesQuery,
   useGetApplicationByIdQuery,
   useCreateApplicationMutation,
   useUpdateApplicationStatusMutation,

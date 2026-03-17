@@ -15,7 +15,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-// import { useGetAllJobsQuery } from "@/Redux/Services/JobApi";
+import {
+  useGetAllJobsQuery,
+  useGetAllCategoriesQuery,
+} from "@/Redux/Services/JobApi";
 import { mockJobs } from "@/lib/mockData/jobs";
 
 import { Separator } from "@/components/ui/separator";
@@ -34,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { JobCategory } from "@/lib/DatabaseTypes";
 
 import hero1 from "@assets/hero1.png";
 import hero2 from "@assets/hero2.png";
@@ -52,21 +56,22 @@ const JOB_TYPES = [
   "Remote",
 ];
 
-const LOCATIONS = [
-  "New York",
-  "San Francisco",
-  "London",
-  "Berlin",
-  "Tokyo",
-  "Remote",
-  "Hybrid",
-];
+// const LOCATIONS = [
+//   "New York",
+//   "San Francisco",
+//   "London",
+//   "Berlin",
+//   "Tokyo",
+//   "Remote",
+//   "Hybrid",
+// ];
 
 interface FilterSidebarProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   selectedTypes: string[];
   setSelectedTypes: React.Dispatch<React.SetStateAction<string[]>>;
+  jobsCategories: JobCategory[];
   selectedLocations: string[];
   setSelectedLocations: React.Dispatch<React.SetStateAction<string[]>>;
   handleTypeToggle: (type: string) => void;
@@ -79,10 +84,11 @@ const FilterSidebar = memo(function FilterSidebar({
   setSearchQuery,
   selectedTypes,
   setSelectedTypes,
-  selectedLocations,
-  setSelectedLocations,
+  jobsCategories,
+  // selectedLocations,
+  // setSelectedLocations,
   handleTypeToggle,
-  handleLocationToggle,
+  // handleLocationToggle,
   clearFilters,
 }: FilterSidebarProps) {
   return (
@@ -107,10 +113,10 @@ const FilterSidebar = memo(function FilterSidebar({
 
       <Separator className="" />
 
-      {/* Job Types */}
+      {/* Job Categories */}
       <fieldset className="px-6 lg:px-0" aria-label="Job types">
         <div className="flex items-center justify-between mb-3">
-          <legend className="text-sm font-semibold">Job Type</legend>
+          <legend className="text-sm font-semibold">Job categories</legend>
           {selectedTypes.length > 0 && (
             <Button
               variant="ghost"
@@ -123,6 +129,43 @@ const FilterSidebar = memo(function FilterSidebar({
           )}
         </div>
         <div className="space-y-2">
+          {jobsCategories.map((category: JobCategory  ) => (
+            <div key={category.id} className="flex items-center space-x-2">
+              <Checkbox
+                id={`type-${category.id}`}
+                checked={selectedTypes.includes(category.content)}
+                onCheckedChange={() => handleTypeToggle(category.content)}
+                className=""
+              />
+              <label
+                htmlFor={`type-${category.id}`}
+                className="text-sm flex-1 cursor-pointer flex items-center justify-between"
+              >
+                <span>{category.categories}</span>
+              </label>
+            </div>
+          ))}
+        </div>
+      </fieldset>
+
+      <Separator className="" />
+
+      {/* Job types */}
+      <fieldset className="px-6 lg:px-0" aria-label="Job locations">
+        <div className="flex items-center justify-between mb-3">
+          <legend className="text-sm font-semibold">Job Types</legend>
+          {selectedTypes.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedTypes([])}
+              className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+            >
+              Clear
+            </Button>
+          )}
+        </div>
+         <div className="space-y-2">
           {JOB_TYPES.map((type) => (
             <div key={type} className="flex items-center space-x-2">
               <Checkbox
@@ -140,43 +183,7 @@ const FilterSidebar = memo(function FilterSidebar({
             </div>
           ))}
         </div>
-      </fieldset>
-
-      <Separator className="" />
-
-      {/* Locations */}
-      <fieldset className="px-6 lg:px-0" aria-label="Job locations">
-        <div className="flex items-center justify-between mb-3">
-          <legend className="text-sm font-semibold">Location</legend>
-          {selectedLocations.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedLocations([])}
-              className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
-            >
-              Clear
-            </Button>
-          )}
-        </div>
-        <div className="space-y-2">
-          {LOCATIONS.map((location) => (
-            <div key={location} className="flex items-center space-x-2">
-              <Checkbox
-                id={`location-${location}`}
-                checked={selectedLocations.includes(location)}
-                onCheckedChange={() => handleLocationToggle(location)}
-                className=""
-              />
-              <label
-                htmlFor={`location-${location}`}
-                className="text-sm flex-1 cursor-pointer flex items-center justify-between"
-              >
-                <span>{location}</span>
-              </label>
-            </div>
-          ))}
-        </div>
+        
       </fieldset>
 
       <Separator className="" />
@@ -210,7 +217,11 @@ function AllJobsPage() {
   const isLoading = false;
 
   // Uncomment below to use real API instead of mock data
+  
   // const { data: jobsData, isLoading } = useGetAllJobsQuery(undefined);
+  const { data: categoriesData , isLoading: isCategoriesLoading } = useGetAllCategoriesQuery();
+  const Jobscategories = categoriesData?.content || [];
+
 
   const filteredJobs = useMemo(() => {
     const jobs = jobsData?.content || [];
@@ -373,6 +384,7 @@ function AllJobsPage() {
               <FilterSidebar
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
+                jobsCategories={Jobscategories}
                 selectedTypes={selectedTypes}
                 setSelectedTypes={setSelectedTypes}
                 selectedLocations={selectedLocations}
@@ -397,7 +409,7 @@ function AllJobsPage() {
                 </p>
               </div>
 
-                {/* Mobile Filter Button */}
+              {/* Mobile Filter Button */}
               <div className="flex items-center gap-2">
                 <Sheet
                   open={mobileFiltersOpen}
@@ -407,7 +419,7 @@ function AllJobsPage() {
                     <Button
                       variant="outline"
                       className="lg:hidden"
-                      size=""
+                      size="lg"
                       aria-label="Open filters menu"
                     >
                       <SlidersHorizontal
@@ -445,6 +457,7 @@ function AllJobsPage() {
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
                         selectedTypes={selectedTypes}
+                        jobsCategories={Jobscategories}
                         setSelectedTypes={setSelectedTypes}
                         selectedLocations={selectedLocations}
                         setSelectedLocations={setSelectedLocations}
@@ -609,9 +622,9 @@ function AllJobsPage() {
                 </p>
                 <Button
                   onClick={clearFilters}
-                  variant=""
+                  variant="primary"
                   className=""
-                  size=""
+                  size="lg"
                   type="button"
                 >
                   Clear all filters

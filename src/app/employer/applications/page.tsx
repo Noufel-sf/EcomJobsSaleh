@@ -136,6 +136,7 @@ export default function EmployerApplications() {
   // API hooks with mock data fallback
   const { data: applicationsData, isLoading: isLoadingApplications } = useGetAllApplicationsQuery();
   const { data: jobsData } = useGetAllJobsQuery();
+  
   const [updateApplicationStatus] = useUpdateApplicationStatusMutation();
   const [deleteApplication] = useDeleteApplicationMutation();
 

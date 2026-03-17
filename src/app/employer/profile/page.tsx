@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import EmployerSidebarLayout from "@/components/EmployerSidebarLayout";
 import { Button } from "@/components/ui/button";
 import { ButtonLoading } from "@/components/ui/ButtonLoading";
@@ -15,8 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { useAppDispatch, useAppSelector } from "@/Redux/hooks";
-import { updateUser } from "@/Redux/Slices/AuthSlice";
+import { useAppSelector } from "@/Redux/hooks";
 import {
   useUpdateEmployerPasswordMutation,
   useUpdateEmployerProfileMutation,
@@ -28,38 +28,48 @@ import {
   type EmployerProfileFormValues,
 } from "@/lib/zodValidation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState, type ChangeEvent } from "react";
+import { Image as ImageIcon, Upload } from "lucide-react";
+import { useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
 
 type EmployerProfileFields = {
+  id?: string;
+  name?: string;
+  logo?: string;
   companyName?: string;
   description?: string;
   website?: string;
   location?: string;
   industry?: string;
+  specialization?: string;
+  jobs?: Array<{ id?: string }>;
 };
 
 export default function EmployerProfilePage() {
-  const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const employerData = (user ?? {}) as EmployerProfileFields;
+  const companyData = employerData;
 
   const [updateEmployerProfile, { isLoading: isSavingProfile }] =
     useUpdateEmployerProfileMutation();
   const [updateEmployerPassword, { isLoading: isSavingPassword }] =
     useUpdateEmployerPasswordMutation();
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>("");
 
   const profileForm = useForm<EmployerProfileFormValues>({
     resolver: zodResolver(employerProfileSchema),
     defaultValues: {
       name: "",
       email: "",
+      companyId: "",
       companyName: "",
+      logo: "",
       description: "",
       website: "",
       location: "",
-      industry: "",
+      specialization: "",
     },
   });
 
@@ -72,59 +82,114 @@ export default function EmployerProfilePage() {
     },
   });
 
+  const logoUrlValue = useWatch({
+    control: profileForm.control,
+    name: "logo",
+  });
+
   useEffect(() => {
     if (!user) return;
 
     profileForm.reset({
       name: user.name ?? "",
       email: user.email ?? "",
-      companyName: employerData.companyName ?? "",
-      description: employerData.description ?? "",
-      website: employerData.website ?? "",
-      location: employerData.location ?? "",
-      industry: employerData.industry ?? "",
+      companyId: companyData.id ?? "",
+      companyName: companyData.name ?? companyData.companyName ?? "",
+      logo: companyData.logo ?? "",
+      description: companyData.description ?? "",
+      website: companyData.website ?? "",
+      location: companyData.location ?? "",
+      specialization: companyData.specialization ?? companyData.industry ?? "",
     });
   }, [
     user,
-    employerData.companyName,
-    employerData.description,
-    employerData.website,
-    employerData.location,
-    employerData.industry,
+    companyData.id,
+    companyData.name,
+    companyData.companyName,
+    companyData.logo,
+    companyData.description,
+    companyData.website,
+    companyData.location,
+    companyData.specialization,
+    companyData.industry,
     profileForm,
   ]);
 
-//   const onSubmitProfile = async (values: EmployerProfileFormValues) => {
-//     try {
-//       const response = await updateEmployerProfile(values).unwrap();
-//       if (user) {
-//         dispatch(updateUser({ ...user, name: values.name, email: values.email }));
-//       }
-//       toast.success(response?.message || "Profile updated successfully.");
-//     } catch (error: unknown) {
-     
-//       toast.error(message || "Failed to update profile.");
-//     }
-//   };
+  const handleLogoFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    if (!file) {
+      setLogoFile(null);
+      setLogoPreview("");
+      return;
+    }
 
-//   const onSubmitPassword = async (values: EmployerPasswordFormValues) => {
-//     try {
-//       const response = await updateEmployerPassword({
-//         currentPassword: values.currentPassword,
-//         newPassword: values.newPassword,
-//       }).unwrap();
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file");
+      return;
+    }
 
-//       passwordForm.reset({
-//         currentPassword: "",
-//         newPassword: "",
-//         confirmPassword: "",
-//       });
-//       toast.success(response?.message || "Password updated successfully.");
-//     } catch (error: unknown) {
-     
-//       toast.error(message || "Failed to update password.");
-//     }
-//   };
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+
+    setLogoFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setLogoPreview((reader.result as string) || "");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const onProfileSubmit = async (values: EmployerProfileFormValues) => {
+    try {
+      const formData = new FormData();
+
+      formData.append("name", values.name);
+      formData.append("email", values.email);
+
+      if (values.companyId) formData.append("id", values.companyId);
+      if (values.companyName)
+        formData.append("companyName", values.companyName);
+      if (logoFile) {
+        formData.append("logo", logoFile);
+      } else if (values.logo) {
+        formData.append("logo", values.logo);
+      }
+      if (values.description)
+        formData.append("description", values.description);
+      if (values.website) formData.append("website", values.website);
+      if (values.location) formData.append("location", values.location);
+      if (values.specialization) {
+        formData.append("specialization", values.specialization);
+        formData.append("industry", values.specialization);
+      }
+
+      await updateEmployerProfile(formData).unwrap();
+
+      toast.success("Profile updated successfully");
+      setLogoFile(null);
+    } catch (error) {
+      toast.error("Failed to update profile");
+      console.error("Failed to update employer profile", error);
+    }
+  };
+
+  const onPasswordSubmit = async (values: EmployerPasswordFormValues) => {
+    try {
+      await updateEmployerPassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+      }).unwrap();
+
+      toast.success("Password updated successfully");
+      passwordForm.reset();
+    } catch (error) {
+      toast.error("Failed to update password");
+      console.error("Failed to update employer password", error);
+    }
+  };
 
   return (
     <EmployerSidebarLayout breadcrumbTitle="Profile">
@@ -145,7 +210,7 @@ export default function EmployerProfilePage() {
           </TabsList>
 
           <TabsContent value="profile" className="mt-4">
-            <form >
+            <form onSubmit={profileForm.handleSubmit(onProfileSubmit)}>
               <Card className="">
                 <CardHeader className="">
                   <CardTitle className="">Edit Profile</CardTitle>
@@ -154,9 +219,9 @@ export default function EmployerProfilePage() {
                   </CardDescription>
                 </CardHeader>
 
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="grid mt-2 grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="employer-name">Full Name</Label>
+                    <Label htmlFor="employer-name">Contact Name</Label>
                     <Input
                       id="employer-name"
                       {...profileForm.register("name")}
@@ -165,6 +230,20 @@ export default function EmployerProfilePage() {
                     {profileForm.formState.errors.name && (
                       <p className="text-sm text-red-500">
                         {profileForm.formState.errors.name.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="company-name">Company Name</Label>
+                    <Input
+                      id="company-name"
+                      {...profileForm.register("companyName")}
+                      placeholder="Your company name"
+                    />
+                    {profileForm.formState.errors.companyName && (
+                      <p className="text-sm text-red-500">
+                        {profileForm.formState.errors.companyName.message}
                       </p>
                     )}
                   </div>
@@ -185,31 +264,84 @@ export default function EmployerProfilePage() {
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="company-name">Company Name</Label>
+                    <Label htmlFor="company-specialization">
+                      Specialization
+                    </Label>
                     <Input
-                      id="company-name"
-                      {...profileForm.register("companyName")}
-                      placeholder="Your company name"
+                      id="company-specialization"
+                      {...profileForm.register("specialization")}
+                      placeholder="e.g. Fintech, E-commerce"
                     />
-                    {profileForm.formState.errors.companyName && (
+                    {profileForm.formState.errors.specialization && (
                       <p className="text-sm text-red-500">
-                        {profileForm.formState.errors.companyName.message}
+                        {profileForm.formState.errors.specialization.message}
                       </p>
                     )}
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="company-industry">Industry</Label>
+                    <Label htmlFor="company-logo">Logo URL</Label>
                     <Input
-                      id="company-industry"
-                      {...profileForm.register("industry")}
-                      placeholder="e.g. Technology"
+                      id="company-logo"
+                      type="url"
+                      {...profileForm.register("logo")}
+                      placeholder="https://example.com/logo.png"
                     />
-                    {profileForm.formState.errors.industry && (
+                    {profileForm.formState.errors.logo && (
                       <p className="text-sm text-red-500">
-                        {profileForm.formState.errors.industry.message}
+                        {profileForm.formState.errors.logo.message}
                       </p>
                     )}
+                  </div>
+
+                  <div className="grid gap-2 md:col-span-2">
+                    <Label>Company Logo Image</Label>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <div className="relative h-24 w-24 overflow-hidden rounded-lg border-2 border-dashed border-border bg-muted">
+                        {logoPreview || logoUrlValue || companyData.logo ? (
+                          <Image
+                            src={
+                              logoPreview ||
+                              logoUrlValue ||
+                              companyData.logo ||
+                              ""
+                            }
+                            alt="Company logo preview"
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full flex-col items-center justify-center text-muted-foreground">
+                            <ImageIcon className="h-6 w-6" />
+                            <span className="mt-1 text-[10px]">No logo</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label
+                          htmlFor="company-logo-file"
+                          className="cursor-pointer"
+                        >
+                          <div className="flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm hover:bg-accent transition-colors">
+                            <Upload className="h-4 w-4" />
+                            <span>Choose Image</span>
+                          </div>
+                        </Label>
+                        <Input
+                          id="company-logo-file"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleLogoFileChange}
+                        />
+                        {logoFile && (
+                          <p className="text-xs text-muted-foreground">
+                            {logoFile.name}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="grid gap-2">
@@ -222,21 +354,6 @@ export default function EmployerProfilePage() {
                     {profileForm.formState.errors.location && (
                       <p className="text-sm text-red-500">
                         {profileForm.formState.errors.location.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="company-website">Website</Label>
-                    <Input
-                      id="company-website"
-                      type="url"
-                      {...profileForm.register("website")}
-                      placeholder="https://example.com"
-                    />
-                    {profileForm.formState.errors.website && (
-                      <p className="text-sm text-red-500">
-                        {profileForm.formState.errors.website.message}
                       </p>
                     )}
                   </div>
@@ -273,7 +390,7 @@ export default function EmployerProfilePage() {
           </TabsContent>
 
           <TabsContent value="password" className="mt-4">
-            <form >
+            <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
               <Card className="">
                 <CardHeader className="">
                   <CardTitle className="">Change Password</CardTitle>

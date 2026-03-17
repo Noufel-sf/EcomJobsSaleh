@@ -215,6 +215,13 @@ export interface JobApplication {
   lastUpdated?: string;
 }
 
+export interface JobCategory {
+  id: string;
+  content : string;
+  categories: string;
+  description?: string;
+}
+
 
 export interface EmployerProfile {
   id: string;
@@ -247,6 +254,8 @@ export interface AuthContextType {
 export interface AuthProviderProps {
   children: ReactNode;
 }
+
+
 
 export interface CartItem {
   productId: string;

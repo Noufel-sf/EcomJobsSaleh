@@ -22,9 +22,15 @@ export type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 export const employerProfileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email"),
+  companyId: z.string().optional().or(z.literal("")),
   companyName: z
     .string()
     .min(2, "Company name must be at least 2 characters")
+    .optional()
+    .or(z.literal("")),
+  logo: z
+    .string()
+    .url("Please enter a valid URL")
     .optional()
     .or(z.literal("")),
   description: z
@@ -42,9 +48,9 @@ export const employerProfileSchema = z.object({
     .min(2, "Location must be at least 2 characters")
     .optional()
     .or(z.literal("")),
-  industry: z
+  specialization: z
     .string()
-    .min(2, "Industry must be at least 2 characters")
+    .min(2, "Specialization must be at least 2 characters")
     .optional()
     .or(z.literal("")),
 });
