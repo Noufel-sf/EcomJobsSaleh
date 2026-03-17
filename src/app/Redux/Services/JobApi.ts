@@ -55,6 +55,25 @@ export interface UpdateEmployerPasswordPayload {
   newPassword: string;
 }
 
+export interface CreateJobPayload {
+  title: string;
+  company: string;
+  location: string;
+  type: string;
+  experience: string;
+  salary: number;
+  description: string;
+  responsibilities: string[];
+  whoYouAre: string[];
+  niceToHaves: string[];
+  jobCategories: string;
+  requiredSkills: string[];
+  appliedCount: number;
+  totalCapacity: number;
+  applyBefore: string;
+  jobPostedOn: string;
+}
+
 export const jobApi = createApi({
   reducerPath: "jobApi",
   baseQuery: fetchBaseQuery({
@@ -105,7 +124,7 @@ export const jobApi = createApi({
       providesTags: ["Jobs"],
     }),
 
-    createJob: builder.mutation({
+    createJob: builder.mutation<{ message?: string }, CreateJobPayload>({
       query: (jobData) => ({
         url: "/jobs",
         method: "POST",
