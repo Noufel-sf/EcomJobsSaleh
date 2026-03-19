@@ -49,9 +49,9 @@ export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_URL}`,
-    credentials: "include",
+    // credentials: "include",
   }),
-  tagTypes: ["Auth"],
+  tagTypes: ["Auth", "Company"],
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -83,13 +83,13 @@ export const authApi = createApi({
     }),
 
     // Employer Register mutation
-    registerEmployer: builder.mutation<AuthResponse, EmployerRegisterRequest>({
+    registerEmployerCompany: builder.mutation<AuthResponse, EmployerRegisterRequest>({
       query: (employerData) => ({
-        url: "/auth/employer/register",
+        url: "/companys",
         method: "POST",
         body: employerData,
       }),
-      invalidatesTags: ["Auth"],
+      invalidatesTags: ["Company"],
     }),
 
     // Get current user profile
@@ -113,7 +113,7 @@ export const {
   useLoginMutation,
   useRegisterMutation,
   useRegisterSellerMutation,
-  useRegisterEmployerMutation,
+  useRegisterEmployerCompanyMutation,
   useGetProfileQuery,
   useLogoutMutation,
 } = authApi;

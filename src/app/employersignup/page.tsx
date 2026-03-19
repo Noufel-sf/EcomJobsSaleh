@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,9 +17,9 @@ import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { useRegisterEmployerMutation } from "@/Redux/Services/AuthApi";
-import { useAppDispatch } from "@/Redux/hooks";
-import { setCredentials } from "@/Redux/Slices/AuthSlice";
+// import { useAppDispatch } from "@/Redux/hooks";
+import { useRegisterEmployerCompanyMutation } from "@/Redux/Services/AuthApi";
+// import { setCredentials } from "@/Redux/Slices/AuthSlice";
 import {
   Lock,
   Mail,
@@ -32,9 +32,8 @@ import {
   CheckCircle2,
   MapPin,
   Briefcase,
-  Image as ImageIcon,
-  Upload,
 } from "lucide-react";
+import Image from "next/image";
 
 interface EmployerSignupPageProps {
   className?: string;
@@ -50,52 +49,27 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   searchParams: _searchParams,
 }) => {
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [logoUrl, setLogoUrl] = useState("");
-  const [logoPreview, setLogoPreview] = useState("");
-  const [logoFileName, setLogoFileName] = useState("");
-  const [registerEmployer, { isLoading: isPending }] =
-    useRegisterEmployerMutation();
+  const [logoUrl, setLogoUrl] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
-  const handleLogoFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select a valid image file");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size should be less than 5MB");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setLogoPreview((reader.result as string) || "");
-      setLogoFileName(file.name);
-    };
-    reader.readAsDataURL(file);
-  };
+  const [registerEmployerCompany, { isLoading: isPending }] =
+    useRegisterEmployerCompanyMutation();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
-    const description = formData.get("description") as string;
-    const location = formData.get("location") as string;
-    const specialization = formData.get("specialization") as string;
-    const logo = (logoPreview || logoUrl || "").trim();
 
-    // Client-side validation
+    if (logoUrl) {
+      formData.append("logo", logoUrl);
+    }
+
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -107,17 +81,8 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
     }
 
     try {
-      const result = await registerEmployer({
-        name,
-        email,
-        password,
-        description,
-        location,
-        specialization,
-        logo,
-      }).unwrap();
-
-      dispatch(setCredentials({ user: result.user }));
+      // @ts-expect-error RTK Query handles FormData at runtime
+      await registerEmployerCompany(formData).unwrap();
       toast.success("Employer Account Created Successfully! 🎉");
       router.push("/employer");
     } catch (error: unknown) {
@@ -126,6 +91,23 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
         err?.data?.message || "Registration failed. Please try again.";
       toast.error(message);
     }
+  };
+  const handleLogoChange = (file: File | undefined) => {
+    setLogoUrl(file || null);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setLogoPreview(null);
+    }
+  };
+
+  const removeLogo = () => {
+    setLogoUrl(null);
+    setLogoPreview(null);
   };
 
   return (
@@ -197,7 +179,8 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                             className="w-4 h-4 inline mr-2"
                             aria-hidden="true"
                           />
-                          Full Name <span className="text-destructive">*</span>
+                          Company Name{" "}
+                          <span className="text-destructive">*</span>
                         </Label>
                         <Input
                           id="name"
@@ -359,33 +342,6 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                         Company Information
                       </h3>
 
-                      {/* Company Name */}
-                      <div className="grid gap-3">
-                        <Label
-                          htmlFor="companyName"
-                          className="text-sm font-medium"
-                        >
-                          <Building2
-                            className="w-4 h-4 inline mr-2"
-                            aria-hidden="true"
-                          />
-                          Company Name{" "}
-                          <span className="text-destructive">*</span>
-                        </Label>
-                        <Input
-                          id="name"
-                          name="name"
-                          type="text"
-                          className="h-11"
-                          placeholder="Acme Corporation"
-                          required
-                          autoComplete="organization"
-                          aria-required="true"
-                          aria-label="Company name"
-                          disabled={isPending}
-                        />
-                      </div>
-
                       {/* Location and Specialization */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Location */}
@@ -439,55 +395,37 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                           />
                         </div>
                       </div>
-
-                      {/* Website and Logo */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                          <Label>Logo Preview</Label>
-                          <div className="flex items-center gap-3">
-                            <div className="relative h-20 w-20 overflow-hidden rounded-lg border-2 border-dashed border-border bg-muted">
-                              {logoPreview || logoUrl ? (
-                                <Image
-                                  src={logoPreview || logoUrl}
-                                  alt="Company logo preview"
-                                  fill
-                                  className="object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-full w-full flex-col items-center justify-center text-muted-foreground">
-                                  <ImageIcon className="h-5 w-5" />
-                                  <span className="mt-1 text-[10px]">
-                                    No logo
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="grid gap-2">
-                              <Label
-                                htmlFor="company-logo-file"
-                                className="cursor-pointer"
-                              >
-                                <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm hover:bg-accent transition-colors">
-                                  <Upload className="h-4 w-4" />
-                                  <span>Choose Image</span>
-                                </div>
-                              </Label>
-                              <Input
-                                id="company-logo-file"
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleLogoFileChange}
-                                disabled={isPending}
-                              />
-                              {logoFileName && (
-                                <p className="max-w-44 truncate text-xs text-muted-foreground">
-                                  {logoFileName}
-                                </p>
-                              )}
-                            </div>
+                      <div className="grid gap-3">
+                        <Label className="" htmlFor="logo">
+                          Logo
+                        </Label>
+                        <Input
+                          id="logo"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            handleLogoChange(e.target.files?.[0])
+                          }
+                          className="cursor-pointer"
+                        />
+                        {logoPreview && (
+                          <div className="relative w-fit">
+                            <Image
+                              width={400}
+                              height={300}
+                              src={logoPreview}
+                              alt="Logo preview"
+                              className="w-48 h-32 object-cover rounded border"
+                            />
+                            <button
+                              type="button"
+                              onClick={removeLogo}
+                              className="absolute top-1 cursor-pointer right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
                           </div>
-                        </div>
+                        )}
                       </div>
 
                       {/* Company Description */}
