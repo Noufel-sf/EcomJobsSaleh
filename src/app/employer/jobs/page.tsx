@@ -27,111 +27,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
 import { MoreHorizontal, ChevronDown, Eye } from "lucide-react";
 import EmployerSidebarLayout from "@/components/EmployerSidebarLayout";
 import toast from "react-hot-toast";
-import { ButtonLoading } from "@/components/ui/ButtonLoading";
 import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
 import Link from "next/link";
 import { useAppSelector } from "@/Redux/hooks";
 import {
   useGetAllJobsQuery,
-  useUpdateJobMutation,
   useDeleteJobMutation,
 } from "@/Redux/Services/JobApi";
 import { Job } from "@/lib/DatabaseTypes";
-import CreateJobDialog from "../../components/CreateJobDialog";
+import CreateJobDialog from "@/components/CreateJobDialog";
+import UpdateJobSheet from "@/components/UpdateJobSheet";
 
-// ─── Mock Data (fallback until backend is ready) ──────────────────────────────
-
-const MOCK_JOBS: Job[] = [
-  {
-    id: "1",
-    title: "Frontend Developer",
-    company: "TechCo",
-    companyLogo: "",
-    location: "Remote",
-    type: "full-time",
-    experience: "3-5 years",
-    salary: "$80,000 - $120,000",
-    description: "Build awesome UIs with React and TypeScript.",
-    responsibilities: [
-      "Lead frontend development",
-      "Code reviews",
-      "Mentor junior developers",
-    ],
-    whoYouAre: ["Experienced with React", "Strong TypeScript skills"],
-    niceToHaves: ["Next.js experience", "UI/UX design skills"],
-    categories: ["Engineering", "Frontend"],
-    requiredSkills: ["React", "TypeScript", "CSS"],
-    appliedCount: 14,
-    totalCapacity: 20,
-    applyBefore: "2025-03-30",
-    jobPostedOn: "2025-01-10",
-  },
-  {
-    id: "2",
-    title: "Backend Engineer",
-    company: "StartupCo",
-    companyLogo: "",
-    location: "Algiers",
-    type: "full-time",
-    experience: "3-5 years",
-    salary: "$70,000 - $100,000",
-    description: "Build scalable APIs with Node.js and PostgreSQL.",
-    responsibilities: [
-      "Design and build backend services",
-      "Database optimization",
-      "API development",
-    ],
-    whoYouAre: ["Strong Node.js developer", "Database expert"],
-    niceToHaves: ["Docker experience", "AWS knowledge"],
-    categories: ["Engineering", "Backend"],
-    requiredSkills: ["Node.js", "PostgreSQL", "REST APIs"],
-    appliedCount: 9,
-    totalCapacity: 15,
-    applyBefore: "2025-04-15",
-    jobPostedOn: "2025-01-15",
-  },
-  {
-    id: "3",
-    title: "UI/UX Designer",
-    company: "DesignCo",
-    companyLogo: "",
-    location: "Remote",
-    type: "part-time",
-    experience: "2-4 years",
-    salary: "$50,000 - $70,000",
-    description: "Design beautiful interfaces for web and mobile.",
-    responsibilities: [
-      "Create user-centered designs",
-      "Conduct user research",
-      "Prototype interfaces",
-    ],
-    whoYouAre: ["Creative designer", "User-focused"],
-    niceToHaves: ["Figma expert", "Animation skills"],
-    categories: ["Design", "UX"],
-    requiredSkills: ["Figma", "UI Design", "User Research"],
-    appliedCount: 22,
-    totalCapacity: 25,
-    applyBefore: "2025-02-28",
-    jobPostedOn: "2024-12-01",
-  },
-];
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
@@ -159,53 +71,17 @@ export default function EmployerJobs() {
 
   // API hooks with mock data fallback
   const { data: jobsData, isLoading } = useGetAllJobsQuery();
-  const [updateJob, { isLoading: isUpdating }] = useUpdateJobMutation();
   const [deleteJob] = useDeleteJobMutation();
 
   // Use API data or fallback to mock data
-  const jobs = jobsData?.content || MOCK_JOBS;
+  const jobs = jobsData?.content || [];
 
   const [open, setOpen] = useState(false);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
-  // Form state
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");
-  const [type, setType] = useState<Job["type"]>("full-time");
-
-  const resetForm = useCallback(() => {
-    setTitle("");
-    setDescription("");
-    setLocation("");
-    setType("full-time");
-  }, []);
-
-  const handleUpdate = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!selectedJob) return;
-      try {
-        await updateJob({
-          id: selectedJob.id,
-          jobData: { title, description, location, type },
-        }).unwrap();
-        toast.success("Job updated successfully");
-        setEditSheetOpen(false);
-        setSelectedJob(null);
-        resetForm();
-      } catch (error: unknown) {
-        const err = error as { data?: { message?: string } };
-        toast.error(err?.data?.message || "Failed to update job");
-      }
-    },
-    [selectedJob, title, description, location, type, updateJob, resetForm],
-  );
-
   const handleDelete = useCallback(
     async (jobId: string) => {
-      if (!confirm("Are you sure you want to delete this job?")) return;
 
       try {
         await deleteJob(jobId).unwrap();
@@ -333,10 +209,6 @@ export default function EmployerJobs() {
                     className="cursor-pointer"
                     onClick={() => {
                       setSelectedJob(job);
-                      setTitle(job.title);
-                      setDescription(job.description);
-                      setLocation(job.location);
-                      setType(job.type);
                       setEditSheetOpen(true);
                     }}
                   >
@@ -377,59 +249,6 @@ export default function EmployerJobs() {
     },
     state: { sorting, columnFilters, columnVisibility, rowSelection },
   });
-
-  const JobFormFields = useMemo(
-    () => (
-      <div className="grid gap-4">
-        <div className="grid gap-3">
-          <Label htmlFor="job-title">Job Title</Label>
-          <Input
-            id="job-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Senior Frontend Developer"
-            required
-          />
-        </div>
-        <div className="grid gap-3">
-          <Label htmlFor="job-description">Description</Label>
-          <Textarea
-            id="job-description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe the role..."
-            rows={4}
-            required
-          />
-        </div>
-        <div className="grid gap-3">
-          <Label htmlFor="job-location">Location</Label>
-          <Input
-            id="job-location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g. Remote, Algiers..."
-            required
-          />
-        </div>
-        <div className="grid gap-3">
-          <Label htmlFor="job-type">Job Type</Label>
-          <select
-            id="job-type"
-            value={type}
-            onChange={(e) => setType(e.target.value as Job["type"])}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <option value="full-time">Full-time</option>
-            <option value="part-time">Part-time</option>
-            <option value="remote">Remote</option>
-            <option value="internship">Internship</option>
-          </select>
-        </div>
-      </div>
-    ),
-    [title, description, location, type],
-  );
 
   return (
     <EmployerSidebarLayout breadcrumbTitle="Jobs">
@@ -487,32 +306,17 @@ export default function EmployerJobs() {
           </DropdownMenu>
         </div>
 
-        {/* Edit Sheet */}
-        <Sheet open={editSheetOpen} onOpenChange={setEditSheetOpen}>
-          <SheetContent className="">
-            <form onSubmit={handleUpdate}>
-              <SheetHeader className="">
-                <SheetTitle className="">Edit Job</SheetTitle>
-                <SheetDescription className="">
-                  Update the job details. Click save when done.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="px-6 py-4">{JobFormFields}</div>
-              <SheetFooter className="space-y-2">
-                <SheetClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </SheetClose>
-                {isUpdating ? (
-                  <ButtonLoading />
-                ) : (
-                  <Button type="submit" size="lg" variant="primary">
-                    Save Changes
-                  </Button>
-                )}
-              </SheetFooter>
-            </form>
-          </SheetContent>
-        </Sheet>
+        <UpdateJobSheet
+          key={selectedJob?.id ?? "no-selected-job"}
+          open={editSheetOpen}
+          onOpenChange={(nextOpen: boolean) => {
+            setEditSheetOpen(nextOpen);
+            if (!nextOpen) {
+              setSelectedJob(null);
+            }
+          }}
+          job={selectedJob}
+        />
 
         {/* Table */}
         <div className="rounded-md border">

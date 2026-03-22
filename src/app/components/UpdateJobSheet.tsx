@@ -1,32 +1,31 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { ButtonLoading } from "@/components/ui/ButtonLoading";
 import {
-  type CreateJobPayload,
-  useCreateJobMutation,
   useGetAllCategoriesQuery,
+  useUpdateJobMutation,
 } from "@/Redux/Services/JobApi";
+import { Job } from "@/lib/DatabaseTypes";
 import toast from "react-hot-toast";
 
-type CreateJobDialogProps = {
+type UpdateJobSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultCompanyId?: string;
+  job: Job | null;
 };
 
 type PointListInputProps = {
@@ -88,71 +87,62 @@ function PointListInput({
   );
 }
 
-export default function CreateJobDialog({
+export default function UpdateJobSheet({
   open,
   onOpenChange,
-  defaultCompanyId = "",
-}: CreateJobDialogProps) {
+  job,
+}: UpdateJobSheetProps) {
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
 
-  const [title, setTitle] = useState("");
-  const [company, setCompany] = useState(defaultCompanyId);
-  const [location, setLocation] = useState("");
-  const [type, setType] = useState("full-time");
-  const [experience, setExperience] = useState("");
-  const [salary, setSalary] = useState<number>(0);
-  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState(job?.title ?? "");
+  const [company] = useState(job?.company ?? "");
+  const [description, setDescription] = useState(job?.description ?? "");
+  const [location, setLocation] = useState(job?.location ?? "");
+  const [type, setType] = useState<Job["type"]>(
+    (job?.type as Job["type"]) ?? "full-time",
+  );
+  const [experience, setExperience] = useState(job?.experience ?? "");
 
-  const [responsibilities, setResponsibilities] = useState<string[]>([]);
-  const [whoYouAre, setWhoYouAre] = useState<string[]>([]);
-  const [niceToHaves, setNiceToHaves] = useState<string[]>([]);
-  const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
+  const initialSalary = Number(job?.salary);
+  const [salary, setSalary] = useState<number>(
+    Number.isFinite(initialSalary) ? initialSalary : 0,
+  );
+
+  const [responsibilities, setResponsibilities] = useState<string[]>(
+    job?.responsibilities ?? [],
+  );
+  const [whoYouAre, setWhoYouAre] = useState<string[]>(job?.whoYouAre ?? []);
+  const [niceToHaves, setNiceToHaves] = useState<string[]>(
+    job?.niceToHaves ?? [],
+  );
+  const [requiredSkills, setRequiredSkills] = useState<string[]>(
+    job?.requiredSkills ?? [],
+  );
 
   const [responsibilityInput, setResponsibilityInput] = useState("");
   const [whoYouAreInput, setWhoYouAreInput] = useState("");
   const [niceToHavesInput, setNiceToHavesInput] = useState("");
   const [requiredSkillInput, setRequiredSkillInput] = useState("");
 
-  const [jobCategories, setJobCategories] = useState("");
-  const [appliedCount, setAppliedCount] = useState<number>(0);
-  const [totalCapacity, setTotalCapacity] = useState<number>(1);
-  const [applyBefore, setApplyBefore] = useState(today);
-  const [jobPostedOn, setJobPostedOn] = useState(today);
+  const initialCategory = job?.categories?.[0] ?? "";
+  const [jobCategories, setJobCategories] = useState(initialCategory);
+
+  const [totalCapacity, setTotalCapacity] = useState<number>(
+    Number.isFinite(job?.totalCapacity) ? (job?.totalCapacity as number) : 1,
+  );
+  const [applyBefore, setApplyBefore] = useState(job?.applyBefore ?? today);
 
   const { data: categoriesData, isLoading: isCategoriesLoading } =
     useGetAllCategoriesQuery();
   const categories = categoriesData?.content ?? [];
 
-  const [createJob, { isLoading: isCreating }] = useCreateJobMutation();
-
-  const resetForm = () => {
-    setTitle("");
-    setCompany("019d0373-9de1-78b4-b177-2274fe9377ff");
-    setLocation("");
-    setType("full-time");
-    setExperience("");
-    setSalary(0);
-    setDescription("");
-    setResponsibilities([]);
-    setWhoYouAre([]);
-    setNiceToHaves([]);
-    setRequiredSkills([]);
-    setResponsibilityInput("");
-    setWhoYouAreInput("");
-    setNiceToHavesInput("");
-    setRequiredSkillInput("");
-    setJobCategories("");
-    setAppliedCount(0);
-    setTotalCapacity(1);
-    setApplyBefore(today);
-    setJobPostedOn(today);
-  };
+  const [updateJob, { isLoading: isUpdating }] = useUpdateJobMutation();
 
   const addItem = (
     input: string,
     setInput: (value: string) => void,
     list: string[],
-    setList: (value: string[]) => void
+    setList: (value: string[]) => void,
   ) => {
     const value = input.trim();
     if (!value) return;
@@ -168,84 +158,97 @@ export default function CreateJobDialog({
   const removeItem = (
     index: number,
     list: string[],
-    setList: (value: string[]) => void
+    setList: (value: string[]) => void,
   ) => {
     setList(list.filter((_, idx) => idx !== index));
   };
 
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (nextOpen) {
-      resetForm();
-    }
-    onOpenChange(nextOpen);
-  };
+  const handleUpdate = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (!job) return;
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+      if (!jobCategories) {
+        toast.error("Please select a category");
+        return;
+      }
 
-    if (!jobCategories) {
-      toast.error("Please select a category");
-      return;
-    }
+      if (
+        requiredSkills.length === 0 ||
+        responsibilities.length === 0 ||
+        whoYouAre.length === 0 ||
+        niceToHaves.length === 0
+      ) {
+        toast.error("Please add at least one point in each list field");
+        return;
+      }
 
-    if (
-      requiredSkills.length === 0 ||
-      responsibilities.length === 0 ||
-      whoYouAre.length === 0 ||
-      niceToHaves.length === 0
-    ) {
-      toast.error("Please add at least one point in each list field");
-      return;
-    }
+      try {
+        const payload = {
+          title,
+          company,
+          location,
+          type,
+          experience,
+          salary: Number.isFinite(salary) ? salary : 0,
+          description,
+          responsibilities,
+          whoYouAre,
+          niceToHaves,
+          jobCategories,
+          requiredSkills,
+          appliedCount: Number.isFinite(job.appliedCount) ? job.appliedCount : 0,
+          totalCapacity: Number.isFinite(totalCapacity) ? totalCapacity : 0,
+          applyBefore,
+          jobPostedOn: job.jobPostedOn || today,
+        };
 
-    const payload: CreateJobPayload = {
-      title,
-      company: "019d0373-9de1-78b4-b177-2274fe9377ff",
-      location,
-      type,
-      experience,
-      salary: Number.isFinite(salary) ? salary : 0,
-      description,
-      responsibilities,
-      whoYouAre,
-      niceToHaves,
-      jobCategories,
-      requiredSkills,
-      // appliedCount: Number.isFinite(appliedCount) ? appliedCount : 0,
-      totalCapacity: Number.isFinite(totalCapacity) ? totalCapacity : 0,
+        await updateJob({
+          id: job.id,
+          jobData: payload,
+        }).unwrap();
+
+        toast.success("Job updated successfully");
+        onOpenChange(false);
+      } catch (error: unknown) {
+        const err = error as { data?: { message?: string } };
+        toast.error(err?.data?.message || "Failed to update job");
+      }
+    },
+    [
       applyBefore,
-      // jobPostedOn,
-    };
-
-    try {
-      await createJob(payload).unwrap();
-      toast.success("Job created successfully");
-      onOpenChange(false);
-      resetForm();
-    } catch (error: unknown) {
-      const err = error as { data?: { message?: string } };
-      toast.error(err?.data?.message || "Failed to create job");
-    }
-  };
+      company,
+      description,
+      experience,
+      job,
+      jobCategories,
+      location,
+      niceToHaves,
+      onOpenChange,
+      requiredSkills,
+      responsibilities,
+      salary,
+      title,
+      today,
+      totalCapacity,
+      type,
+      updateJob,
+      whoYouAre,
+    ],
+  );
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="primary" size="lg">
-          Post a New Job
-        </Button>
-      </DialogTrigger>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="">
+        <form onSubmit={handleUpdate}>
+          <SheetHeader className="">
+            <SheetTitle className="">Edit Job</SheetTitle>
+            <SheetDescription className="">
+              Update the job details. Click save when done.
+            </SheetDescription>
+          </SheetHeader>
 
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-175">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Post a New Job</DialogTitle>
-            <DialogDescription className="mb-3">
-              Fill in all required fields to match the backend job payload.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 px-6 py-4 md:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="job-title">Title</Label>
               <Input
@@ -271,7 +274,7 @@ export default function CreateJobDialog({
               <Input
                 id="job-type"
                 value={type}
-                onChange={(e) => setType(e.target.value)}
+                onChange={(e) => setType(e.target.value as Job["type"])}
                 placeholder="full-time"
                 required
               />
@@ -345,10 +348,12 @@ export default function CreateJobDialog({
                   requiredSkillInput,
                   setRequiredSkillInput,
                   requiredSkills,
-                  setRequiredSkills
+                  setRequiredSkills,
                 )
               }
-              onRemove={(index) => removeItem(index, requiredSkills, setRequiredSkills)}
+              onRemove={(index) =>
+                removeItem(index, requiredSkills, setRequiredSkills)
+              }
             />
 
             <PointListInput
@@ -363,7 +368,7 @@ export default function CreateJobDialog({
                   responsibilityInput,
                   setResponsibilityInput,
                   responsibilities,
-                  setResponsibilities
+                  setResponsibilities,
                 )
               }
               onRemove={(index) =>
@@ -379,7 +384,12 @@ export default function CreateJobDialog({
               placeholder="Add who-you-are point"
               items={whoYouAre}
               onAdd={() =>
-                addItem(whoYouAreInput, setWhoYouAreInput, whoYouAre, setWhoYouAre)
+                addItem(
+                  whoYouAreInput,
+                  setWhoYouAreInput,
+                  whoYouAre,
+                  setWhoYouAre,
+                )
               }
               onRemove={(index) => removeItem(index, whoYouAre, setWhoYouAre)}
             />
@@ -396,14 +406,12 @@ export default function CreateJobDialog({
                   niceToHavesInput,
                   setNiceToHavesInput,
                   niceToHaves,
-                  setNiceToHaves
+                  setNiceToHaves,
                 )
               }
               onRemove={(index) => removeItem(index, niceToHaves, setNiceToHaves)}
               className="grid gap-2 md:col-span-2"
             />
-
-          
 
             <div className="grid gap-2">
               <Label htmlFor="job-total-capacity">Total Capacity</Label>
@@ -427,35 +435,22 @@ export default function CreateJobDialog({
                 required
               />
             </div>
-
-            {/* <div className="grid gap-2">
-              <Label htmlFor="job-posted-on">Job Posted On</Label>
-              <Input
-                id="job-posted-on"
-                type="date"
-                value={jobPostedOn}
-                onChange={(e) => setJobPostedOn(e.target.value)}
-                required
-              />
-            </div> */}
           </div>
 
-          <DialogFooter className="mt-5">
-            <DialogClose asChild>
-              <Button variant="outline" size="lg">
-                Cancel
-              </Button>
-            </DialogClose>
-            {isCreating ? (
+          <SheetFooter className="space-y-2">
+            <SheetClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </SheetClose>
+            {isUpdating ? (
               <ButtonLoading />
             ) : (
-              <Button type="submit" variant="primary" size="lg">
-                Post Job
+              <Button type="submit" size="lg" variant="primary" disabled={!job}>
+                Save Changes
               </Button>
             )}
-          </DialogFooter>
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

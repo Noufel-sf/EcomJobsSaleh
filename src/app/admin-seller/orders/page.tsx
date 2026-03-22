@@ -40,7 +40,7 @@ import type { Order } from "@/lib/DatabaseTypes";
 
 export default function AdminAllOrders() {
 
-  const { data: ordersData, isLoading: ordersLoading } = useGetSellerOrdersQuery({Seller_id: "019c52df-1e7a-7006-ac12-aa2be28f77b4", size: 10});
+  const { data: ordersData, isLoading: ordersLoading } = useGetSellerOrdersQuery({Seller_id: "019d17a3-6d61-771a-abf9-8b588f9c6f83", size: 10});
   const orders = ordersData?.content || [];
   const [deleteOrderMutation] = useDeleteOrderMutation();
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
