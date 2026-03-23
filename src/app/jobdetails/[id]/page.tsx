@@ -1,60 +1,28 @@
 "use client";
 
-import { memo, useState, useEffect } from "react";
+import { memo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  MapPin,
-  CheckCircle2,
-  Building2,
-} from "lucide-react";
-import { getJobById } from "@/lib/mockData/jobs";
-import { Job } from "@/lib/DatabaseTypes";
+import { MapPin, CheckCircle2, Building2 } from "lucide-react";
 import Image from "next/image";
 import { JobApplicationModal } from "@/components/JobApplicationModal";
-// import { useGetJobByIdQuery } from "@/Redux/Services/JobApi";
+import { useGetJobByIdQuery } from "@/Redux/Services/JobApi";
 
 const JobDetailsPage = () => {
   const { id } = useParams();
-  const [job, setJob] = useState<Job | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
 
-  // Using mock data instead of API
-  useEffect(() => {
-    if (!id) return;
-    
-    // Simulate API delay
-    const timer = setTimeout(() => {
-      const foundJob = getJobById(id as string);
-      if (foundJob) {
-        setJob(foundJob);
-        setIsError(false);
-      } else {
-        setJob(null);
-        setIsError(true);
-      }
-      setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [id]);
-
-  // Uncomment below to use real API instead of mock data
-  // const {
-  //   data: job,
-  //   isLoading,
-  //   isError,
-  // } = useGetJobByIdQuery(id as string, {
-  //   skip: !id,
-  // });
-
-
+  const {
+    data: job,
+    isLoading,
+    isError,
+  } = useGetJobByIdQuery(id as string, {
+    skip: !id,
+  });
 
   const handleApply = () => {
     setIsApplicationModalOpen(true);
@@ -63,7 +31,6 @@ const JobDetailsPage = () => {
   const handleCloseModal = () => {
     setIsApplicationModalOpen(false);
   };
-
 
   if (isError) {
     return (
@@ -78,7 +45,13 @@ const JobDetailsPage = () => {
         <p className="text-muted-foreground mb-6">
           Sorry, the job you are looking for does not exist.
         </p>
-        <Button asChild variant="default" size="default" className="" type="button">
+        <Button
+          asChild
+          variant="default"
+          size="default"
+          className=""
+          type="button"
+        >
           <Link href="/jobs">Back to Jobs</Link>
         </Button>
       </main>
@@ -178,7 +151,6 @@ const JobDetailsPage = () => {
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 self-start shrink-0">
-                
                   <Button
                     onClick={handleApply}
                     size="default"

@@ -19,7 +19,6 @@ import {
   useGetAllJobsQuery,
   useGetAllCategoriesQuery,
 } from "@/Redux/Services/JobApi";
-import { mockJobs } from "@/lib/mockData/jobs";
 
 import { Separator } from "@/components/ui/separator";
 import {
@@ -212,19 +211,14 @@ function AllJobsPage() {
 
   const heroImages = [hero1, hero2, hero3, hero4];
 
-  // Using mock data instead of API
-  const jobsData = { content: mockJobs };
-  const isLoading = false;
+  const { data: jobsResponse, isLoading } = useGetAllJobsQuery();
 
-  // Uncomment below to use real API instead of mock data
-  
-  // const { data: jobsData, isLoading } = useGetAllJobsQuery(undefined);
-  const { data: categoriesData , isLoading: isCategoriesLoading } = useGetAllCategoriesQuery();
+  const { data: categoriesData } = useGetAllCategoriesQuery();
   const Jobscategories = categoriesData?.content || [];
 
 
   const filteredJobs = useMemo(() => {
-    const jobs = jobsData?.content || [];
+    const jobs = jobsResponse?.content ?? [];
     let filtered = [...jobs];
 
     if (selectedTypes.length > 0) {
@@ -269,7 +263,7 @@ function AllJobsPage() {
 
     return filtered;
   }, [
-    jobsData?.content,
+    jobsResponse,
     selectedTypes,
     selectedLocations,
     searchQuery,

@@ -152,23 +152,23 @@ export const jobApi = createApi({
 
     // Application endpoints
     getAllApplications: builder.query<GetAllApplicationsResponse, void>({
-      query: () => "/jobs/applications",
+      query: () => "/jobapplications",
       providesTags: ["Applications"],
     }),
 
     getApplicationsByJobId: builder.query<JobApplication[], string>({
-      query: (jobId) => `/jobs/applications/job/${jobId}`,
+      query: (jobId) => `/jobapplications/${jobId}`,
       providesTags: ["Applications"],
     }),
 
     getApplicationById: builder.query<JobApplication, string>({
-      query: (id) => `/jobs/applications/${id}`,
+      query: (id) => `/jobapplications/${id}`,
       providesTags: (result, error, id) => [{ type: "Application", id }],
     }),
 
     createApplication: builder.mutation({
       query: (applicationData) => ({
-        url: "/jobs/applications",
+        url: "/jobapplications",
         method: "POST",
         body: applicationData,
       }),
@@ -177,7 +177,7 @@ export const jobApi = createApi({
 
     updateApplicationStatus: builder.mutation({
       query: ({ id, status }) => ({
-        url: `/jobs/applications/${id}/status`,
+        url: `/jobapplications/${id}`,
         method: "PATCH",
         body: { status },
       }),
@@ -189,7 +189,7 @@ export const jobApi = createApi({
 
     deleteApplication: builder.mutation({
       query: (id) => ({
-        url: `/jobs/applications/${id}`,
+        url: `/jobapplications/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Applications"],

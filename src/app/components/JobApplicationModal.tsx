@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Upload, X } from "lucide-react";
 import toast from "react-hot-toast";
-// import { useCreateApplicationMutation } from "@/Redux/Services/JobApi";
+import { useCreateApplicationMutation } from "@/Redux/Services/JobApi";
 
 interface JobApplicationModalProps {
   isOpen: boolean;
@@ -40,10 +40,9 @@ export function JobApplicationModal({
     resume: null as File | null,
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Uncomment when backend is ready
-  // const [createApplication, { isLoading: isSubmitting }] = useCreateApplicationMutation();
+  const [createApplication, { isLoading: isSubmitting }] = useCreateApplicationMutation();
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -110,30 +109,22 @@ export function JobApplicationModal({
       return;
     }
 
-    // Mock submission with delay
-    setIsSubmitting(true);
-    
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Create FormData object to handle file and form fields
+      const form = new FormData();
+      form.append("applicantName", formData.applicantName);
+      form.append("applicantEmail", formData.applicantEmail);
+      form.append("applicantPhone", formData.applicantPhone);
+      form.append("coverLetter", formData.coverLetter);
+      form.append("id", jobId);
+      // Append file if it exists
+      if (formData.resume) {
+        form.append("resume", formData.resume);
+      }
 
-      // Mock data for submission
-      const applicationData = {
-        jobId,
-        jobTitle,
-        applicantName: formData.applicantName,
-        applicantEmail: formData.applicantEmail,
-        applicantPhone: formData.applicantPhone,
-        coverLetter: formData.coverLetter,
-        resume: formData.resume?.name || "",
-        status: "pending" as const,
-        appliedDate: new Date().toISOString(),
-      };
+      console.log("Application submitted with FormData");
 
-      console.log("Application submitted:", applicationData);
-
-      // Uncomment when backend is ready:
-      // const result = await createApplication(applicationData).unwrap();
+      await createApplication(form).unwrap();
       
       toast.success("Application submitted successfully!");
       
@@ -150,8 +141,6 @@ export function JobApplicationModal({
     } catch (error) {
       console.error("Error submitting application:", error);
       toast.error("Failed to submit application. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

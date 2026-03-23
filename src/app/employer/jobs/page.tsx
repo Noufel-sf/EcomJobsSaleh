@@ -44,13 +44,12 @@ import { Job } from "@/lib/DatabaseTypes";
 import CreateJobDialog from "@/components/CreateJobDialog";
 import UpdateJobSheet from "@/components/UpdateJobSheet";
 
-
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
-const statusStyles: Record<string, string> = {
-  open: "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400",
-  closed: "bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400",
-};
+// const statusStyles: Record<string, string> = {
+//   open: "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400",
+//   closed: "bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400",
+// };
 
 const typeStyles: Record<string, string> = {
   "full-time":
@@ -69,11 +68,9 @@ export default function EmployerJobs() {
   const user = useAppSelector((state) => state.auth.user);
   const companyId = user?.userId ?? "";
 
-  // API hooks with mock data fallback
   const { data: jobsData, isLoading } = useGetAllJobsQuery();
   const [deleteJob] = useDeleteJobMutation();
 
-  // Use API data or fallback to mock data
   const jobs = jobsData?.content || [];
 
   const [open, setOpen] = useState(false);
@@ -82,7 +79,6 @@ export default function EmployerJobs() {
 
   const handleDelete = useCallback(
     async (jobId: string) => {
-
       try {
         await deleteJob(jobId).unwrap();
         toast.success("Job deleted successfully");
@@ -144,37 +140,10 @@ export default function EmployerJobs() {
           </span>
         ),
       },
-      {
-        accessorKey: "status",
-        header: "Status",
-        cell: ({ row }: any) => (
-          <span
-            className={`text-xs px-2 py-1 rounded-full font-medium ${statusStyles[row.getValue("status")] || ""}`}
-          >
-            {row.getValue("status")}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "applicationsCount",
-        header: "Applications",
-        cell: ({ row }: any) => (
-          <div className="font-semibold text-center">
-            {row.getValue("applicationsCount") ?? 0}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "createdAt",
-        header: "Posted",
-        cell: ({ row }: any) => (
-          <div className="text-sm text-muted-foreground">
-            {row.getValue("createdAt")}
-          </div>
-        ),
-      },
+
       {
         id: "actions",
+        header: "Actions",
         enableHiding: false,
         cell: ({ row }: any) => {
           const job = row.original as Job;
@@ -259,7 +228,6 @@ export default function EmployerJobs() {
 
       <div className="w-full">
         <div className="flex items-center py-4 gap-3">
-
           {/* create job dialog */}
           <CreateJobDialog
             open={open}
