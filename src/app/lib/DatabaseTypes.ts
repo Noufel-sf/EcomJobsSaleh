@@ -1,4 +1,3 @@
-import { Seller } from './DatabaseTypes';
 // Database Types - Generated from actual database schema
 
 import type { Dispatch, ReactNode, SetStateAction } from "react";
@@ -200,8 +199,9 @@ export interface Job {
 
 export interface JobApplication {
   id: string;
-  jobId: string;
-  jobTitle: string;
+  jobApplicationJob: string;
+  jobId?: string;
+  jobTitle?: string;
   applicantName: string;
   applicantEmail: string;
   applicantPhone?: string;

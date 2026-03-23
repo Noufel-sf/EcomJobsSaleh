@@ -151,8 +151,8 @@ export const jobApi = createApi({
     }),
 
     // Application endpoints
-    getAllApplications: builder.query<GetAllApplicationsResponse, void>({
-      query: () => "/jobapplications",
+    getAllApplications: builder.query<GetAllApplicationsResponse, string>({
+      query: (companyid) => `/jobapplications/company/${companyid}`,
       providesTags: ["Applications"],
     }),
 
@@ -162,7 +162,7 @@ export const jobApi = createApi({
     }),
 
     getApplicationById: builder.query<JobApplication, string>({
-      query: (id) => `/jobapplications/${id}`,
+      query: (id) => `/jobapplications/job/${id}`,
       providesTags: (result, error, id) => [{ type: "Application", id }],
     }),
 

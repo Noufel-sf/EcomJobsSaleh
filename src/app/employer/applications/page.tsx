@@ -65,69 +65,10 @@ import {
 } from "@/Redux/Services/JobApi";
 import { JobApplication } from "@/lib/DatabaseTypes";
 
-// ─── Mock Data (fallback until backend is ready) ──────────────────────────────
-
-const MOCK_APPLICATIONS: JobApplication[] = [
-  {
-    id: "a1",
-    jobId: "1",
-    jobTitle: "Frontend Developer",
-    applicantName: "Yacine Benali",
-    applicantEmail: "yacine@mail.com",
-    applicantPhone: "+213 555 1234",
-    coverLetter:
-      "I am passionate about building great UIs with React and TypeScript. I have 3 years of experience working on e-commerce platforms.",
-    status: "pending",
-    appliedDate: "2025-02-01",
-  },
-  {
-    id: "a2",
-    jobId: "1",
-    jobTitle: "Frontend Developer",
-    applicantName: "Sara Boudiaf",
-    applicantEmail: "sara@mail.com",
-    applicantPhone: "+213 555 5678",
-    coverLetter:
-      "Frontend dev with a strong eye for design and 4 years of experience. Excited to contribute to your team.",
-    status: "reviewing",
-    appliedDate: "2025-02-03",
-  },
-  {
-    id: "a3",
-    jobId: "2",
-    jobTitle: "Backend Engineer",
-    applicantName: "Amine Cherif",
-    applicantEmail: "amine@mail.com",
-    applicantPhone: "+213 555 9012",
-    coverLetter:
-      "Experienced Node.js and Java backend engineer with strong API design skills.",
-    status: "accepted",
-    appliedDate: "2025-01-28",
-  },
-  {
-    id: "a4",
-    jobId: "2",
-    jobTitle: "Backend Engineer",
-    applicantName: "Farid Meziane",
-    applicantEmail: "farid@mail.com",
-    applicantPhone: "+213 555 3456",
-    coverLetter: "5 years of experience building microservices at scale.",
-    status: "rejected",
-    appliedDate: "2025-01-30",
-  },
-  {
-    id: "a5",
-    jobId: "3",
-    jobTitle: "UI/UX Designer",
-    applicantName: "Lila Hamidi",
-    applicantEmail: "lila@mail.com",
-    applicantPhone: "+213 555 7890",
-    coverLetter:
-      "UX designer with a strong portfolio of mobile and web products.",
-    status: "pending",
-    appliedDate: "2025-02-05",
-  },
-] as JobApplication[];
+type ApplicationRow = JobApplication & {
+  jobId: string;
+  jobTitle: string;
+};
 
 // ─── Status Styles ────────────────────────────────────────────────────────────
 
@@ -144,22 +85,38 @@ const statusStyles: Record<string, string> = {
 export default function EmployerApplications() {
   const searchParams = useSearchParams();
   const preFilterJobId = searchParams.get("jobId") || "all";
+  const companyid = "019d0373-9de1-78b4-b177-2274fe9377ff"; // TODO: get from auth context
 
-  // API hooks with mock data fallback
   const { data: applicationsData, isLoading: isLoadingApplications } =
-    useGetAllApplicationsQuery();
+    useGetAllApplicationsQuery(companyid);
   const { data: jobsData } = useGetAllJobsQuery();
 
   const [updateApplicationStatus] = useUpdateApplicationStatusMutation();
   const [deleteApplication] = useDeleteApplicationMutation();
 
-  // Use API data or fallback to mock data
-  const applications = applicationsData?.content || MOCK_APPLICATIONS;
-  const jobs = jobsData?.content || [];
+  const jobs = useMemo(() => jobsData?.content ?? [], [jobsData]);
+
+  const applications = useMemo<ApplicationRow[]>(() => {
+    const rawApplications = applicationsData?.content ?? [];
+    const jobTitleById = new Map(jobs.map((job) => [job.id, job.title]));
+
+    return rawApplications.map((application) => {
+      const jobRef = application.jobApplicationJob || application.jobId || "";
+
+      return {
+        ...application,
+        jobApplicationJob: jobRef,
+        jobId: jobRef,
+        jobTitle:
+          application.jobTitle || jobTitleById.get(jobRef) || "Unknown Job",
+        appliedDate: application.appliedDate || application.lastUpdated || "",
+      };
+    });
+  }, [applicationsData, jobs]);
 
   const [selectedJobFilter, setSelectedJobFilter] = useState(preFilterJobId);
   const [selectedApplication, setSelectedApplication] =
-    useState<JobApplication | null>(null);
+    useState<ApplicationRow | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Build jobs filter list
@@ -175,7 +132,7 @@ export default function EmployerApplications() {
     () =>
       selectedJobFilter === "all"
         ? applications
-        : applications.filter((a) => a.jobId === selectedJobFilter),
+        : applications.filter((a) => a.jobApplicationJob === selectedJobFilter),
     [applications, selectedJobFilter],
   );
 
@@ -220,7 +177,6 @@ export default function EmployerApplications() {
       "ID",
       "Job Title",
       "Applicant Name",
-      "Email",
       "Phone",
       "Status",
       "Applied At",
@@ -237,7 +193,11 @@ export default function EmployerApplications() {
 
     const csv = [headers, ...rows]
       .map((row) =>
-        row.map((v) => (String(v).includes(",") ? `"${v}"` : v)).join(","),
+        row
+          .map((v: string | undefined) =>
+            String(v).includes(",") ? `"${v}"` : (v ?? ""),
+          )
+          .join(","),
       )
       .join("\n");
 
@@ -266,7 +226,9 @@ export default function EmployerApplications() {
           <Checkbox
             className="cursor-pointer"
             checked={row.getIsSelected()}
-            onCheckedChange={(v) => row.toggleSelected(!!v)}
+            onCheckedChange={(v: boolean | "indeterminate") =>
+              row.toggleSelected(!!v)
+            }
           />
         ),
         enableSorting: false,
@@ -285,7 +247,7 @@ export default function EmployerApplications() {
                 .join("")
                 .toUpperCase()}
             </div>
-            <div>
+          <div>
               <div className="font-medium">{row.getValue("applicantName")}</div>
               <div className="text-xs text-muted-foreground">
                 {row.original.applicantEmail}
@@ -314,10 +276,20 @@ export default function EmployerApplications() {
         ),
       },
       {
+        accessorKey: "applicantPhone",
+        header: "Contact",
+        cell: ({ row }: any) => (
+          <div className="flex items-center gap-1 text-sm">
+            <Phone className="h-3 w-3 text-muted-foreground" />
+            {row.getValue("applicantPhone") || "N/A"}
+          </div>
+        ),
+      },
+      {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }: any) => {
-          const app = row.original as JobApplication;
+          const app = row.original as ApplicationRow;
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -362,7 +334,7 @@ export default function EmployerApplications() {
         id: "actions",
         enableHiding: false,
         cell: ({ row }: any) => {
-          const app = row.original as JobApplication;
+          const app = row.original as ApplicationRow;
           return (
             <div className="flex items-center gap-1">
               <Button
@@ -515,7 +487,9 @@ export default function EmployerApplications() {
                       key={col.id}
                       className="capitalize cursor-pointer"
                       checked={col.getIsVisible()}
-                      onCheckedChange={(v) => col.toggleVisibility(!!v)}
+                      onCheckedChange={(v: boolean) =>
+                        col.toggleVisibility(!!v)
+                      }
                     >
                       {col.id}
                     </DropdownMenuCheckboxItem>
@@ -579,7 +553,7 @@ export default function EmployerApplications() {
 
         {/* Application Details Modal */}
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-          <DialogContent className="sm:max-w-[520px]">
+          <DialogContent className="sm:max-w-130">
             <DialogHeader>
               <DialogTitle>Application Details</DialogTitle>
               <DialogDescription>
@@ -622,9 +596,9 @@ export default function EmployerApplications() {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <span>
+                    <span className="font-medium ">
                       Applied for:{" "}
-                      <strong>{selectedApplication.jobTitle}</strong>
+                      <strong className="text-primary">{selectedApplication.jobTitle}</strong>
                     </span>
                   </div>
                 </div>

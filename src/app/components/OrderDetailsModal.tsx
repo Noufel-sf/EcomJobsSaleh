@@ -80,13 +80,15 @@ export default function OrderDetailsModal({
                       height={64}
                       className="w-16 h-16 object-cover rounded"
                     />
-                    <div className="flex-1">
+                    <div className="flex-1 flex flex-col gap-1">
                       <p className="font-medium">{item.name}</p>
                       <p className="text-sm text-primary">
                         ${(item.product.price).toFixed(2)} x {item.prodNb}
                       </p>
                       <p className="text-sm">{item.size}</p>
-                      <p className="text-sm">{item.color}</p>
+                      <p className="w-5 h-5 rounded-full"
+                       style={{ backgroundColor: item.color }}
+                      ></p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">

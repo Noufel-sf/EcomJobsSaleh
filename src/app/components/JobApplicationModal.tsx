@@ -110,14 +110,12 @@ export function JobApplicationModal({
     }
 
     try {
-      // Create FormData object to handle file and form fields
       const form = new FormData();
       form.append("applicantName", formData.applicantName);
       form.append("applicantEmail", formData.applicantEmail);
       form.append("applicantPhone", formData.applicantPhone);
       form.append("coverLetter", formData.coverLetter);
       form.append("id", jobId);
-      // Append file if it exists
       if (formData.resume) {
         form.append("resume", formData.resume);
       }

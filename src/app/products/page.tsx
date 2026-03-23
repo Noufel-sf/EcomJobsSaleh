@@ -309,7 +309,7 @@ function AllProductsPage() {
                   onOpenChange={setMobileFiltersOpen}
                 >
                   <SheetTrigger asChild>
-                    <Button variant="outline" className="lg:hidden" size="" aria-label="Open filters menu">
+                    <Button variant="outline" className="lg:hidden" size="lg" aria-label="Open filters menu">
                       <SlidersHorizontal className="w-4 h-4 mr-2" aria-hidden="true" />
                       Filters
                       {(selectedCategories.length > 0 || searchQuery) && (
@@ -418,13 +418,13 @@ function AllProductsPage() {
 
             {/* Products Grid */}
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" role="status" aria-label="Loading products">
+              <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6" role="status" aria-label="Loading products">
                 {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
                   <ProductCardSkeleton key={`skeleton-${i}`} />
                 ))}
               </div>
             ) : paginatedProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" role="list" aria-label={`Showing ${paginatedProducts.length} products`}>
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" role="list" aria-label={`Showing ${paginatedProducts.length} products`}>
                 {paginatedProducts.map((product) => (
                   <ProductCard
                     key={product.id}
