@@ -2,7 +2,7 @@ import { Job, JobApplication } from "@/lib/DatabaseTypes";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { JobCategory } from "@/lib/DatabaseTypes";
 
-const API_URL = "https://wadkniss.onrender.com/api/v1";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://wadkniss-r6ar.onrender.com/api/v1";
 
 export interface GetAllJobsParams {
   page?: number;
@@ -100,6 +100,32 @@ export const jobApi = createApi({
     getAllCategories: builder.query<GetAllCategoriesResponse, void>({
       query: () => "/categoriess",
       providesTags: ["JobsCategories"],
+    }),
+
+    deleteCategory: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/categoriess/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["JobsCategories"],
+    }),
+
+    updateCategory: builder.mutation<void, JobCategory>({
+      query: ({ id, ...data }) => ({
+        url: `/categoriess/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["JobsCategories"],
+    }),
+
+    addCategory: builder.mutation<void, Omit<JobCategory, "id">>({
+      query: (data) => ({
+        url: "/categoriess",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["JobsCategories"],
     }),
 
 
@@ -226,10 +252,13 @@ export const {
   useSearchJobsQuery,
   useCreateJobMutation,
   useUpdateJobMutation,
+  useGetAllCategoriesQuery,
+  useDeleteCategoryMutation,
+  useUpdateCategoryMutation,
+  useAddCategoryMutation,
   useDeleteJobMutation,
   useGetAllApplicationsQuery,
   useGetApplicationsByJobIdQuery,
-  useGetAllCategoriesQuery,
   useGetApplicationByIdQuery,
   useCreateApplicationMutation,
   useUpdateApplicationStatusMutation,

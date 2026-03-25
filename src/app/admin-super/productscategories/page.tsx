@@ -43,7 +43,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MoreHorizontal, ChevronDown } from "lucide-react";
-import AdminSidebarLayout from "@/components/AdminSidebarLayout";
+import SuperAdminSidebarLayout from "@/components/SuperAdminSidebarLayout";
 import { useAppSelector } from "@/Redux/hooks";
 import toast from "react-hot-toast";
 import { ButtonLoading } from "@/components/ui/ButtonLoading";
@@ -66,7 +66,7 @@ import {
 } from "@/components/ui/sheet";
 import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
 
-export default function AdminCategories() {
+export default function SuperAdminCategories() {
   const { data: categoriesData, isLoading } = useGetAllClassificationsQuery();
   const categories = categoriesData?.content || [];
   console.log("categories", categoriesData);
@@ -265,7 +265,7 @@ export default function AdminCategories() {
   });
 
   return (
-    <AdminSidebarLayout breadcrumbTitle="Categories">
+    <SuperAdminSidebarLayout breadcrumbTitle="Products Categories">
       <h1 className="text-2xl font-bold">Categories</h1>
       <p className="text-gray-700 dark:text-gray-400 mb-4">
         View & Organize All Categories.
@@ -498,6 +498,6 @@ export default function AdminCategories() {
           </div>
         </div>
       </div>
-    </AdminSidebarLayout>
+    </SuperAdminSidebarLayout>
   );
 }

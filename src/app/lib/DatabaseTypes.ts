@@ -1,3 +1,4 @@
+import { Sponsor } from '@/lib/DatabaseTypes';
 // Database Types - Generated from actual database schema
 
 import type { Dispatch, ReactNode, SetStateAction } from "react";
@@ -57,13 +58,41 @@ export interface OrderItem {
   color: string | null;
 }
 
+export interface Classification {
+  id: string; // uuid
+  name: string; // varchar(100)
+  desc: string | null; // varchar(500)
+}
 
+export interface Sponsor {
+  id: string; // uuid
+  ownerId: string; // uuid → FK to seller.id
+  name: string; // varchar(255)
+  img: string; // varchar(255)
+  link: string; // varchar(255)
+  description: string | null; // varchar(500)
+}
+
+export interface JobSponsor {
+  id: string;
+  jobId: string; // uuid → FK to job.id
+  sponsorId: string;
+  sponsor: Sponsor; // populated via JOIN
+}
+
+
+export interface JobCategory {
+  id: string; // uuid
+  categories: string; // varchar(255)
+  description?: string; // varchar(500)
+}
 
 
 export interface OrderProduct {
   id: string; // uuid
   name: string; // varchar(255)
   price: number; // numeric
+  prodNb: number; // quantity
   priceAtTime: number; // numeric
   mainImage: string; // varchar(255)
   smallDesc: string; // varchar(255)

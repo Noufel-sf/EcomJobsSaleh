@@ -25,10 +25,7 @@ const data = {
         //   title: 'Users',
         //   url: '/admin/users',
         // },
-        {
-          title: 'Categories',
-          url: '/admin-seller/categories',
-        },
+      
         {
           title: 'Products',
           url: '/admin-seller/products',

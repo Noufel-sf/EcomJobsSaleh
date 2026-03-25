@@ -16,13 +16,15 @@ import { Product } from "@/lib/DatabaseTypes";
 interface CreateProductColumnsProps {
   handleStatusChange: (productId: string, status: string) => void;
   handleDelete: (productId: string) => void;
-  onEdit: (product: Product) => void;
+  onEdit?: (product: Product) => void;
+  showEdit?: boolean;
 }
 
 export const createProductColumns = ({
   handleStatusChange,
   handleDelete,
   onEdit,
+  showEdit = true,
 }: CreateProductColumnsProps) => [
   
 
@@ -131,12 +133,14 @@ export const createProductColumns = ({
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => onEdit(product)}
-            >
-              Edit
-            </DropdownMenuItem>
+            {showEdit && onEdit && (
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => onEdit(product)}
+              >
+                Edit
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               className="text-red-600 cursor-pointer"
               onClick={() => handleDelete(product.id)}
