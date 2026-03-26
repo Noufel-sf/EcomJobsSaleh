@@ -17,10 +17,10 @@ const QuickLinks = memo(() => (
       </CardHeader>
       <CardContent className="">
         <p className="text-sm text-muted-foreground mb-4">
-          Create and manage your job listings.
+          Checkout your posted jobs and manage them effectively.
         </p>
         <Button variant="primary" asChild>
-          <Link href="/employer/jobs">Go to Jobs</Link>
+          <Link href="/admin-super/jobs">Go to Jobs</Link>
         </Button>
       </CardContent>
     </Card>
@@ -29,15 +29,15 @@ const QuickLinks = memo(() => (
       <CardHeader className="">
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5" />
-          Review Applications
+          Review Products
         </CardTitle>
       </CardHeader>
       <CardContent className="">
         <p className="text-sm text-muted-foreground mb-4">
-          View and manage all incoming applications.
+          View and manage all incoming product reviews.
         </p>
         <Button variant="primary" asChild>
-          <Link href="/employer/applications">Go to Applications</Link>
+          <Link href="/admin-super/products">Go to Products</Link>
         </Button>
       </CardContent>
     </Card>

@@ -14,7 +14,7 @@ interface Stat {
   icon: LucideIcon;
 }
 
-interface EmployerDashboardStatsProps {
+interface SuperAdminDashboardStatsProps {
   stats: Stat[];
 }
 
@@ -61,7 +61,7 @@ const StatCard = memo(({ stat }: { stat: Stat }) => {
 
 StatCard.displayName = 'StatCard';
 
-const EmployerDashboardStats = memo(({ stats }: EmployerDashboardStatsProps) => (
+const SuperAdminDashboardStats = memo(({ stats }: SuperAdminDashboardStatsProps) => (
   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
     {stats.map((stat, index) => (
       <StatCard key={`${stat.title}-${index}`} stat={stat} />
@@ -69,6 +69,6 @@ const EmployerDashboardStats = memo(({ stats }: EmployerDashboardStatsProps) => 
   </div>
 ));
 
-EmployerDashboardStats.displayName = 'EmployerDashboardStats';
+SuperAdminDashboardStats.displayName = 'SuperAdminDashboardStats';
 
-export default EmployerDashboardStats;
+export default SuperAdminDashboardStats;

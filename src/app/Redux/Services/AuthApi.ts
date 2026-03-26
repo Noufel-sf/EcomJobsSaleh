@@ -73,9 +73,9 @@ export const authApi = createApi({
     }),
 
     // Seller Register mutation
-    registerSeller: builder.mutation<AuthResponse, SellerRegisterRequest>({
-      query: (sellerData) => ({
-        url: "/auth/seller/register",
+    registerSeller: builder.mutation<AuthResponse, FormData>({
+      query: (sellerData :FormData) => ({
+        url: "/seller",
         method: "POST",
         body: sellerData,
       }),

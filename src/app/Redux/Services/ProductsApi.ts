@@ -45,6 +45,26 @@ export const productsApi = createApi({
       providesTags: ["Products"],
     }),
 
+    getProductsbyCategory: builder.query<{ content: Product[] }, string>({
+      query: (category) => `/category/${category}`,
+      providesTags: ["Products"],
+    }),
+
+    getElectronicsProducts: builder.query<{ content: Product[] }, void>({
+      query: () => "/electronics",
+      providesTags: ["Products"],
+    }),
+
+    getClothingProducts: builder.query<{ content: Product[] }, void>({
+      query: () => "/clothing",
+      providesTags: ["Products"],
+    }),
+
+    getShoesesProducts: builder.query<{ content: Product[] }, void>({
+      query: () => "/shoes",
+      providesTags: ["Products"],
+    }),
+
     getBestSelling: builder.query<{ content: Product[] }, void>({
       query: () => "/bestSelling",
       providesTags: ["Products"],

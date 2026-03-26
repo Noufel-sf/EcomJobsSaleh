@@ -8,7 +8,7 @@ import { shippingApi } from "./Services/ShippingApi";
 import { jobApi } from "./Services/JobApi";
 import { sellerApi } from "./Services/SellerApi";
 import authReducer from "./Slices/AuthSlice";
-
+import { sponsorApi } from "./Services/SponsorApi";
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +19,7 @@ export const store = configureStore({
     [authApi.reducerPath]: authApi.reducer,
     [classificationApi.reducerPath]: classificationApi.reducer,
     [shippingApi.reducerPath]: shippingApi.reducer,
+    [sponsorApi.reducerPath]: sponsorApi.reducer,
     [jobApi.reducerPath]: jobApi.reducer,
     [sellerApi.reducerPath]: sellerApi.reducer,
   },
@@ -27,12 +28,13 @@ export const store = configureStore({
     getDefaultMiddleware().concat(
       cartApi.middleware,
       productsApi.middleware,
+      sponsorApi.middleware,
       orderApi.middleware,
       authApi.middleware,
       classificationApi.middleware,
       shippingApi.middleware,
       jobApi.middleware,
-      sellerApi.middleware
+      sellerApi.middleware,
     ),
 });
 

@@ -24,10 +24,6 @@ const BestSellingSection = dynamic(
   },
 );
 
-// Below-the-fold sections - code splitting for better performance
-const JobsSponsor = dynamic(() => import("@/components/JobsSponsor"), {
-  loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
-});
 
 const JobsSection = dynamic(() => import("@/components/JobsSection"), {
   loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
@@ -89,11 +85,7 @@ const HomePage = () => {
         <SponsoredSection />
       </Suspense>
 
-      <Suspense
-        fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}
-      >
-        <JobsSponsor />
-      </Suspense>
+
 
       <Suspense
         fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}

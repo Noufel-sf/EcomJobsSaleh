@@ -105,7 +105,7 @@ const Navbar = memo(function Navbar() {
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/" aria-label="Go to homepage">
-            <Image src="/logo.png" alt="ShoppingJobs Logo" className="h-10 w-auto" width={120} height={40} />
+            <h2 className="text-xl font-bold">Shopping <span className="text-primary">Jobs</span></h2>
           </Link>
         </div>
 

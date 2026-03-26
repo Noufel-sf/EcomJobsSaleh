@@ -47,7 +47,7 @@ import hero4 from "@assets/hero4.png";
 
 import { useGetAllClassificationsQuery } from "@/Redux/Services/ClassificationApi";
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 12;
 
 function AllProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -88,7 +88,7 @@ function AllProductsPage() {
 
     if (selectedCategories.length > 0) {
       filtered = filtered.filter((product) =>
-        selectedCategories.includes(product.category),
+        selectedCategories.includes(product.prod_class),
       );
     }
 
@@ -135,11 +135,11 @@ function AllProductsPage() {
     setCurrentPage(1);
   }, [selectedCategories, priceRange, searchQuery, sortBy]);
 
-  const handleCategoryToggle = useCallback((category: string) => {
+  const handleCategoryToggle = useCallback((categoryId: string) => {
     setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category],
+      prev.includes(categoryId)
+        ? prev.filter((c) => c !== categoryId)
+        : [...prev, categoryId],
     );
   }, []);
 
@@ -189,8 +189,8 @@ function AllProductsPage() {
             <div key={category.id} className="flex items-center space-x-2">
               <Checkbox
                 id={`category-${category.id}`}
-                checked={selectedCategories.includes(category.name)}
-                onCheckedChange={() => handleCategoryToggle(category.name)}
+                checked={selectedCategories.includes(category.id)}
+                onCheckedChange={() => handleCategoryToggle(category.id)}
                 className=""
               />
               <label

@@ -177,6 +177,7 @@ const SingleProduct = () => {
                       className="w-full lg:w-2/3 object-contain"
                       alt={`${singleProduct?.name} - Image ${idx + 1}`}
                       loading={idx === 0 ? "eager" : "lazy"}
+                      fetchPriority={idx === 0 ? "high" : "auto"}
                       width={600}
                       height={600}
                     />
@@ -241,10 +242,7 @@ const SingleProduct = () => {
           </div>
 
           {/* Size Selector */}
-          {/* {(singleProduct?.category === "Clothing" ||
-            singleProduct?.category === "Shoes" ||
-            singleProduct?.sizes) && ( */}
-          {singleProduct?.sizes?.length ? (
+          {singleProduct?.sizes && singleProduct.sizes.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">Select Size</h3>
               <fieldset aria-label="Select product size">
@@ -268,12 +266,10 @@ const SingleProduct = () => {
                 </div>
               </fieldset>
             </div>
-          ) : (
-            <></>
           )}
 
           {/* Color Selector */}
-          {singleProduct?.colors?.length ? (
+          {singleProduct?.colors && singleProduct.colors.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">
                 Select Color{" "}
@@ -305,8 +301,6 @@ const SingleProduct = () => {
                 </div>
               </fieldset>
             </div>
-          ) : (
-            <></>
           )}
 
           {/* Price */}

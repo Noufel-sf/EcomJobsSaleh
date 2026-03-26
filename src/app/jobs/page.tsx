@@ -203,7 +203,7 @@ const FilterSidebar = memo(function FilterSidebar({
 
 function AllJobsPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("featured");
@@ -221,8 +221,12 @@ function AllJobsPage() {
     const jobs = jobsResponse?.content ?? [];
     let filtered = [...jobs];
 
-    if (selectedTypes.length > 0) {
-      filtered = filtered.filter((job) => selectedTypes.includes(job.type));
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter((job) =>
+        job.categories?.some((categoryId: string) =>
+          selectedCategories.includes(categoryId)
+        )
+      );
     }
 
     if (selectedLocations.length > 0) {
@@ -264,7 +268,7 @@ function AllJobsPage() {
     return filtered;
   }, [
     jobsResponse,
-    selectedTypes,
+    selectedCategories,
     selectedLocations,
     searchQuery,
     sortBy,
@@ -283,9 +287,11 @@ function AllJobsPage() {
     currentPageAdjusted * ITEMS_PER_PAGE,
   );
 
-  const handleTypeToggle = useCallback((type: string) => {
-    setSelectedTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+  const handleTypeToggle = useCallback((categoryId: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
     );
   }, []);
 
@@ -298,7 +304,7 @@ function AllJobsPage() {
   }, []);
 
   const clearFilters = useCallback(() => {
-    setSelectedTypes([]);
+    setSelectedCategories([]);
     setSelectedLocations([]);
     setSearchQuery("");
     setSortBy("featured");
@@ -379,8 +385,8 @@ function AllJobsPage() {
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
                 jobsCategories={Jobscategories}
-                selectedTypes={selectedTypes}
-                setSelectedTypes={setSelectedTypes}
+                selectedTypes={selectedCategories}
+                setSelectedTypes={setSelectedCategories}
                 selectedLocations={selectedLocations}
                 setSelectedLocations={setSelectedLocations}
                 handleTypeToggle={handleTypeToggle}
@@ -421,15 +427,15 @@ function AllJobsPage() {
                         aria-hidden="true"
                       />
                       Filters
-                      {(selectedTypes.length > 0 ||
+                      {(selectedCategories.length > 0 ||
                         selectedLocations.length > 0 ||
                         searchQuery) && (
                         <Badge
                           variant="destructive"
                           className="ml-2 px-1.5 py-0.5 text-xs"
-                          aria-label={`${selectedTypes.length + selectedLocations.length + (searchQuery ? 1 : 0)} active filters`}
+                          aria-label={`${selectedCategories.length + selectedLocations.length + (searchQuery ? 1 : 0)} active filters`}
                         >
-                          {selectedTypes.length +
+                          {selectedCategories.length +
                             selectedLocations.length +
                             (searchQuery ? 1 : 0)}
                         </Badge>
@@ -450,9 +456,9 @@ function AllJobsPage() {
                       <FilterSidebar
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
-                        selectedTypes={selectedTypes}
+                        selectedTypes={selectedCategories}
                         jobsCategories={Jobscategories}
-                        setSelectedTypes={setSelectedTypes}
+                        setSelectedTypes={setSelectedCategories}
                         selectedLocations={selectedLocations}
                         setSelectedLocations={setSelectedLocations}
                         handleTypeToggle={handleTypeToggle}
@@ -487,7 +493,7 @@ function AllJobsPage() {
             </header>
 
             {/* Active Filters */}
-            {(selectedTypes.length > 0 ||
+            {(selectedCategories.length > 0 ||
               selectedLocations.length > 0 ||
               searchQuery) && (
               <div
@@ -502,23 +508,23 @@ function AllJobsPage() {
                   className="flex flex-wrap gap-2"
                   aria-labelledby="active-filters-label"
                 >
-                  {selectedTypes.map((type) => (
+                  {selectedCategories.map((category) => (
                     <Badge
-                      key={type}
+                      key={category}
                       variant="secondary"
                       className="cursor-pointer hover:bg-primary transition duration-300"
-                      onClick={() => handleTypeToggle(type)}
+                      onClick={() => handleTypeToggle(category)}
                       role="button"
                       tabIndex={0}
                       onKeyDown={(e: React.KeyboardEvent) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          handleTypeToggle(type);
+                          handleTypeToggle(category);
                         }
                       }}
-                      aria-label={`Remove ${type} filter`}
+                      aria-label={`Remove ${category} filter`}
                     >
-                      {type}
+                      {category}
                       <X className="w-3 h-3 ml-1" aria-hidden="true" />
                     </Badge>
                   ))}

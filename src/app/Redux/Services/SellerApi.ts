@@ -1,6 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { create } from "domain";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://wadkniss-r6ar.onrender.com/api/v1";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://wadkniss-r6ar.onrender.com/api/v1";
 
 // Types for Seller
 export interface SellerInfo {
@@ -37,15 +40,25 @@ export interface UpdateSellerResponse {
 export const sellerApi = createApi({
   reducerPath: "sellerApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_URL}/sellers`,
-    credentials: "include",
+    baseUrl: `${API_URL}`,
+    // credentials: "include",
   }),
-  tagTypes: ["Seller"],
+  tagTypes: ["Store", "Seller"],
   endpoints: (builder) => ({
     // Get seller information
+
+    createSellerInfo: builder.query<SellerInfo, void>({
+      query: (sellerdata) => ({
+        url: "/store",
+        method: "POST",
+        body: sellerdata,
+      }),
+      providesTags: (result, error, id) => [{ type: "Store", id }],
+    }),
+
     getSellerInfo: builder.query<SellerInfo, string>({
-      query: (sellerId) => `/${sellerId}`,
-      providesTags: (result, error, id) => [{ type: "Seller", id }],
+      query: (sellerId) => `store/${sellerId}`,
+      providesTags: (result, error, id) => [{ type: "Store", id }],
     }),
 
     // Update seller information
@@ -54,12 +67,12 @@ export const sellerApi = createApi({
       { sellerId: string; data: UpdateSellerRequest }
     >({
       query: ({ sellerId, data }) => ({
-        url: `/${sellerId}`,
+        url: `store/${sellerId}`,
         method: "PUT",
         body: data,
       }),
       invalidatesTags: (result, error, { sellerId }) => [
-        { type: "Seller", id: sellerId },
+        { type: "Store", id: sellerId },
       ],
     }),
 
@@ -69,18 +82,19 @@ export const sellerApi = createApi({
       { sellerId: string; formData: FormData }
     >({
       query: ({ sellerId, formData }) => ({
-        url: `/${sellerId}/image`,
+        url: `store/${sellerId}/image`,
         method: "PUT",
         body: formData,
       }),
       invalidatesTags: (result, error, { sellerId }) => [
-        { type: "Seller", id: sellerId },
+        { type: "Store", id: sellerId },
       ],
     }),
   }),
 });
 
 export const {
+  useCreateSellerInfoQuery,
   useGetSellerInfoQuery,
   useUpdateSellerInfoMutation,
   useUpdateSellerImageMutation,

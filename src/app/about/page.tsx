@@ -101,11 +101,11 @@ const About = () => {
             </div>
             <div className="relative">
               <Image
-                src="/hero2.png"
+                src="/about.png"
                 alt="Our team"
-                width={300}
+                width={500}
                 height={200}
-                className="rounded-lg shadow-2xl"
+                className=""
               />
             </div>
           </div>
@@ -163,7 +163,7 @@ const About = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" asChild>
-              <Link href="/allproducts">
+              <Link href="/products">
                 Start Shopping
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Link>

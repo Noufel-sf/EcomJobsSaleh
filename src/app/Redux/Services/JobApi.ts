@@ -221,12 +221,14 @@ export const jobApi = createApi({
       invalidatesTags: ["Applications"],
     }),
 
+   
+
     updateEmployerProfile: builder.mutation<
       { message?: string },
       UpdateEmployerProfilePayload | FormData
     >({
       query: (payload) => ({
-        url: "/company",
+        url: "/companys",
         method: "PUT",
         body: payload,
       }),
@@ -244,6 +246,8 @@ export const jobApi = createApi({
       }),
     }),
   }),
+
+  
 });
 
 export const {
