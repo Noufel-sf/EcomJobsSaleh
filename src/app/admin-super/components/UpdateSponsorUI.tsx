@@ -18,6 +18,58 @@ import { ButtonLoading } from "@/components/ui/ButtonLoading";
 import toast from "react-hot-toast";
 import { Sponsor } from "@/lib/DatabaseTypes";
 import Image from "next/image";
+import { type Language, useI18n } from "@/context/I18nContext";
+
+const updateSponsorCopy: Record<Language, Record<string, string>> = {
+  en: {
+    updated: "Sponsor updated successfully",
+    updateFailed: "Failed to update sponsor",
+    editTitle: "Edit Sponsor",
+    editDescription: "Update sponsor details. Click save when done.",
+    imageUrl: "Image URL",
+    sponsorPreviewAlt: "Sponsor preview",
+    sponsorLink: "Sponsor Link",
+    description: "Description",
+    descriptionPlaceholder: "Short description of the sponsor",
+    ownerId: "Owner ID",
+    ownerPlaceholder: "User or organization ID",
+    activeLabel: "Active (visible to users)",
+    cancel: "Cancel",
+    save: "Save changes",
+  },
+  fr: {
+    updated: "Sponsor mis a jour avec succes",
+    updateFailed: "Echec de mise a jour du sponsor",
+    editTitle: "Modifier le sponsor",
+    editDescription: "Mettez a jour les details puis enregistrez.",
+    imageUrl: "URL de l'image",
+    sponsorPreviewAlt: "Apercu du sponsor",
+    sponsorLink: "Lien du sponsor",
+    description: "Description",
+    descriptionPlaceholder: "Courte description du sponsor",
+    ownerId: "ID proprietaire",
+    ownerPlaceholder: "ID utilisateur ou organisation",
+    activeLabel: "Actif (visible pour les utilisateurs)",
+    cancel: "Annuler",
+    save: "Enregistrer",
+  },
+  ar: {
+    updated: "تم تحديث الراعي بنجاح",
+    updateFailed: "فشل تحديث الراعي",
+    editTitle: "تعديل الراعي",
+    editDescription: "قم بتحديث التفاصيل ثم اضغط حفظ.",
+    imageUrl: "رابط الصورة",
+    sponsorPreviewAlt: "معاينة الراعي",
+    sponsorLink: "رابط الراعي",
+    description: "الوصف",
+    descriptionPlaceholder: "وصف قصير للراعي",
+    ownerId: "معرف المالك",
+    ownerPlaceholder: "معرف المستخدم او المؤسسة",
+    activeLabel: "نشط (مرئي للمستخدمين)",
+    cancel: "الغاء",
+    save: "حفظ التغييرات",
+  },
+};
 
 interface UpdateSponsorUiProps {
   open: boolean;
@@ -32,6 +84,8 @@ export default function UpdateSponsorUi({
   sponsor,
   onUpdated,
 }: UpdateSponsorUiProps) {
+  const { language } = useI18n();
+  const copy = updateSponsorCopy[language];
   const [imgUrl, setImgUrl] = useState("");
   const [link, setLink] = useState("");
   const [description, setDescription] = useState("");
@@ -66,10 +120,10 @@ export default function UpdateSponsorUi({
       }).unwrap();
 
       onUpdated(updated);
-      toast.success("Sponsor updated successfully");
+      toast.success(copy.updated);
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to update sponsor");
+      toast.error(error?.data?.message || copy.updateFailed);
     }
   };
 
@@ -78,16 +132,16 @@ export default function UpdateSponsorUi({
       <SheetContent className="">
         <form onSubmit={handleUpdate}>
           <SheetHeader>
-            <SheetTitle>Edit Sponsor</SheetTitle>
+            <SheetTitle>{copy.editTitle}</SheetTitle>
             <SheetDescription>
-              Update sponsor details. Click save when done.
+              {copy.editDescription}
             </SheetDescription>
           </SheetHeader>
 
           <div className="grid gap-4 py-4 px-6">
             {/* Image URL */}
             <div className="grid gap-3">
-              <Label htmlFor="edit-img">Image URL</Label>
+              <Label htmlFor="edit-img">{copy.imageUrl}</Label>
               <Input
                 id="edit-img"
                 placeholder="https://example.com/logo.png"
@@ -99,7 +153,7 @@ export default function UpdateSponsorUi({
                 <div className="flex items-center justify-center h-20 w-full rounded-md border bg-muted overflow-hidden">
                   <Image
                     src={imgUrl}
-                    alt="Sponsor preview"
+                    alt={copy.sponsorPreviewAlt}
                     className="h-full object-contain"
                     width={120}
                     height={40}
@@ -113,7 +167,7 @@ export default function UpdateSponsorUi({
 
             {/* Link */}
             <div className="grid gap-3">
-              <Label htmlFor="edit-link">Sponsor Link</Label>
+              <Label htmlFor="edit-link">{copy.sponsorLink}</Label>
               <Input
                 id="edit-link"
                 placeholder="https://sponsor-website.com"
@@ -125,10 +179,10 @@ export default function UpdateSponsorUi({
 
             {/* Description */}
             <div className="grid gap-3">
-              <Label htmlFor="edit-description">Description</Label>
+              <Label htmlFor="edit-description">{copy.description}</Label>
               <Input
                 id="edit-description"
-                placeholder="Short description of the sponsor"
+                placeholder={copy.descriptionPlaceholder}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -136,10 +190,10 @@ export default function UpdateSponsorUi({
 
             {/* Owner ID */}
             <div className="grid gap-3">
-              <Label htmlFor="edit-ownerId">Owner ID</Label>
+              <Label htmlFor="edit-ownerId">{copy.ownerId}</Label>
               <Input
                 id="edit-ownerId"
-                placeholder="User or organization ID"
+                placeholder={copy.ownerPlaceholder}
                 value={ownerId}
                 onChange={(e) => setOwnerId(e.target.value)}
                 required
@@ -158,7 +212,7 @@ export default function UpdateSponsorUi({
                 htmlFor="edit-isActive"
                 className="cursor-pointer font-normal"
               >
-                Active (visible to users)
+                {copy.activeLabel}
               </Label>
             </div>
           </div>
@@ -166,14 +220,14 @@ export default function UpdateSponsorUi({
           <SheetFooter className="space-y-2">
             <SheetClose asChild>
               <Button variant="outline" type="button">
-                Cancel
+                {copy.cancel}
               </Button>
             </SheetClose>
             {/* {isLoading ? (
               <ButtonLoading />
             ) : ( */}
               <Button type="submit" size="lg" variant="primary">
-                Save changes
+                {copy.save}
               </Button>
             {/* )} */}
           </SheetFooter>

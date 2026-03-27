@@ -43,6 +43,70 @@ import {
 import { Job } from "@/lib/DatabaseTypes";
 import CreateJobDialog from "@/components/CreateJobDialog";
 import UpdateJobSheet from "@/components/UpdateJobSheet";
+import { type Language, useI18n } from "@/context/I18nContext";
+
+const jobsCopy: Record<Language, Record<string, string>> = {
+  en: {
+    title: "Jobs",
+    subtitle: "Manage all your job listings.",
+    search: "Search by title...",
+    columns: "Columns",
+    noJobs: "No jobs found.",
+    selectedRows: "{selected} of {total} row(s) selected.",
+    previous: "Previous",
+    next: "Next",
+    jobDeleted: "Job deleted successfully",
+    deleteFailed: "Failed to delete job",
+    jobTitle: "Job Title",
+    location: "Location",
+    type: "Type",
+    actions: "Actions",
+    viewApps: "View Apps",
+    openMenu: "Open menu",
+    edit: "Edit",
+    delete: "Delete",
+  },
+  fr: {
+    title: "Offres",
+    subtitle: "Gerez toutes vos offres d'emploi.",
+    search: "Rechercher par titre...",
+    columns: "Colonnes",
+    noJobs: "Aucune offre trouvee.",
+    selectedRows: "{selected} sur {total} ligne(s) selectionnee(s).",
+    previous: "Precedent",
+    next: "Suivant",
+    jobDeleted: "Offre supprimee",
+    deleteFailed: "Echec de suppression",
+    jobTitle: "Poste",
+    location: "Localisation",
+    type: "Type",
+    actions: "Actions",
+    viewApps: "Voir candidatures",
+    openMenu: "Ouvrir menu",
+    edit: "Modifier",
+    delete: "Supprimer",
+  },
+  ar: {
+    title: "الوظائف",
+    subtitle: "ادارة جميع الوظائف المنشورة.",
+    search: "ابحث بعنوان الوظيفة...",
+    columns: "الاعمدة",
+    noJobs: "لا توجد وظائف.",
+    selectedRows: "تم تحديد {selected} من {total} صف.",
+    previous: "السابق",
+    next: "التالي",
+    jobDeleted: "تم حذف الوظيفة بنجاح",
+    deleteFailed: "فشل حذف الوظيفة",
+    jobTitle: "المسمى الوظيفي",
+    location: "الموقع",
+    type: "النوع",
+    actions: "الاجراءات",
+    viewApps: "عرض الطلبات",
+    openMenu: "فتح القائمة",
+    edit: "تعديل",
+    delete: "حذف",
+  },
+};
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
@@ -65,6 +129,8 @@ const typeStyles: Record<string, string> = {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EmployerJobs() {
+  const { language, t } = useI18n();
+  const copy = jobsCopy[language];
   const user = useAppSelector((state) => state.auth.user);
   const companyId = user?.userId ?? "";
 
@@ -81,13 +147,13 @@ export default function EmployerJobs() {
     async (jobId: string) => {
       try {
         await deleteJob(jobId).unwrap();
-        toast.success("Job deleted successfully");
+        toast.success(copy.jobDeleted);
       } catch (error: unknown) {
         const err = error as { data?: { message?: string } };
-        toast.error(err?.data?.message || "Failed to delete job");
+        toast.error(err?.data?.message || copy.deleteFailed);
       }
     },
-    [deleteJob],
+    [copy.deleteFailed, copy.jobDeleted, deleteJob],
   );
 
   const [sorting, setSorting] = useState<any[]>([]);
@@ -106,7 +172,7 @@ export default function EmployerJobs() {
           <Checkbox
             className="cursor-pointer"
             checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            onCheckedChange={(value: boolean | "indeterminate") => row.toggleSelected(!!value)}
             aria-label="Select row"
           />
         ),
@@ -115,14 +181,14 @@ export default function EmployerJobs() {
       },
       {
         accessorKey: "title",
-        header: "Job Title",
+        header: copy.jobTitle,
         cell: ({ row }: any) => (
           <div className="font-medium">{row.getValue("title")}</div>
         ),
       },
       {
         accessorKey: "location",
-        header: "Location",
+        header: copy.location,
         cell: ({ row }: any) => (
           <div className="text-sm text-muted-foreground">
             {row.getValue("location")}
@@ -131,7 +197,7 @@ export default function EmployerJobs() {
       },
       {
         accessorKey: "type",
-        header: "Type",
+        header: copy.type,
         cell: ({ row }: any) => (
           <span
             className={`text-xs px-2 py-1 rounded-full font-medium ${typeStyles[row.getValue("type")] || ""}`}
@@ -143,7 +209,7 @@ export default function EmployerJobs() {
 
       {
         id: "actions",
-        header: "Actions",
+        header: copy.actions,
         enableHiding: false,
         cell: ({ row }: any) => {
           const job = row.original as Job;
@@ -157,7 +223,7 @@ export default function EmployerJobs() {
               >
                 <Link href={`/employer/applications?jobId=${job.id}`}>
                   <Eye className="h-4 w-4 mr-1" />
-                  View Apps
+                  {copy.viewApps}
                 </Link>
               </Button>
               <DropdownMenu>
@@ -167,12 +233,12 @@ export default function EmployerJobs() {
                     size="sm"
                     className="h-8 w-8 p-0 cursor-pointer"
                   >
-                    <span className="sr-only">Open menu</span>
+                    <span className="sr-only">{copy.openMenu}</span>
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuLabel>{copy.actions}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer"
@@ -181,14 +247,14 @@ export default function EmployerJobs() {
                       setEditSheetOpen(true);
                     }}
                   >
-                    Edit
+                    {copy.edit}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer text-red-600"
                     onClick={() => handleDelete(job.id)}
                   >
-                    Delete
+                    {copy.delete}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -197,7 +263,7 @@ export default function EmployerJobs() {
         },
       },
     ],
-    [handleDelete],
+    [copy.actions, copy.delete, copy.edit, copy.jobTitle, copy.location, copy.openMenu, copy.type, copy.viewApps, handleDelete],
   );
 
   const table = useReactTable({
@@ -221,9 +287,9 @@ export default function EmployerJobs() {
 
   return (
     <EmployerSidebarLayout breadcrumbTitle="Jobs">
-      <h1 className="text-2xl font-bold">Jobs</h1>
+      <h1 className="text-2xl font-bold">{copy.title}</h1>
       <p className="text-gray-700 dark:text-gray-400 mb-4">
-        Manage all your job listings.
+        {copy.subtitle}
       </p>
 
       <div className="w-full">
@@ -237,7 +303,7 @@ export default function EmployerJobs() {
 
           {/* Search */}
           <Input
-            placeholder="Search by title..."
+            placeholder={copy.search}
             value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
             onChange={(e) =>
               table.getColumn("title")?.setFilterValue(e.target.value)
@@ -253,7 +319,7 @@ export default function EmployerJobs() {
                 size="lg"
                 className="ml-auto cursor-pointer"
               >
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
+                {copy.columns} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="">
@@ -265,7 +331,7 @@ export default function EmployerJobs() {
                     key={col.id}
                     className="capitalize cursor-pointer"
                     checked={col.getIsVisible()}
-                    onCheckedChange={(value) => col.toggleVisibility(!!value)}
+                    onCheckedChange={(value: boolean | "indeterminate") => col.toggleVisibility(!!value)}
                   >
                     {col.id}
                   </DropdownMenuCheckboxItem>
@@ -330,7 +396,7 @@ export default function EmployerJobs() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No jobs found.
+                    {copy.noJobs}
                   </TableCell>
                 </TableRow>
               )}
@@ -341,8 +407,10 @@ export default function EmployerJobs() {
         {/* Pagination */}
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="text-muted-foreground flex-1 text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {t(copy.selectedRows, {
+              selected: table.getFilteredSelectedRowModel().rows.length,
+              total: table.getFilteredRowModel().rows.length,
+            })}
           </div>
           <div className="space-x-2">
             <Button
@@ -352,7 +420,7 @@ export default function EmployerJobs() {
               disabled={!table.getCanPreviousPage()}
               className="cursor-pointer"
             >
-              Previous
+              {copy.previous}
             </Button>
             <Button
               variant="primary"
@@ -361,7 +429,7 @@ export default function EmployerJobs() {
               disabled={!table.getCanNextPage()}
               className="cursor-pointer"
             >
-              Next
+              {copy.next}
             </Button>
           </div>
         </div>

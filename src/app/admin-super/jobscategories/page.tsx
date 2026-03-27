@@ -65,11 +65,109 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
+import { type Language, useI18n } from "@/context/I18nContext";
+
+const superAdminJobCategoriesCopy: Record<Language, Record<string, string>> = {
+  en: {
+    breadcrumb: "Jobs Categories",
+    title: "Jobs Categories",
+    description: "View and organize all job categories.",
+    created: "Category created successfully",
+    updated: "Category updated successfully",
+    deleted: "Category deleted successfully",
+    updateFailed: "Failed to update category",
+    deleteFailed: "Failed to delete category",
+    selectAll: "Select all",
+    selectRow: "Select row",
+    name: "Name",
+    desc: "Description",
+    openMenu: "Open menu",
+    actions: "Actions",
+    edit: "Edit",
+    delete: "Delete",
+    createNew: "Create a new category",
+    createCategory: "Create Category",
+    editCategory: "Edit Category",
+    createDescription: "Create a new category. Click save when you are done.",
+    editDescription: "Edit category. Click save when you are done.",
+    cancel: "Cancel",
+    saveChanges: "Save changes",
+    columns: "Columns",
+    noResults: "No results.",
+    selectedRows: "{selected} of {total} row(s) selected.",
+    previous: "Previous",
+    next: "Next",
+    titleLabel: "Title",
+  },
+  fr: {
+    breadcrumb: "Categories emplois",
+    title: "Categories emplois",
+    description: "Afficher et organiser toutes les categories d'emploi.",
+    created: "Categorie creee avec succes",
+    updated: "Categorie mise a jour avec succes",
+    deleted: "Categorie supprimee avec succes",
+    updateFailed: "Echec de mise a jour de la categorie",
+    deleteFailed: "Echec de suppression de la categorie",
+    selectAll: "Tout selectionner",
+    selectRow: "Selectionner la ligne",
+    name: "Nom",
+    desc: "Description",
+    openMenu: "Ouvrir le menu",
+    actions: "Actions",
+    edit: "Modifier",
+    delete: "Supprimer",
+    createNew: "Creer une nouvelle categorie",
+    createCategory: "Creer une categorie",
+    editCategory: "Modifier la categorie",
+    createDescription: "Creez une categorie puis cliquez sur enregistrer.",
+    editDescription: "Modifiez la categorie puis cliquez sur enregistrer.",
+    cancel: "Annuler",
+    saveChanges: "Enregistrer",
+    columns: "Colonnes",
+    noResults: "Aucun resultat.",
+    selectedRows: "{selected} sur {total} ligne(s) selectionnee(s).",
+    previous: "Precedent",
+    next: "Suivant",
+    titleLabel: "Titre",
+  },
+  ar: {
+    breadcrumb: "فئات الوظائف",
+    title: "فئات الوظائف",
+    description: "عرض وتنظيم جميع فئات الوظائف.",
+    created: "تم انشاء الفئة بنجاح",
+    updated: "تم تحديث الفئة بنجاح",
+    deleted: "تم حذف الفئة بنجاح",
+    updateFailed: "فشل تحديث الفئة",
+    deleteFailed: "فشل حذف الفئة",
+    selectAll: "تحديد الكل",
+    selectRow: "تحديد الصف",
+    name: "الاسم",
+    desc: "الوصف",
+    openMenu: "فتح القائمة",
+    actions: "الاجراءات",
+    edit: "تعديل",
+    delete: "حذف",
+    createNew: "انشاء فئة جديدة",
+    createCategory: "انشاء فئة",
+    editCategory: "تعديل الفئة",
+    createDescription: "انشئ فئة جديدة ثم اضغط حفظ.",
+    editDescription: "عدّل الفئة ثم اضغط حفظ.",
+    cancel: "الغاء",
+    saveChanges: "حفظ التغييرات",
+    columns: "الاعمدة",
+    noResults: "لا توجد نتائج.",
+    selectedRows: "تم تحديد {selected} من {total} صف.",
+    previous: "السابق",
+    next: "التالي",
+    titleLabel: "العنوان",
+  },
+};
 
 export default function SuperAdminJobsCategories() {
+  const { language, t } = useI18n();
+  const copy = superAdminJobCategoriesCopy[language];
   const { data: categoriesData, isLoading } = useGetAllCategoriesQuery();
   const categories = categoriesData?.content || [];
-  console.log("categories", categoriesData);
 
   useEffect(() => {
     if (categoriesData?.content) {
@@ -100,7 +198,7 @@ export default function SuperAdminJobsCategories() {
         description: description,
       }).unwrap();
       setData((prev) => [...prev, newCategory]);
-      toast.success("Category created successfully");
+      toast.success(copy.created);
       setOpen(false);
       setTitle("");
       setDescription("");
@@ -117,8 +215,6 @@ export default function SuperAdminJobsCategories() {
     if (!selectedCategory) return;
 
     try {
-      console.log("updated data is ", title, description);
-
       const updated = await updateCategory({
         id: selectedCategory.id,
         categories: title,
@@ -133,12 +229,12 @@ export default function SuperAdminJobsCategories() {
       setTitle("");
       setDescription("");
 
-      toast.success("Category updated successfully");
+      toast.success(copy.updated);
       setSelectedCategory(null);
       setEditSheetOpen(false);
       setEditMode(false);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to update category");
+      toast.error(error?.data?.message || copy.updateFailed);
     }
   };
 
@@ -146,9 +242,9 @@ export default function SuperAdminJobsCategories() {
     try {
       await deleteCategory(categoryId).unwrap();
       setData((prev) => prev.filter((c) => c.id !== categoryId));
-      toast.success("Category deleted successfully");
+      toast.success(copy.deleted);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to delete category");
+      toast.error(error?.data?.message || copy.deleteFailed);
     }
   };
 
@@ -162,14 +258,14 @@ export default function SuperAdminJobsCategories() {
     {
       id: "select",
       header: ({ table }) => (
-        <Checkbox className="cursor-pointer" aria-label="Select all" />
+        <Checkbox className="cursor-pointer" aria-label={copy.selectAll} />
       ),
       cell: ({ row }) => (
         <Checkbox
           className="cursor-pointer"
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label={copy.selectRow}
         />
       ),
       enableSorting: false,
@@ -178,14 +274,14 @@ export default function SuperAdminJobsCategories() {
 
     {
       accessorKey: "categories",
-      header: "Name",
+      header: copy.name,
       cell: ({ row }) => (
         <div className="font-medium">{row.getValue("categories")}</div>
       ),
     },
     {
       accessorKey: "description",
-      header: "Description",
+      header: copy.desc,
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
           {row.getValue("description") || "-"}
@@ -206,12 +302,12 @@ export default function SuperAdminJobsCategories() {
                 size="lg"
                 className="h-8 w-8 p-0 cursor-pointer"
               >
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{copy.openMenu}</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className={""} align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{copy.actions}</DropdownMenuLabel>
               <DropdownMenuSeparator className={""} />
               <DropdownMenuItem
                 className="cursor-pointer"
@@ -224,14 +320,14 @@ export default function SuperAdminJobsCategories() {
                   setEditSheetOpen(true);
                 }}
               >
-                Edit
+                {copy.edit}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
                 inset=""
                 onClick={() => handleDelete(category.id)}
               >
-                Delete
+                {copy.delete}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -260,35 +356,35 @@ export default function SuperAdminJobsCategories() {
   });
 
   return (
-    <SuperAdminSidebarLayout breadcrumbTitle="Jobs Categories">
-      <h1 className="text-2xl font-bold">Jobs Categories</h1>
+    <SuperAdminSidebarLayout breadcrumbTitle={copy.breadcrumb}>
+      <h1 className="text-2xl font-bold">{copy.title}</h1>
       <p className="text-gray-700 dark:text-gray-400 mb-4">
-        View & Organize All jobs Categories.
+        {copy.description}
       </p>
       <div className="w-full">
         <div className="flex items-center py-4">
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button variant="primary" size="lg" className="">
-                Create a new category
+                {copy.createNew}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <form onSubmit={handleCreate}>
                 <DialogHeader className="">
                   <DialogTitle className="">
-                    {editMode ? "Edit Category" : "Create Category"}
+                    {editMode ? copy.editCategory : copy.createCategory}
                   </DialogTitle>
                   <DialogDescription className="mb-3">
                     {editMode
-                      ? "Edit category. Click save when you are done."
-                      : "Create a new category. Click save when you are done."}
+                      ? copy.editDescription
+                      : copy.createDescription}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4">
                   <div className="grid gap-3">
                     <Label className="" htmlFor="categories">
-                      Name
+                      {copy.name}
                     </Label>
                     <Input
                       id="categories"
@@ -298,7 +394,7 @@ export default function SuperAdminJobsCategories() {
                     />
                   </div>
                   <div className="grid gap-3">
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description">{copy.desc}</Label>
                     <Input
                       id="description"
                       name="description"
@@ -310,7 +406,7 @@ export default function SuperAdminJobsCategories() {
                 <DialogFooter className="mt-5">
                   <DialogClose asChild>
                     <Button variant="outline" size="lg">
-                      Cancel
+                      {copy.cancel}
                     </Button>
                   </DialogClose>
                   {isLoading ? (
@@ -322,7 +418,7 @@ export default function SuperAdminJobsCategories() {
                       variant="primary"
                       size="lg"
                     >
-                      Save changes
+                      {copy.saveChanges}
                     </Button>
                   )}
                 </DialogFooter>
@@ -336,7 +432,7 @@ export default function SuperAdminJobsCategories() {
                 size="lg"
                 className="ml-auto cursor-pointer"
               >
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
+                {copy.columns} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="" align="end">
@@ -363,16 +459,16 @@ export default function SuperAdminJobsCategories() {
           <SheetContent className="">
             <form onSubmit={handleUpdate}>
               <SheetHeader className="">
-                <SheetTitle className="">Edit Category</SheetTitle>
+                <SheetTitle className="">{copy.editCategory}</SheetTitle>
                 <SheetDescription className="">
-                  Edit category. Click save when done.
+                  {copy.editDescription}
                 </SheetDescription>
               </SheetHeader>
 
               <div className="grid gap-4 py-4 px-6">
                 <div className="grid gap-3">
                   <Label className="" htmlFor="title">
-                    Title
+                    {copy.titleLabel}
                   </Label>
                   <Input
                     id="title"
@@ -382,7 +478,7 @@ export default function SuperAdminJobsCategories() {
                 </div>
                 <div className="grid gap-3">
                   <Label className="" htmlFor="description">
-                    Description
+                    {copy.desc}
                   </Label>
                   <Input
                     id="description"
@@ -395,7 +491,7 @@ export default function SuperAdminJobsCategories() {
               <SheetFooter className="space-y-2">
                 <SheetClose asChild>
                   <Button className="" variant="outline">
-                    Cancel
+                    {copy.cancel}
                   </Button>
                 </SheetClose>
                 {isLoading ? (
@@ -407,7 +503,7 @@ export default function SuperAdminJobsCategories() {
                     size="lg"
                     variant="primary"
                   >
-                    Save changes
+                    {copy.saveChanges}
                   </Button>
                 )}
               </SheetFooter>
@@ -459,7 +555,7 @@ export default function SuperAdminJobsCategories() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No results.
+                    {copy.noResults}
                   </TableCell>
                 </TableRow>
               )}
@@ -468,8 +564,10 @@ export default function SuperAdminJobsCategories() {
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="text-muted-foreground flex-1 text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {t(copy.selectedRows, {
+              selected: table.getFilteredSelectedRowModel().rows.length,
+              total: table.getFilteredRowModel().rows.length,
+            })}
           </div>
           <div className="space-x-2">
             <Button
@@ -479,7 +577,7 @@ export default function SuperAdminJobsCategories() {
               disabled={!table.getCanPreviousPage()}
               className="cursor-pointer"
             >
-              Previous
+              {copy.previous}
             </Button>
             <Button
               variant="primary"
@@ -488,7 +586,7 @@ export default function SuperAdminJobsCategories() {
               disabled={!table.getCanNextPage()}
               className="cursor-pointer"
             >
-              Next
+              {copy.next}
             </Button>
           </div>
         </div>

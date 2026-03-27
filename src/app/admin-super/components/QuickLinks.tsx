@@ -5,44 +5,77 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Briefcase, Users } from 'lucide-react';
 import Link from 'next/link';
+import { type Language, useI18n } from '@/context/I18nContext';
 
-const QuickLinks = memo(() => (
-  <div className="grid gap-4 md:grid-cols-2">
-    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-      <CardHeader className="">
-        <CardTitle className="flex items-center gap-2">
-          <Briefcase className="h-5 w-5" />
-          Manage Jobs
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="">
-        <p className="text-sm text-muted-foreground mb-4">
-          Checkout your posted jobs and manage them effectively.
-        </p>
-        <Button variant="primary" asChild>
-          <Link href="/admin-super/jobs">Go to Jobs</Link>
-        </Button>
-      </CardContent>
-    </Card>
+const quickLinksCopy: Record<Language, Record<string, string>> = {
+  en: {
+    manageJobs: 'Manage Jobs',
+    jobsDescription: 'Check your posted jobs and manage them effectively.',
+    goJobs: 'Go to Jobs',
+    reviewProducts: 'Review Products',
+    productsDescription: 'View and manage all incoming product reviews.',
+    goProducts: 'Go to Products',
+  },
+  fr: {
+    manageJobs: 'Gerer les emplois',
+    jobsDescription: 'Consultez et gerez efficacement les offres publiees.',
+    goJobs: 'Aller aux emplois',
+    reviewProducts: 'Verifier les produits',
+    productsDescription: 'Consultez et gerez tous les produits recus.',
+    goProducts: 'Aller aux produits',
+  },
+  ar: {
+    manageJobs: 'ادارة الوظائف',
+    jobsDescription: 'راجع الوظائف المنشورة وقم بادارتها بكفاءة.',
+    goJobs: 'الذهاب للوظائف',
+    reviewProducts: 'مراجعة المنتجات',
+    productsDescription: 'عرض وادارة جميع المنتجات الواردة.',
+    goProducts: 'الذهاب للمنتجات',
+  },
+};
 
-    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-      <CardHeader className="">
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
-          Review Products
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="">
-        <p className="text-sm text-muted-foreground mb-4">
-          View and manage all incoming product reviews.
-        </p>
-        <Button variant="primary" asChild>
-          <Link href="/admin-super/products">Go to Products</Link>
-        </Button>
-      </CardContent>
-    </Card>
-  </div>
-));
+const QuickLinks = memo(() => {
+  const { language } = useI18n();
+  const copy = quickLinksCopy[language];
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+        <CardHeader className="">
+          <CardTitle className="flex items-center gap-2">
+            <Briefcase className="h-5 w-5" />
+            {copy.manageJobs}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="">
+          <p className="text-sm text-muted-foreground mb-4">
+            {copy.jobsDescription}
+          </p>
+          <Button variant="primary" asChild>
+            <Link href="/admin-super/jobs">{copy.goJobs}</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+        <CardHeader className="">
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            {copy.reviewProducts}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="">
+          <p className="text-sm text-muted-foreground mb-4">
+            {copy.productsDescription}
+          </p>
+          <Button variant="primary" asChild>
+            <Link href="/admin-super/products">{copy.goProducts}</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+});
 
 QuickLinks.displayName = 'QuickLinks';
 

@@ -64,6 +64,67 @@ import {
   ShippingState,
 } from "@/Redux/Services/ShippingApi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { type Language, useI18n } from "@/context/I18nContext";
+
+const shippingCopy: Record<Language, Record<string, string>> = {
+  en: {
+    active: "Active",
+    inactive: "Inactive",
+    changeStatus: "Change Status",
+    title: "Shipping States",
+    subtitle: "View and track all shipping states.",
+    save: "Save Changes",
+    saving: "Saving...",
+    noStates: "No states found.",
+    localPriceUpdated: "Price updated locally",
+    allUpdated: "All states updated successfully!",
+    updateFailed: "Update failed",
+    code: "Code",
+    stateName: "State Name",
+    price: "Shipping Price",
+    status: "Status",
+    actions: "Actions",
+    editPrice: "Edit Price",
+  },
+  fr: {
+    active: "Actif",
+    inactive: "Inactif",
+    changeStatus: "Changer le statut",
+    title: "Wilayas de livraison",
+    subtitle: "Consultez et suivez tous les etats de livraison.",
+    save: "Enregistrer",
+    saving: "Enregistrement...",
+    noStates: "Aucun etat trouve.",
+    localPriceUpdated: "Prix mis a jour localement",
+    allUpdated: "Tous les etats ont ete mis a jour !",
+    updateFailed: "Echec de mise a jour",
+    code: "Code",
+    stateName: "Nom de la wilaya",
+    price: "Prix de livraison",
+    status: "Statut",
+    actions: "Actions",
+    editPrice: "Modifier le prix",
+  },
+  ar: {
+    active: "نشط",
+    inactive: "غير نشط",
+    changeStatus: "تغيير الحالة",
+    title: "ولايات الشحن",
+    subtitle: "عرض وتتبع جميع حالات الشحن.",
+    save: "حفظ التغييرات",
+    saving: "جار الحفظ...",
+    noStates: "لا توجد ولايات.",
+    localPriceUpdated: "تم تحديث السعر محليا",
+    allUpdated: "تم تحديث جميع الولايات بنجاح!",
+    updateFailed: "فشل التحديث",
+    code: "الرمز",
+    stateName: "اسم الولاية",
+    price: "سعر الشحن",
+    status: "الحالة",
+    actions: "الاجراءات",
+    editPrice: "تعديل السعر",
+  },
+};
 
 const getStatusStyle = (status: string) => {
   switch (status) {
@@ -77,6 +138,8 @@ const getStatusStyle = (status: string) => {
 };
 
 export default function ShippingManagement() {
+  const { language } = useI18n();
+  const copy = shippingCopy[language];
   const ownerId = "019c52df-1e7a-7006-ac12-aa2be28f77b4";
 
   const { data: statesData, isLoading } =
@@ -123,7 +186,7 @@ export default function ShippingManagement() {
       ),
     );
 
-    toast.success("Price updated locally");
+    toast.success(copy.localPriceUpdated);
 
     setEditDialogOpen(false);
     setPriceInput("");
@@ -138,16 +201,15 @@ export default function ShippingManagement() {
         price: state.price,
         available: state.availavle,
       }));
-      console.log(payload);
 
       await updatePrice({
         ownerId,
         payload,
       }).unwrap();
 
-      toast.success("All states updated successfully!");
+      toast.success(copy.allUpdated);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Update failed");
+      toast.error(error?.data?.message || copy.updateFailed);
     }
   };
 
@@ -173,11 +235,11 @@ export default function ShippingManagement() {
     },
     {
       accessorKey: "id",
-      header: "Code",
+      header: copy.code,
     },
     {
       accessorKey: "name",
-      header: "State Name",
+      header: copy.stateName,
       cell: ({ row }: any) => (
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -192,7 +254,7 @@ export default function ShippingManagement() {
     },
     {
       accessorKey: "price",
-      header: "Shipping Price",
+      header: copy.price,
       cell: ({ row }: any) => (
         <div className="flex items-center gap-2">
           <span className="font-semibold text-green-600">
@@ -203,10 +265,10 @@ export default function ShippingManagement() {
     },
     {
       accessorKey: "availavle",
-      header: "Status",
+      header: copy.status,
       cell: ({ row }: any) => {
         const state = row.original;
-        const status = state.availavle ? "Active" : "Inactive";
+        const status = state.availavle ? copy.active : copy.inactive;
 
         return (
           <DropdownMenu>
@@ -222,7 +284,7 @@ export default function ShippingManagement() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+              <DropdownMenuLabel>{copy.changeStatus}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() =>
@@ -233,7 +295,7 @@ export default function ShippingManagement() {
                   )
                 }
               >
-                Active
+                {copy.active}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() =>
@@ -244,7 +306,7 @@ export default function ShippingManagement() {
                   )
                 }
               >
-                Inactive
+                {copy.inactive}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -253,7 +315,7 @@ export default function ShippingManagement() {
     },
     {
       id: "actions",
-      header: "Actions",
+      header: copy.actions,
       cell: ({ row }: any) => (
         <Button
           variant="primary"
@@ -265,7 +327,7 @@ export default function ShippingManagement() {
           }}
         >
           <Edit className="mr-2 h-4 w-4" />
-          Edit Price
+          {copy.editPrice}
         </Button>
       ),
     },
@@ -293,9 +355,9 @@ export default function ShippingManagement() {
   return (
     <AdminSidebarLayout breadcrumbTitle="Shipping Management">
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Shipping States</h1>
+        <h1 className="text-2xl font-bold">{copy.title}</h1>
         <p className="text-gray-700 dark:text-gray-400 mb-4">
-          View & Track All User shipping states.
+          {copy.subtitle}
         </p>
 
 
@@ -307,7 +369,7 @@ export default function ShippingManagement() {
             onClick={handleUpdateStates}
             disabled={isUpdating}
           >
-            {isUpdating ? "Saving..." : "Save Changes"}
+            {isUpdating ? copy.saving : copy.save}
           </Button>
         </div>
 
@@ -352,7 +414,7 @@ export default function ShippingManagement() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No states found.
+                    {copy.noStates}
                   </TableCell>
                 </TableRow>
               )}

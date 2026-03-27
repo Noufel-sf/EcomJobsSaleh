@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/context/ThemeContext";
+import ClientProviders from "@/lib/ClientProviders";
 import { Toaster } from "@/components/Toaster";
-import LayoutWrapper from "@/lib/Layout";
-import { ReduxProvider } from "./Redux/ReduxProvider";
 
 
 const outfit = Outfit({
@@ -15,10 +13,11 @@ const outfit = Outfit({
   preload: true,
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://yoursite.com'), // Replace with your actual domain
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'Saleh Store - Your Trusted Online Marketplace',
     template: '%s | Saleh Store',
@@ -36,7 +35,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://yoursite.com',
+    url: siteUrl,
     title: 'Saleh Store - Your Trusted Online Marketplace',
     description: 'Shop quality products at great prices with fast shipping and secure checkout.',
     siteName: 'Saleh Store',
@@ -45,7 +44,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Saleh Store - Your Trusted Online Marketplace',
     description: 'Shop quality products at great prices with fast shipping and secure checkout.',
-    creator: '@salehstore', // Replace with your actual Twitter handle
+    creator: '@salehstore',
   },
   robots: {
     index: true,
@@ -74,17 +73,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`antialiased ${outfit.variable}`}
-      >
-        <ThemeProvider>
-          <ReduxProvider>
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
-            <Toaster />
-          </ReduxProvider>
-        </ThemeProvider>
+      <body className={`antialiased ${outfit.variable}`}>
+        <ClientProviders>
+          {children}
+        </ClientProviders>
+        <Toaster />
       </body>
     </html>
   );

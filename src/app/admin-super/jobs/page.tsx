@@ -31,19 +31,94 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MoreHorizontal, ChevronDown, Eye } from "lucide-react";
-import EmployerSidebarLayout from "@/components/EmployerSidebarLayout";
 import toast from "react-hot-toast";
 import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
 import Link from "next/link";
-import { useAppSelector } from "@/Redux/hooks";
 import {
   useGetAllJobsQuery,
   useDeleteJobMutation,
 } from "@/Redux/Services/JobApi";
 import { Job } from "@/lib/DatabaseTypes";
-import CreateJobDialog from "@/components/CreateJobDialog";
-import UpdateJobSheet from "@/components/UpdateJobSheet";
 import SuperAdminSidebarLayout from "@/components/SuperAdminSidebarLayout";
+import { type Language, useI18n } from "@/context/I18nContext";
+
+const superAdminJobsCopy: Record<Language, Record<string, string>> = {
+  en: {
+    pageTitle: "Jobs",
+    pageDescription: "Manage all your website job listings.",
+    deleted: "Job deleted successfully",
+    deleteFailed: "Failed to delete job",
+    toggled: "Job status toggled successfully",
+    toggleFailed: "Failed to toggle job status",
+    selectAll: "Select all",
+    selectRow: "Select row",
+    jobTitle: "Job Title",
+    location: "Location",
+    type: "Type",
+    actions: "Actions",
+    viewApps: "View Apps",
+    openMenu: "Open menu",
+    deactivate: "Deactivate",
+    activate: "Activate",
+    delete: "Delete",
+    searchTitle: "Search by title...",
+    columns: "Columns",
+    noJobs: "No jobs found.",
+    selectedRows: "{selected} of {total} row(s) selected.",
+    previous: "Previous",
+    next: "Next",
+  },
+  fr: {
+    pageTitle: "Emplois",
+    pageDescription: "Gerez toutes les offres d'emploi du site.",
+    deleted: "Emploi supprime avec succes",
+    deleteFailed: "Echec de suppression de l'emploi",
+    toggled: "Statut de l'emploi mis a jour",
+    toggleFailed: "Echec de mise a jour du statut",
+    selectAll: "Tout selectionner",
+    selectRow: "Selectionner la ligne",
+    jobTitle: "Titre du poste",
+    location: "Lieu",
+    type: "Type",
+    actions: "Actions",
+    viewApps: "Voir candidatures",
+    openMenu: "Ouvrir le menu",
+    deactivate: "Desactiver",
+    activate: "Activer",
+    delete: "Supprimer",
+    searchTitle: "Rechercher par titre...",
+    columns: "Colonnes",
+    noJobs: "Aucun emploi trouve.",
+    selectedRows: "{selected} sur {total} ligne(s) selectionnee(s).",
+    previous: "Precedent",
+    next: "Suivant",
+  },
+  ar: {
+    pageTitle: "الوظائف",
+    pageDescription: "ادارة جميع اعلانات الوظائف في المنصة.",
+    deleted: "تم حذف الوظيفة بنجاح",
+    deleteFailed: "فشل حذف الوظيفة",
+    toggled: "تم تغيير حالة الوظيفة بنجاح",
+    toggleFailed: "فشل تغيير حالة الوظيفة",
+    selectAll: "تحديد الكل",
+    selectRow: "تحديد الصف",
+    jobTitle: "عنوان الوظيفة",
+    location: "الموقع",
+    type: "النوع",
+    actions: "الاجراءات",
+    viewApps: "عرض الطلبات",
+    openMenu: "فتح القائمة",
+    deactivate: "تعطيل",
+    activate: "تفعيل",
+    delete: "حذف",
+    searchTitle: "ابحث بالعنوان...",
+    columns: "الاعمدة",
+    noJobs: "لم يتم العثور على وظائف.",
+    selectedRows: "تم تحديد {selected} من {total} صف.",
+    previous: "السابق",
+    next: "التالي",
+  },
+};
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
@@ -66,6 +141,8 @@ const typeStyles: Record<string, string> = {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SuperAdminJobs() {
+  const { language, t } = useI18n();
+  const copy = superAdminJobsCopy[language];
   const { data: jobsData, isLoading } = useGetAllJobsQuery();
   const [deleteJob] = useDeleteJobMutation();
 
@@ -75,24 +152,27 @@ export default function SuperAdminJobs() {
     async (jobId: string) => {
       try {
         await deleteJob(jobId).unwrap();
-        toast.success("Job deleted successfully");
+        toast.success(copy.deleted);
       } catch (error: unknown) {
         const err = error as { data?: { message?: string } };
-        toast.error(err?.data?.message || "Failed to delete job");
+        toast.error(err?.data?.message || copy.deleteFailed);
       }
     },
-    [deleteJob],
+    [copy.deleteFailed, copy.deleted, deleteJob],
   );
   
-  const toggleActive = async (jobId: string) => {
-    try {
-      await deleteJob(jobId).unwrap();
-      toast.success("Job status toggled successfully");
-    } catch (error: unknown) {
-      const err = error as { data?: { message?: string } };
-      toast.error(err?.data?.message || "Failed to toggle job status");
-    }
-  };
+  const toggleActive = useCallback(
+    async (jobId: string) => {
+      try {
+        await deleteJob(jobId).unwrap();
+        toast.success(copy.toggled);
+      } catch (error: unknown) {
+        const err = error as { data?: { message?: string } };
+        toast.error(err?.data?.message || copy.toggleFailed);
+      }
+    },
+    [copy.toggleFailed, copy.toggled, deleteJob],
+  );
   const [sorting, setSorting] = useState<any[]>([]);
   const [columnFilters, setColumnFilters] = useState<any[]>([]);
   const [columnVisibility, setColumnVisibility] = useState({});
@@ -103,14 +183,14 @@ export default function SuperAdminJobs() {
       {
         id: "select",
         header: () => (
-          <Checkbox className="cursor-pointer" aria-label="Select all" />
+          <Checkbox className="cursor-pointer" aria-label={copy.selectAll} />
         ),
         cell: ({ row }: any) => (
           <Checkbox
             className="cursor-pointer"
             checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
+            onCheckedChange={(value: boolean | "indeterminate") => row.toggleSelected(!!value)}
+            aria-label={copy.selectRow}
           />
         ),
         enableSorting: false,
@@ -118,14 +198,14 @@ export default function SuperAdminJobs() {
       },
       {
         accessorKey: "title",
-        header: "Job Title",
+        header: copy.jobTitle,
         cell: ({ row }: any) => (
           <div className="font-medium">{row.getValue("title")}</div>
         ),
       },
       {
         accessorKey: "location",
-        header: "Location",
+        header: copy.location,
         cell: ({ row }: any) => (
           <div className="text-sm text-muted-foreground">
             {row.getValue("location")}
@@ -134,7 +214,7 @@ export default function SuperAdminJobs() {
       },
       {
         accessorKey: "type",
-        header: "Type",
+        header: copy.type,
         cell: ({ row }: any) => (
           <span
             className={`text-xs px-2 py-1 rounded-full font-medium ${typeStyles[row.getValue("type")] || ""}`}
@@ -146,7 +226,7 @@ export default function SuperAdminJobs() {
 
       {
         id: "actions",
-        header: "Actions",
+        header: copy.actions,
         enableHiding: false,
         cell: ({ row }: any) => {
           const job = row.original as Job;
@@ -160,7 +240,7 @@ export default function SuperAdminJobs() {
               >
                 <Link href={`/employer/applications?jobId=${job.id}`}>
                   <Eye className="h-4 w-4 mr-1" />
-                  View Apps
+                  {copy.viewApps}
                 </Link>
               </Button>
               <DropdownMenu>
@@ -170,12 +250,12 @@ export default function SuperAdminJobs() {
                     size="sm"
                     className="h-8 w-8 p-0 cursor-pointer"
                   >
-                    <span className="sr-only">Open menu</span>
+                    <span className="sr-only">{copy.openMenu}</span>
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuLabel>{copy.actions}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer"
@@ -184,14 +264,16 @@ export default function SuperAdminJobs() {
 
                     }}
                   >
-                    {job.isActive ? "Deactivate" : "Activate"}
+                    {(job as Job & { isActive?: boolean }).isActive
+                      ? copy.deactivate
+                      : copy.activate}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer text-red-600"
                     onClick={() => handleDelete(job.id)}
                   >
-                    Delete
+                    {copy.delete}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -200,7 +282,21 @@ export default function SuperAdminJobs() {
         },
       },
     ],
-    [handleDelete , toggleActive],
+    [
+      copy.actions,
+      copy.activate,
+      copy.deactivate,
+      copy.delete,
+      copy.jobTitle,
+      copy.location,
+      copy.openMenu,
+      copy.selectAll,
+      copy.selectRow,
+      copy.type,
+      copy.viewApps,
+      handleDelete,
+      toggleActive,
+    ],
   );
 
   const table = useReactTable({
@@ -223,10 +319,10 @@ export default function SuperAdminJobs() {
   });
 
   return (
-    <SuperAdminSidebarLayout breadcrumbTitle="Jobs">
-      <h1 className="text-2xl font-bold">Jobs</h1>
+    <SuperAdminSidebarLayout breadcrumbTitle={copy.pageTitle}>
+      <h1 className="text-2xl font-bold">{copy.pageTitle}</h1>
       <p className="text-gray-700 dark:text-gray-400 mb-4">
-        Manage all your website job listings.
+        {copy.pageDescription}
       </p>
 
       <div className="w-full">
@@ -235,7 +331,7 @@ export default function SuperAdminJobs() {
 
           {/* Search */}
           <Input
-            placeholder="Search by title..."
+            placeholder={copy.searchTitle}
             value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
             onChange={(e) =>
               table.getColumn("title")?.setFilterValue(e.target.value)
@@ -251,7 +347,7 @@ export default function SuperAdminJobs() {
                 size="lg"
                 className="ml-auto cursor-pointer"
               >
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
+                {copy.columns} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="">
@@ -263,7 +359,7 @@ export default function SuperAdminJobs() {
                     key={col.id}
                     className="capitalize cursor-pointer"
                     checked={col.getIsVisible()}
-                    onCheckedChange={(value) => col.toggleVisibility(!!value)}
+                    onCheckedChange={(value: boolean) => col.toggleVisibility(!!value)}
                   >
                     {col.id}
                   </DropdownMenuCheckboxItem>
@@ -316,7 +412,7 @@ export default function SuperAdminJobs() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No jobs found.
+                    {copy.noJobs}
                   </TableCell>
                 </TableRow>
               )}
@@ -327,8 +423,10 @@ export default function SuperAdminJobs() {
         {/* Pagination */}
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="text-muted-foreground flex-1 text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {t(copy.selectedRows, {
+              selected: table.getFilteredSelectedRowModel().rows.length,
+              total: table.getFilteredRowModel().rows.length,
+            })}
           </div>
           <div className="space-x-2">
             <Button
@@ -338,7 +436,7 @@ export default function SuperAdminJobs() {
               disabled={!table.getCanPreviousPage()}
               className="cursor-pointer"
             >
-              Previous
+              {copy.previous}
             </Button>
             <Button
               variant="primary"
@@ -347,7 +445,7 @@ export default function SuperAdminJobs() {
               disabled={!table.getCanNextPage()}
               className="cursor-pointer"
             >
-              Next
+              {copy.next}
             </Button>
           </div>
         </div>

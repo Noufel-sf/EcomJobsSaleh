@@ -18,7 +18,6 @@ export const ProductCard = memo(function ProductCard({
   // addToCart,
 }: {
   product: Product;
-  addToCart: (product: { id: string; name: string; image: string; price: number }) => void | Promise<void>;
 }) {
   // const [isPending, startTransition] = useTransition();
 

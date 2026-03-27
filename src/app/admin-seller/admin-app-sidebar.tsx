@@ -12,6 +12,7 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
+import { type Language, useI18n } from '@/context/I18nContext';
 
 // This is sample data.
 const data = {
@@ -47,25 +48,85 @@ const data = {
   ],
 };
 
+const adminSidebarCopy: Record<
+  Language,
+  {
+    groupTitle: string;
+    items: {
+      products: string;
+      orders: string;
+      shipping: string;
+      store: string;
+    };
+  }
+> = {
+  en: {
+    groupTitle: 'Admin Dashboard',
+    items: {
+      products: 'Products',
+      orders: 'Orders',
+      shipping: 'Shipping',
+      store: 'Store settings',
+    },
+  },
+  fr: {
+    groupTitle: 'Tableau de bord admin',
+    items: {
+      products: 'Produits',
+      orders: 'Commandes',
+      shipping: 'Livraison',
+      store: 'Parametres boutique',
+    },
+  },
+  ar: {
+    groupTitle: 'لوحة تحكم البائع',
+    items: {
+      products: 'المنتجات',
+      orders: 'الطلبات',
+      shipping: 'الشحن',
+      store: 'اعدادات المتجر',
+    },
+  },
+};
+
 export function AdminAppSidebar({ ...props }) {
+  const { language } = useI18n();
+  const copy = adminSidebarCopy[language];
+
+  const localizedData = {
+    ...data,
+    navMain: [
+      {
+        ...data.navMain[0],
+        title: copy.groupTitle,
+        items: [
+          { ...data.navMain[0].items[0], title: copy.items.products },
+          { ...data.navMain[0].items[1], title: copy.items.orders },
+          { ...data.navMain[0].items[2], title: copy.items.shipping },
+          { ...data.navMain[0].items[3], title: copy.items.store },
+        ],
+      },
+    ],
+  };
+
   return (
-    <Sidebar {...props}>
-      <SidebarHeader>
+    <Sidebar className="" {...props}>
+      <SidebarHeader className="">
         <VersionSwitcher
           versions={data.versions}
           defaultVersion={data.versions[0]}
         />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="">
         {/* We create a SidebarGroup for each parent. */}
-        {data.navMain.map((item) => (
-          <SidebarGroup key={item.title}>
-            <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
+        {localizedData.navMain.map((item) => (
+          <SidebarGroup className="" key={item.title}>
+            <SidebarGroupLabel className="">{item.title}</SidebarGroupLabel>
+            <SidebarGroupContent className="">
+              <SidebarMenu className="">
                 {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive} className="cursor-pointer">
+                  <SidebarMenuItem className="" key={item.title}>
+                    <SidebarMenuButton asChild tooltip={item.title} className="cursor-pointer">
                       <Link href={item.url}>{item.title}</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -75,7 +136,7 @@ export function AdminAppSidebar({ ...props }) {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarRail />
+      <SidebarRail className="" />
     </Sidebar>
   );
 }

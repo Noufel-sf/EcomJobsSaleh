@@ -46,8 +46,65 @@ import {
 
 import { useGetAllClassificationsQuery } from "@/Redux/Services/ClassificationApi";
 import { Product } from "@/lib/DatabaseTypes";
+import { type Language, useI18n } from "@/context/I18nContext";
+
+const productsCopy: Record<Language, Record<string, string>> = {
+  en: {
+    title: "Products",
+    subtitle: "View, create, and organize all products.",
+    search: "Search by name...",
+    columns: "Columns",
+    noResults: "No results.",
+    selectedRows: "{selected} of {total} row(s) selected.",
+    previous: "Previous",
+    next: "Next",
+    created: "Product created successfully",
+    updated: "Product updated successfully",
+    updateFailed: "Failed to update product",
+    deleted: "Product deleted successfully",
+    deleteFailed: "Failed to delete product",
+    statusUpdated: "Status updated successfully",
+    statusFailed: "Failed to update status",
+  },
+  fr: {
+    title: "Produits",
+    subtitle: "Consultez, creez et organisez tous les produits.",
+    search: "Rechercher par nom...",
+    columns: "Colonnes",
+    noResults: "Aucun resultat.",
+    selectedRows: "{selected} sur {total} ligne(s) selectionnee(s).",
+    previous: "Precedent",
+    next: "Suivant",
+    created: "Produit cree avec succes",
+    updated: "Produit mis a jour",
+    updateFailed: "Echec de mise a jour du produit",
+    deleted: "Produit supprime",
+    deleteFailed: "Echec de suppression du produit",
+    statusUpdated: "Statut mis a jour",
+    statusFailed: "Echec de mise a jour du statut",
+  },
+  ar: {
+    title: "المنتجات",
+    subtitle: "عرض وخلق وتنظيم جميع المنتجات.",
+    search: "ابحث بالاسم...",
+    columns: "الاعمدة",
+    noResults: "لا توجد نتائج.",
+    selectedRows: "تم تحديد {selected} من {total} صف.",
+    previous: "السابق",
+    next: "التالي",
+    created: "تم انشاء المنتج بنجاح",
+    updated: "تم تحديث المنتج بنجاح",
+    updateFailed: "فشل تحديث المنتج",
+    deleted: "تم حذف المنتج بنجاح",
+    deleteFailed: "فشل حذف المنتج",
+    statusUpdated: "تم تحديث الحالة بنجاح",
+    statusFailed: "فشل تحديث الحالة",
+  },
+};
 
 export default function AdminProducts() {
+  const { language, t } = useI18n();
+  const copy = productsCopy[language];
   const { data: categoriesData } = useGetAllClassificationsQuery(undefined);
   const categories = categoriesData?.content || [];
 
@@ -58,9 +115,7 @@ export default function AdminProducts() {
 
   const [data, setData] = useState<Product[]>([]);
   const { data: productsData, isLoading } = useGetAllProductsQuery(undefined);
-  console.log("data", productsData);
   const products = productsData?.content || [];
-  console.log("products", products);
 
   const [sorting, setSorting] = useState<any[]>([]);
   const [columnFilters, setColumnFilters] = useState<any[]>([]);
@@ -75,7 +130,7 @@ export default function AdminProducts() {
     try {
       const newProduct = await createProduct(formData).unwrap();
       setData((prev) => [...prev, newProduct]);
-      toast.success("Product created successfully");
+      toast.success(copy.created);
       setOpenCreate(false);
     } catch (error: any) {
       toast.error(error?.data?.message);
@@ -92,11 +147,11 @@ export default function AdminProducts() {
         ),
       );
 
-      toast.success("Product updated successfully");
+      toast.success(copy.updated);
       setOpenEdit(false);
       setSelectedProduct(null);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to update product");
+      toast.error(error?.data?.message || copy.updateFailed);
     }
   };
 
@@ -104,9 +159,9 @@ export default function AdminProducts() {
     try {
       await deleteProduct(productId).unwrap();
       setData((prev) => prev.filter((p) => p.id !== productId));
-      toast.success("Product deleted successfully");
+      toast.success(copy.deleted);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to delete product");
+      toast.error(error?.data?.message || copy.deleteFailed);
     }
   };
 
@@ -127,10 +182,10 @@ export default function AdminProducts() {
         available: newStatus === "active",
       }).unwrap();
 
-      toast.success("Status updated successfully");
+      toast.success(copy.statusUpdated);
     } catch (error: any) {
       setData(previousData);
-      toast.error(error?.data?.message || "Failed to update status");
+      toast.error(error?.data?.message || copy.statusFailed);
     }
   };
 
@@ -164,9 +219,9 @@ export default function AdminProducts() {
 
   return (
     <AdminSidebarLayout breadcrumbTitle="Products">
-      <h1 className="text-2xl font-bold">Products</h1>
+      <h1 className="text-2xl font-bold">{copy.title}</h1>
       <p className="text-gray-700 dark:text-gray-400 mb-4">
-        View & Create and Organize All Products.
+        {copy.subtitle}
       </p>
 
       <div className="w-full">
@@ -174,12 +229,12 @@ export default function AdminProducts() {
         <div className="flex items-center justify-between py-4">
           <Input
             type="text"
-            placeholder="Search by name..."
+            placeholder={copy.search}
             value={table.getColumn("name")?.getFilterValue() ?? ""}
             onChange={(event: any) =>
               table.getColumn("name")?.setFilterValue(event.target.value)
             }
-            className="max-w-sm"
+            className="max-w-sm hidden md:block"
           />
 
           <div className="flex items-center gap-3">
@@ -195,7 +250,7 @@ export default function AdminProducts() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
-                  Columns <ChevronDown className="ml-2 h-4 w-4" />
+                  {copy.columns} <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className={""} align="end">
@@ -270,7 +325,7 @@ export default function AdminProducts() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No results.
+                    {copy.noResults}
                   </TableCell>
                 </TableRow>
               )}
@@ -280,8 +335,10 @@ export default function AdminProducts() {
 
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="text-muted-foreground flex-1 text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {t(copy.selectedRows, {
+              selected: table.getFilteredSelectedRowModel().rows.length,
+              total: table.getFilteredRowModel().rows.length,
+            })}
           </div>
 
           <div className="space-x-2">
@@ -292,7 +349,7 @@ export default function AdminProducts() {
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              Previous
+              {copy.previous}
             </Button>
             <Button
               size="lg"
@@ -301,7 +358,7 @@ export default function AdminProducts() {
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              Next
+              {copy.next}
             </Button>
           </div>
         </div>

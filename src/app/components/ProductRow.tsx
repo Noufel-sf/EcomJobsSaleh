@@ -43,9 +43,9 @@ export const createProductColumns = ({
   },
   {
     accessorKey: "name",
-    header: "Name",
+    header: () => <span className="hidden md:inline">Name</span>,
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("name")}</div>
+      <div className="font-medium hidden md:block">{row.getValue("name")}</div>
     ),
     filterFn: (row, columnId, filterValue) => {
       return row
@@ -57,9 +57,9 @@ export const createProductColumns = ({
 
   {
     accessorKey: "price",
-    header: "Price",
+    header: () => <span className="hidden md:inline">Price</span>,
     cell: ({ row }) => (
-      <div className="text-sm text-green-600 font-semibold">
+      <div className="text-sm hidden md:block text-green-600 font-semibold">
         {row.getValue("price")}
       </div>
     ),

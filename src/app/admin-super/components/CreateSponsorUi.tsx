@@ -19,12 +19,69 @@ import { ButtonLoading } from "@/components/ui/ButtonLoading";
 import toast from "react-hot-toast";
 import { Sponsor } from "@/lib/DatabaseTypes";
 import Image from "next/image";
+import { type Language, useI18n } from "@/context/I18nContext";
+
+const createSponsorCopy: Record<Language, Record<string, string>> = {
+  en: {
+    created: "Sponsor created successfully",
+    createFailed: "Failed to create sponsor",
+    addNew: "Add New Sponsor",
+    createTitle: "Create Sponsor",
+    createDescription: "Fill in the sponsor details. Click save when you are done.",
+    imageUrl: "Image URL",
+    previewAlt: "Preview",
+    sponsorLink: "Sponsor Link",
+    description: "Description",
+    descriptionPlaceholder: "Short description of the sponsor",
+    ownerId: "Owner ID",
+    ownerPlaceholder: "User or organization ID",
+    activeLabel: "Active (visible to users)",
+    cancel: "Cancel",
+    save: "Save changes",
+  },
+  fr: {
+    created: "Sponsor cree avec succes",
+    createFailed: "Echec de creation du sponsor",
+    addNew: "Ajouter un sponsor",
+    createTitle: "Creer un sponsor",
+    createDescription: "Renseignez les details du sponsor puis enregistrez.",
+    imageUrl: "URL de l'image",
+    previewAlt: "Apercu",
+    sponsorLink: "Lien du sponsor",
+    description: "Description",
+    descriptionPlaceholder: "Courte description du sponsor",
+    ownerId: "ID proprietaire",
+    ownerPlaceholder: "ID utilisateur ou organisation",
+    activeLabel: "Actif (visible pour les utilisateurs)",
+    cancel: "Annuler",
+    save: "Enregistrer",
+  },
+  ar: {
+    created: "تم انشاء الراعي بنجاح",
+    createFailed: "فشل انشاء الراعي",
+    addNew: "اضافة راع جديد",
+    createTitle: "انشاء راع",
+    createDescription: "املأ تفاصيل الراعي ثم اضغط حفظ.",
+    imageUrl: "رابط الصورة",
+    previewAlt: "معاينة",
+    sponsorLink: "رابط الراعي",
+    description: "الوصف",
+    descriptionPlaceholder: "وصف قصير للراعي",
+    ownerId: "معرف المالك",
+    ownerPlaceholder: "معرف المستخدم او المؤسسة",
+    activeLabel: "نشط (مرئي للمستخدمين)",
+    cancel: "الغاء",
+    save: "حفظ التغييرات",
+  },
+};
 
 interface CreateSponsorUiProps {
   onCreated: (sponsor: Sponsor) => void;
 }
 
 export default function CreateSponsorUi({ onCreated }: CreateSponsorUiProps) {
+  const { language } = useI18n();
+  const copy = createSponsorCopy[language];
   const [open, setOpen] = useState(false);
   const [imgUrl, setImgUrl] = useState("");
   const [link, setLink] = useState("");
@@ -54,11 +111,11 @@ export default function CreateSponsorUi({ onCreated }: CreateSponsorUiProps) {
       }).unwrap();
 
       onCreated(newSponsor);
-      toast.success("Sponsor created successfully");
+      toast.success(copy.created);
       setOpen(false);
       resetForm();
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to create sponsor");
+      toast.error(error?.data?.message || copy.createFailed);
     }
   };
 
@@ -66,23 +123,23 @@ export default function CreateSponsorUi({ onCreated }: CreateSponsorUiProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="primary" size="lg">
-          Add New Sponsor
+          {copy.addNew}
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[480px]">
         <form onSubmit={handleCreate}>
           <DialogHeader>
-            <DialogTitle>Create Sponsor</DialogTitle>
+            <DialogTitle>{copy.createTitle}</DialogTitle>
             <DialogDescription className="mb-3">
-              Fill in the sponsor details. Click save when you are done.
+              {copy.createDescription}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4">
             {/* Image URL */}
             <div className="grid gap-3">
-              <Label htmlFor="img">Image URL</Label>
+              <Label htmlFor="img">{copy.imageUrl}</Label>
               <Input
                 id="img"
                 name="img"
@@ -95,7 +152,7 @@ export default function CreateSponsorUi({ onCreated }: CreateSponsorUiProps) {
                 <div className="flex items-center justify-center h-20 w-full rounded-md border bg-muted overflow-hidden">
                   <Image
                     src={imgUrl}
-                    alt="Preview"
+                    alt={copy.previewAlt}
                     className="h-full object-contain"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = "none";
@@ -107,7 +164,7 @@ export default function CreateSponsorUi({ onCreated }: CreateSponsorUiProps) {
 
             {/* Link */}
             <div className="grid gap-3">
-              <Label htmlFor="link">Sponsor Link</Label>
+              <Label htmlFor="link">{copy.sponsorLink}</Label>
               <Input
                 id="link"
                 name="link"
@@ -120,11 +177,11 @@ export default function CreateSponsorUi({ onCreated }: CreateSponsorUiProps) {
 
             {/* Description */}
             <div className="grid gap-3">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{copy.description}</Label>
               <Input
                 id="description"
                 name="description"
-                placeholder="Short description of the sponsor"
+                placeholder={copy.descriptionPlaceholder}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -132,11 +189,11 @@ export default function CreateSponsorUi({ onCreated }: CreateSponsorUiProps) {
 
             {/* Owner ID */}
             <div className="grid gap-3">
-              <Label htmlFor="ownerId">Owner ID</Label>
+              <Label htmlFor="ownerId">{copy.ownerId}</Label>
               <Input
                 id="ownerId"
                 name="ownerId"
-                placeholder="User or organization ID"
+                placeholder={copy.ownerPlaceholder}
                 value={ownerId}
                 onChange={(e) => setOwnerId(e.target.value)}
                 required
@@ -152,7 +209,7 @@ export default function CreateSponsorUi({ onCreated }: CreateSponsorUiProps) {
                 className="cursor-pointer"
               />
               <Label htmlFor="isActive" className="cursor-pointer font-normal">
-                Active (visible to users)
+                {copy.activeLabel}
               </Label>
             </div>
           </div>
@@ -160,14 +217,14 @@ export default function CreateSponsorUi({ onCreated }: CreateSponsorUiProps) {
           <DialogFooter className="mt-5">
             <DialogClose asChild>
               <Button variant="outline" size="lg" type="button" onClick={resetForm}>
-                Cancel
+                {copy.cancel}
               </Button>
             </DialogClose>
             {/* {isLoading ? (
               <ButtonLoading /> */}
             {/* ) : ( */}
               <Button type="submit" variant="primary" size="lg">
-                Save changes
+                {copy.save}
               </Button>
             {/* )} */}
           </DialogFooter>

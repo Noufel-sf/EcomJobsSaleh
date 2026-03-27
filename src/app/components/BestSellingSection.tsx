@@ -13,6 +13,7 @@ import Link from "next/link";
 import { SkeletonCard } from "./SkeletonCard";
 import { useGetAllProductsQuery } from "@/Redux/Services/ProductsApi";
 import ProductCard from "./ProductCard";
+import { Product } from "@/lib/DatabaseTypes";
 
 const BestSellingSection = memo(function BestSellingSection() {
   const swiperRef = useRef<SwiperType | null>(null);
@@ -99,19 +100,11 @@ const BestSellingSection = memo(function BestSellingSection() {
                     <SkeletonCard />
                   </SwiperSlide>
                 ))
-              : products.map(
-                  (product: {
-                    id: string;
-                    name: string;
-                    main_img?: string;
-                    image?: string;
-                    price: number;
-                  }) => (
-                    <SwiperSlide key={product.id}>
-                      <ProductCard product={product} />
-                    </SwiperSlide>
-                  ),
-                )}
+              : products.map((product: Product) => (
+                  <SwiperSlide key={product.id}>
+                    <ProductCard product={product} />
+                  </SwiperSlide>
+                ))}
           </Swiper>
 
           {!isLoading && products.length === 0 && (

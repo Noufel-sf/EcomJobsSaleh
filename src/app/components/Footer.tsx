@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Facebook,
@@ -6,9 +7,10 @@ import {
   Instagram,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useI18n } from '@/context/I18nContext';
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
+  const { messages } = useI18n();
 
   return (
     <footer className="border-t bg-primary p-3 md:p-12 text-shadow-black/50">
@@ -18,7 +20,7 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-2xl font-bold text-foreground">Shopping Jobs</h3>
             <p className="">
-              Your trusted marketplace for quality products at great prices.
+              {messages.footer.tagline}
             </p>
             <div className="flex gap-3 pt-2">
               <a
@@ -54,26 +56,26 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-foreground">Quick Links</h4>
+            <h4 className="text-lg font-semibold text-foreground">{messages.footer.quickLinks}</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/about" className=" transition-colors cursor-pointer">
-                  About Us
+                  {messages.topBar.about}
                 </Link>
               </li>
               <li>
                 <Link href="/products" className=" transition-colors cursor-pointer">
-                  Products
+                  {messages.footer.products}
                 </Link>
               </li>
               <li>
                 <Link href="/jobs" className=" transition-colors cursor-pointer">
-                  Jobs
+                  {messages.footer.jobs}
                 </Link>
               </li>
               <li>
                 <Link href="/help" className=" transition-colors cursor-pointer">
-                  Help Center
+                  {messages.topBar.helpCenter}
                 </Link>
               </li>
             </ul>
@@ -81,26 +83,26 @@ const Footer = () => {
 
           {/* Categories */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-foreground">Categories</h4>
+            <h4 className="text-lg font-semibold text-foreground">{messages.footer.categories}</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/products" className=" transition-colors cursor-pointer">
-                  Electronics
+                  {messages.footer.electronics}
                 </Link>
               </li>
               <li>
                 <Link href="/products" className=" transition-colors cursor-pointer">
-                  Fashion
+                  {messages.footer.fashion}
                 </Link>
               </li>
               <li>
                 <Link href="/products" className=" transition-colors cursor-pointer">
-                  Home & Garden
+                  {messages.footer.homeGarden}
                 </Link>
               </li>
               <li>
                 <Link href="/products" className=" transition-colors cursor-pointer">
-                  Sports
+                  {messages.footer.sports}
                 </Link>
               </li>
             </ul>
@@ -108,26 +110,26 @@ const Footer = () => {
 
           {/* Support */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-foreground">Support</h4>
+            <h4 className="text-lg font-semibold text-foreground">{messages.footer.support}</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/help" className=" transition-colors cursor-pointer">
-                  Contact Us
+                  {messages.footer.contactUs}
                 </Link>
               </li>
               <li>
                 <Link href="/help" className=" transition-colors cursor-pointer">
-                  FAQs
+                  {messages.footer.faqs}
                 </Link>
               </li>
               <li>
                 <Link href="/help" className=" transition-colors cursor-pointer">
-                  Shipping Info
+                  {messages.footer.shippingInfo}
                 </Link>
               </li>
               <li>
                 <Link href="/help" className=" transition-colors cursor-pointer">
-                  Returns
+                  {messages.footer.returns}
                 </Link>
               </li>
             </ul>
@@ -137,14 +139,14 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="">
-            © {currentYear} Saleh Store. All rights reserved.
+            © 2026 Saleh Store. {messages.footer.copyright}
           </p>
           <div className="flex gap-6 text-sm">
             <Link href="/privacy" className=" transition-colors cursor-pointer">
-              Privacy Policy
+              {messages.footer.privacyPolicy}
             </Link>
             <Link href="/terms" className=" transition-colors cursor-pointer">
-              Terms of Service
+              {messages.footer.termsOfService}
             </Link>
           </div>
         </div>

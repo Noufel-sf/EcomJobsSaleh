@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
   DropdownMenu,
@@ -11,15 +11,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Phone, Mail, MapPin, Globe, ChevronDown } from 'lucide-react';
+import { type Language, useI18n } from '@/context/I18nContext';
 
 const TopBar = () => {
-  const [language, setLanguage] = useState('en');
+  const { language, setLanguage, messages } = useI18n();
 
   const languages = [
     { value: 'en', label: 'English', flag: '🇺🇸' },
     { value: 'ar', label: 'العربية', flag: '🇩🇿' },
     { value: 'fr', label: 'Français', flag: '🇫🇷' },
-  ];
+  ] as const;
 
   const currentLanguage = languages.find((lang) => lang.value === language);
 
@@ -49,7 +50,7 @@ const TopBar = () => {
 
             <div className="hidden lg:flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5" />
-              <span className="text-sm font-medium">Free Shipping on Orders $50+</span>
+              <span className="text-sm font-medium">{messages.topBar.shipping}</span>
             </div>
           </div>
 
@@ -59,21 +60,21 @@ const TopBar = () => {
               href="/about"
               className="hover:opacity-80 text-sm transition font-medium"
             >
-              About Us
+              {messages.topBar.about}
             </Link>
 
             <Link
               href="/contact"
               className="hover:opacity-80 transition text-sm font-medium"
             >
-              Contact
+              {messages.topBar.contact}
             </Link>
 
             <Link
               href="/help"
               className="hidden sm:inline hover:opacity-80 transition text-sm font-medium"
             >
-              Help Center
+              {messages.topBar.helpCenter}
             </Link>
 
             {/* Language Switcher */}
@@ -95,10 +96,10 @@ const TopBar = () => {
               <DropdownMenuContent align="end" className="w-40">
                 <DropdownMenuRadioGroup
                   value={language}
-                  onValueChange={setLanguage}
+                  onValueChange={(value: string) => setLanguage(value as Language)}
                 >
                   {languages.map((lang) => (
-                    <DropdownMenuRadioItem key={lang.value} value={lang.value}>
+                    <DropdownMenuRadioItem className="" key={lang.value} value={lang.value}>
                       <span className="mr-2 text-sm">{lang.flag}</span>
                       {lang.label}
                     </DropdownMenuRadioItem>

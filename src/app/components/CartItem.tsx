@@ -5,6 +5,7 @@ import type { CartItem as CartItemType } from "@/lib/DatabaseTypes";
 import Image from "next/image";
 import { Minus, Plus ,Trash } from "lucide-react";
 import { memo } from "react";
+import { useI18n } from "@/context/I18nContext";
 
 interface CartItemProps {
   item: CartItemType;
@@ -13,6 +14,7 @@ interface CartItemProps {
 }
 
 const CartItem = memo(function CartItem({ item, handleQuantityUpdate, handleDeleteCartItem }: CartItemProps) {
+  const { messages } = useI18n();
   const totalPrice = (item?.price * item?.quantity).toFixed(2);
 
   return (
@@ -43,10 +45,10 @@ const CartItem = memo(function CartItem({ item, handleQuantityUpdate, handleDele
             onClick={() => handleDeleteCartItem(item.productId)}
             type="button"
             className="flex items-center gap-1 cursor-pointer text-red-500 text-xs hover:text-red-600 transition"
-            aria-label="Remove item"
+            aria-label={messages.cart.removeItem}
           >
             <Trash className="w-3 h-3" />
-            <span>remove</span>
+            <span>{messages.cart.remove}</span>
           </button>
         </div>
 
@@ -67,7 +69,7 @@ const CartItem = memo(function CartItem({ item, handleQuantityUpdate, handleDele
             onClick={() => handleQuantityUpdate(item.productId, item.quantity - 1, item.quantity)}
             disabled={item.quantity <= 1}
             type="button"
-            aria-label="Decrease quantity"
+            aria-label={messages.cart.decreaseQuantity}
           >
             <Minus className="w-3 h-3" />
           </Button>
@@ -80,7 +82,7 @@ const CartItem = memo(function CartItem({ item, handleQuantityUpdate, handleDele
             className="h-8 w-8 sm:h-7 sm:w-7 rounded-full border"
             onClick={() => handleQuantityUpdate(item.productId, item.quantity + 1, item.quantity)}
             type="button"
-            aria-label="Increase quantity"
+            aria-label={messages.cart.increaseQuantity}
           >
             <Plus className="w-3 h-3" />
           </Button>

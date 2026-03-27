@@ -32,8 +32,104 @@ import {
   useUpdateSellerInfoMutation,
   useUpdateSellerImageMutation,
 } from "@/Redux/Services/SellerApi";
+import { type Language, useI18n } from "@/context/I18nContext";
+
+const storeCopy: Record<Language, Record<string, string>> = {
+  en: {
+    invalidImage: "Please select a valid image file",
+    imageTooLarge: "Image size should be less than 5MB",
+    unauthenticated: "User not authenticated",
+    updateSuccess: "Store information updated successfully!",
+    updateFailed: "Failed to update store information",
+    selectImageFirst: "Please select an image first",
+    imageUpdated: "Store image updated successfully!",
+    uploadFailed: "Failed to upload image",
+    loadFailed: "Failed to load store information",
+    retry: "Retry",
+    title: "Store Settings",
+    subtitle: "Manage your store information and branding",
+    logoTitle: "Store Logo",
+    logoDesc: "Upload a logo for your store (Max 5MB)",
+    noImage: "No image",
+    chooseImage: "Choose Image",
+    uploading: "Uploading...",
+    uploadImage: "Upload Image",
+    infoTitle: "Store Information",
+    infoDesc: "Update your store and personal details",
+    storeName: "Store Name",
+    firstName: "First Name",
+    lastName: "Last Name",
+    phone: "Phone Number",
+    storeDescription: "Store Description",
+    reset: "Reset",
+    saving: "Saving...",
+    saveChanges: "Save Changes",
+  },
+  fr: {
+    invalidImage: "Veuillez selectionner une image valide",
+    imageTooLarge: "La taille de l'image doit etre inferieure a 5 Mo",
+    unauthenticated: "Utilisateur non authentifie",
+    updateSuccess: "Informations de la boutique mises a jour !",
+    updateFailed: "Echec de mise a jour des informations",
+    selectImageFirst: "Veuillez d'abord selectionner une image",
+    imageUpdated: "Image de la boutique mise a jour !",
+    uploadFailed: "Echec de l'envoi de l'image",
+    loadFailed: "Echec de chargement des infos boutique",
+    retry: "Reessayer",
+    title: "Parametres boutique",
+    subtitle: "Gerez les informations et l'image de votre boutique",
+    logoTitle: "Logo boutique",
+    logoDesc: "Telechargez un logo (Max 5 Mo)",
+    noImage: "Aucune image",
+    chooseImage: "Choisir image",
+    uploading: "Envoi...",
+    uploadImage: "Telecharger l'image",
+    infoTitle: "Informations boutique",
+    infoDesc: "Mettez a jour les details de votre boutique",
+    storeName: "Nom de la boutique",
+    firstName: "Prenom",
+    lastName: "Nom",
+    phone: "Telephone",
+    storeDescription: "Description de la boutique",
+    reset: "Reinitialiser",
+    saving: "Enregistrement...",
+    saveChanges: "Enregistrer",
+  },
+  ar: {
+    invalidImage: "يرجى اختيار ملف صورة صالح",
+    imageTooLarge: "يجب ان يكون حجم الصورة اقل من 5MB",
+    unauthenticated: "المستخدم غير مسجل",
+    updateSuccess: "تم تحديث معلومات المتجر بنجاح!",
+    updateFailed: "فشل تحديث معلومات المتجر",
+    selectImageFirst: "يرجى اختيار صورة اولا",
+    imageUpdated: "تم تحديث صورة المتجر بنجاح!",
+    uploadFailed: "فشل رفع الصورة",
+    loadFailed: "فشل تحميل معلومات المتجر",
+    retry: "اعادة المحاولة",
+    title: "اعدادات المتجر",
+    subtitle: "ادارة معلومات المتجر والهوية",
+    logoTitle: "شعار المتجر",
+    logoDesc: "ارفع شعار المتجر (الحد الاقصى 5MB)",
+    noImage: "لا توجد صورة",
+    chooseImage: "اختر صورة",
+    uploading: "جار الرفع...",
+    uploadImage: "رفع الصورة",
+    infoTitle: "معلومات المتجر",
+    infoDesc: "تحديث معلومات المتجر والبيانات الشخصية",
+    storeName: "اسم المتجر",
+    firstName: "الاسم",
+    lastName: "اللقب",
+    phone: "رقم الهاتف",
+    storeDescription: "وصف المتجر",
+    reset: "اعادة تعيين",
+    saving: "جار الحفظ...",
+    saveChanges: "حفظ التغييرات",
+  },
+};
 
 export default function StorePage() {
+  const { language } = useI18n();
+  const copy = storeCopy[language];
   const user = useAppSelector((state) => state.auth.user);
   const sellerId = user?.userId;
 
@@ -101,13 +197,13 @@ export default function StorePage() {
     if (file) {
       // Validate file type
       if (!file.type.startsWith("image/")) {
-        toast.error("Please select a valid image file");
+        toast.error(copy.invalidImage);
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
+        toast.error(copy.imageTooLarge);
         return;
       }
 
@@ -127,7 +223,7 @@ export default function StorePage() {
     e.preventDefault();
 
     if (!sellerId) {
-      toast.error("User not authenticated");
+      toast.error(copy.unauthenticated);
       return;
     }
 
@@ -143,11 +239,11 @@ export default function StorePage() {
         },
       }).unwrap();
 
-      toast.success(result.message || "Store information updated successfully!");
+      toast.success(result.message || copy.updateSuccess);
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
       const message =
-        err?.data?.message || "Failed to update store information";
+        err?.data?.message || copy.updateFailed;
       toast.error(message);
     }
   };
@@ -155,7 +251,7 @@ export default function StorePage() {
   // Handle image upload
   const handleImageUpload = async () => {
     if (!imageFile || !sellerId) {
-      toast.error("Please select an image first");
+      toast.error(copy.selectImageFirst);
       return;
     }
 
@@ -168,11 +264,11 @@ export default function StorePage() {
         formData,
       }).unwrap();
 
-      toast.success(result.message || "Store image updated successfully!");
+      toast.success(result.message || copy.imageUpdated);
       setImageFile(null);
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
-      const message = err?.data?.message || "Failed to upload image";
+      const message = err?.data?.message || copy.uploadFailed;
       toast.error(message);
     }
   };
@@ -191,8 +287,8 @@ export default function StorePage() {
     return (
       <AdminSidebarLayout breadcrumbTitle="Store Settings">
         <div className="flex flex-col items-center justify-center min-h-100 gap-4">
-          <p className="text-destructive text-lg">Failed to load store information</p>
-          <Button onClick={() => window.location.reload()}>Retry</Button>
+          <p className="text-destructive text-lg">{copy.loadFailed}</p>
+          <Button onClick={() => window.location.reload()}>{copy.retry}</Button>
         </div>
       </AdminSidebarLayout>
     );
@@ -202,9 +298,9 @@ export default function StorePage() {
     <AdminSidebarLayout breadcrumbTitle="Store Settings">
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Store Settings</h1>
+          <h1 className="text-3xl font-bold">{copy.title}</h1>
           <p className="text-muted-foreground mt-2">
-            Manage your store information and branding
+            {copy.subtitle}
           </p>
         </div>
 
@@ -214,10 +310,10 @@ export default function StorePage() {
             <CardHeader className="">
               <CardTitle className="flex items-center gap-2">
                 <ImageIcon className="w-5 h-5" />
-                Store Logo
+                {copy.logoTitle}
               </CardTitle>
               <CardDescription className="">
-                Upload a logo for your store (Max 5MB)
+                {copy.logoDesc}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -235,7 +331,7 @@ export default function StorePage() {
                   ) : (
                     <div className="text-center text-muted-foreground">
                       <Store className="w-12 h-12 mx-auto mb-2" />
-                      <p className="text-sm">No image</p>
+                      <p className="text-sm">{copy.noImage}</p>
                     </div>
                   )}
                 </div>
@@ -246,7 +342,7 @@ export default function StorePage() {
                 <Label htmlFor="storeImage" className="cursor-pointer">
                   <div className="flex items-center justify-center gap-2 p-3 border rounded-lg hover:bg-accent transition-colors">
                     <Upload className="w-4 h-4" />
-                    <span className="text-sm font-medium">Choose Image</span>
+                    <span className="text-sm font-medium">{copy.chooseImage}</span>
                   </div>
                 </Label>
                 <Input
@@ -268,7 +364,7 @@ export default function StorePage() {
               {isUploadingImage ? (
                 <Button disabled className="w-full">
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Uploading...
+                  {copy.uploading}
                 </Button>
               ) : (
                 <Button
@@ -277,7 +373,7 @@ export default function StorePage() {
                   className="w-full"
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  Upload Image
+                  {copy.uploadImage}
                 </Button>
               )}
             </CardFooter>
@@ -288,10 +384,10 @@ export default function StorePage() {
             <CardHeader className="">
               <CardTitle className="flex items-center gap-2">
                 <Store className="w-5 h-5" />
-                Store Information
+                {copy.infoTitle}
               </CardTitle>
               <CardDescription className="">
-                Update your store and personal details
+                {copy.infoDesc}
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
@@ -300,7 +396,7 @@ export default function StorePage() {
                 <div className="grid gap-3">
                   <Label htmlFor="storeName" className="text-sm font-medium">
                     <Store className="w-4 h-4 inline mr-2" />
-                    Store Name
+                    {copy.storeName}
                   </Label>
                   <Input
                     id="storeName"
@@ -323,7 +419,7 @@ export default function StorePage() {
                   <div className="grid gap-3">
                     <Label htmlFor="firstName" className="text-sm font-medium">
                       <User className="w-4 h-4 inline mr-2" />
-                      First Name
+                      {copy.firstName}
                     </Label>
                     <Input
                       id="firstName"
@@ -342,7 +438,7 @@ export default function StorePage() {
                   <div className="grid gap-3">
                     <Label htmlFor="lastName" className="text-sm font-medium">
                       <User className="w-4 h-4 inline mr-2" />
-                      Last Name
+                      {copy.lastName}
                     </Label>
                     <Input
                       id="lastName"
@@ -362,7 +458,7 @@ export default function StorePage() {
                 <div className="grid gap-3">
                   <Label htmlFor="phone" className="text-sm font-medium">
                     <Phone className="w-4 h-4 inline mr-2" />
-                    Phone Number
+                    {copy.phone}
                   </Label>
                   <Input
                     id="phone"
@@ -381,7 +477,7 @@ export default function StorePage() {
                 <div className="grid gap-3">
                   <Label htmlFor="description" className="text-sm font-medium">
                     <FileText className="w-4 h-4 inline mr-2" />
-                    Store Description
+                    {copy.storeDescription}
                   </Label>
                   <Textarea
                     id="description"
@@ -452,17 +548,17 @@ export default function StorePage() {
                   }}
                   disabled={isUpdating}
                 >
-                  Reset
+                  {copy.reset}
                 </Button>
                 {isUpdating ? (
                   <Button disabled>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving...
+                    {copy.saving}
                   </Button>
                 ) : (
                   <Button type="submit">
                     <Save className="w-4 h-4 mr-2" />
-                    Save Changes
+                    {copy.saveChanges}
                   </Button>
                 )}
               </CardFooter>

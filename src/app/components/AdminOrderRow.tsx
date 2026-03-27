@@ -65,17 +65,17 @@ export function getColumns({
     },
     {
       id: "state",
-      header: "state",
+      header: () => <span className="hidden md:inline">state</span>,
       accessorFn: (row: Order) => row.state,
       cell: ({ row }: any) => (
-        <div className="font-medium">{row.getValue("state")}</div>
+        <div className="font-medium hidden md:block">{row.getValue("state")}</div>
       ),
     },
     {
       accessorKey: "totalCost",
-      header: "Total",
+      header: () => <span className="hidden md:inline">Total</span>,
       cell: ({ row }: any) => (
-        <div className="font-medium text-green-500">
+        <div className="font-medium hidden md:block text-green-500">
           {row.getValue("totalCost").toFixed(2)}
         </div>
       ),

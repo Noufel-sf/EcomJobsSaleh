@@ -1,3 +1,5 @@
+"use client";
+
 import { VersionSwitcher } from "@/components/version-switcher";
 import {
   Sidebar,
@@ -12,48 +14,85 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
+import { type Language, useI18n } from "@/context/I18nContext";
 
-const data = {
-  versions: ["1.0.0"],
-  navMain: [
-    {
-      title: "Super admin Dashboard",
-      url: "#",
-      items: [
-        {
-          title: "Overview",
-          url: "/admin-super",
-        },
-        {
-          title: "Jobs",
-          url: "/admin-super/jobs",
-        },
-        {
-          title: "Products",
-          url: "/admin-super/products",
-        },
-        {
-          title: "products categories",
-          url: "/admin-super/productscategories",
-        },
-        {
-          title: "Job categories",
-          url: "/admin-super/jobscategories",
-        },
-        {
-          title: "Users",
-          url: "/admin-super/users",
-        },
-        {
-          title: "Sponsors",
-          url: "/admin-super/sponsors",
-        },
-      ],
-    },
-  ],
+const superAdminSidebarCopy: Record<Language, Record<string, string>> = {
+  en: {
+    title: "Super Admin Dashboard",
+    overview: "Overview",
+    jobs: "Jobs",
+    products: "Products",
+    productsCategories: "Products Categories",
+    jobsCategories: "Job Categories",
+    users: "Users",
+    sponsors: "Sponsors",
+  },
+  fr: {
+    title: "Tableau super admin",
+    overview: "Vue d'ensemble",
+    jobs: "Emplois",
+    products: "Produits",
+    productsCategories: "Categories produits",
+    jobsCategories: "Categories emplois",
+    users: "Utilisateurs",
+    sponsors: "Sponsors",
+  },
+  ar: {
+    title: "لوحة السوبر ادمن",
+    overview: "نظرة عامة",
+    jobs: "الوظائف",
+    products: "المنتجات",
+    productsCategories: "فئات المنتجات",
+    jobsCategories: "فئات الوظائف",
+    users: "المستخدمون",
+    sponsors: "الرعاة",
+  },
 };
 
 export function SuperAdminAppSidebar({ ...props }) {
+  const { language } = useI18n();
+  const copy = superAdminSidebarCopy[language];
+
+  const data = {
+    versions: ["1.0.0"],
+    navMain: [
+      {
+        title: copy.title,
+        url: "#",
+        items: [
+          {
+            title: copy.overview,
+            url: "/admin-super",
+          },
+          {
+            title: copy.jobs,
+            url: "/admin-super/jobs",
+          },
+          {
+            title: copy.products,
+            url: "/admin-super/products",
+          },
+          {
+            title: copy.productsCategories,
+            url: "/admin-super/productscategories",
+          },
+          {
+            title: copy.jobsCategories,
+            url: "/admin-super/jobscategories",
+          },
+          {
+            title: copy.users,
+            url: "/admin-super/users",
+          },
+          {
+            title: copy.sponsors,
+            url: "/admin-super/sponsors",
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <Sidebar className="" {...props}>
       <SidebarHeader className="">

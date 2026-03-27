@@ -64,6 +64,7 @@ import {
   useGetAllJobsQuery,
 } from "@/Redux/Services/JobApi";
 import { JobApplication } from "@/lib/DatabaseTypes";
+import { type Language, useI18n } from "@/context/I18nContext";
 
 type ApplicationRow = JobApplication & {
   jobId: string;
@@ -80,9 +81,83 @@ const statusStyles: Record<string, string> = {
   rejected: "bg-red-500/10 text-red-600 dark:text-red-400",
 };
 
+const applicationsCopy: Record<Language, Record<string, string>> = {
+  en: {
+    title: "Applications",
+    subtitle: "Review and manage all incoming applications.",
+    allJobs: "All Jobs",
+    updated: "Application marked as {status}",
+    updateFailed: "Failed to update status",
+    deleteConfirm: "Are you sure you want to delete this application?",
+    deleted: "Application deleted successfully",
+    deleteFailed: "Failed to delete application",
+    noData: "No data to export",
+    exported: "Applications exported!",
+    applicant: "Applicant",
+    appliedFor: "Applied For",
+    date: "Date",
+    contact: "Contact",
+    status: "Status",
+    changeStatus: "Change Status",
+    view: "View",
+    actions: "Actions",
+    accept: "Accept",
+    reject: "Reject",
+    delete: "Delete",
+  },
+  fr: {
+    title: "Candidatures",
+    subtitle: "Examinez et gerez toutes les candidatures recues.",
+    allJobs: "Toutes les offres",
+    updated: "Candidature marquee comme {status}",
+    updateFailed: "Echec de mise a jour du statut",
+    deleteConfirm: "Voulez-vous vraiment supprimer cette candidature ?",
+    deleted: "Candidature supprimee",
+    deleteFailed: "Echec de suppression",
+    noData: "Aucune donnee a exporter",
+    exported: "Candidatures exportees !",
+    applicant: "Candidat",
+    appliedFor: "Poste",
+    date: "Date",
+    contact: "Contact",
+    status: "Statut",
+    changeStatus: "Changer le statut",
+    view: "Voir",
+    actions: "Actions",
+    accept: "Accepter",
+    reject: "Refuser",
+    delete: "Supprimer",
+  },
+  ar: {
+    title: "طلبات التوظيف",
+    subtitle: "مراجعة وادارة جميع الطلبات الواردة.",
+    allJobs: "كل الوظائف",
+    updated: "تم تغيير الحالة الى {status}",
+    updateFailed: "فشل تحديث الحالة",
+    deleteConfirm: "هل تريد حذف طلب التوظيف هذا؟",
+    deleted: "تم حذف الطلب بنجاح",
+    deleteFailed: "فشل حذف الطلب",
+    noData: "لا توجد بيانات للتصدير",
+    exported: "تم تصدير الطلبات!",
+    applicant: "المتقدم",
+    appliedFor: "الوظيفة",
+    date: "التاريخ",
+    contact: "التواصل",
+    status: "الحالة",
+    changeStatus: "تغيير الحالة",
+    view: "عرض",
+    actions: "الاجراءات",
+    accept: "قبول",
+    reject: "رفض",
+    delete: "حذف",
+  },
+};
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EmployerApplications() {
+  const { language, t } = useI18n();
+  const copy = applicationsCopy[language];
   const searchParams = useSearchParams();
   const preFilterJobId = searchParams.get("jobId") || "all";
   const companyid = "019d0373-9de1-78b4-b177-2274fe9377ff"; // TODO: get from auth context
@@ -122,10 +197,10 @@ export default function EmployerApplications() {
   // Build jobs filter list
   const jobsFilterList = useMemo(
     () => [
-      { id: "all", title: "All Jobs" },
+      { id: "all", title: copy.allJobs },
       ...jobs.map((job) => ({ id: job.id, title: job.title })),
     ],
-    [jobs],
+    [copy.allJobs, jobs],
   );
 
   const filteredData = useMemo(
@@ -143,33 +218,33 @@ export default function EmployerApplications() {
           id: appId,
           status: newStatus,
         }).unwrap();
-        toast.success(`Application marked as ${newStatus}`);
+        toast.success(t(copy.updated, { status: newStatus }));
       } catch (error: unknown) {
         const err = error as { data?: { message?: string } };
-        toast.error(err?.data?.message || "Failed to update status");
+        toast.error(err?.data?.message || copy.updateFailed);
       }
     },
-    [updateApplicationStatus],
+    [copy.updateFailed, copy.updated, t, updateApplicationStatus],
   );
 
   const handleDelete = useCallback(
     async (appId: string) => {
-      if (!confirm("Are you sure you want to delete this application?")) return;
+      if (!confirm(copy.deleteConfirm)) return;
 
       try {
         await deleteApplication(appId).unwrap();
-        toast.success("Application deleted successfully");
+        toast.success(copy.deleted);
       } catch (error: unknown) {
         const err = error as { data?: { message?: string } };
-        toast.error(err?.data?.message || "Failed to delete application");
+        toast.error(err?.data?.message || copy.deleteFailed);
       }
     },
-    [deleteApplication],
+    [copy.deleteConfirm, copy.deleteFailed, copy.deleted, deleteApplication],
   );
 
   const exportToCSV = useCallback(() => {
     if (!filteredData.length) {
-      toast.error("No data to export");
+      toast.error(copy.noData);
       return;
     }
 
@@ -209,8 +284,8 @@ export default function EmployerApplications() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success("Applications exported!");
-  }, [filteredData]);
+    toast.success(copy.exported);
+  }, [copy.exported, copy.noData, filteredData]);
 
   const [sorting, setSorting] = useState<any[]>([]);
   const [columnFilters, setColumnFilters] = useState<any[]>([]);
@@ -236,7 +311,7 @@ export default function EmployerApplications() {
       },
       {
         accessorKey: "applicantName",
-        header: "Applicant",
+        header: copy.applicant,
         cell: ({ row }: any) => (
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
@@ -258,7 +333,7 @@ export default function EmployerApplications() {
       },
       {
         accessorKey: "jobTitle",
-        header: "Applied For",
+        header: copy.appliedFor,
         cell: ({ row }: any) => (
           <div className="flex items-center gap-1 text-sm">
             <Briefcase className="h-3 w-3 text-muted-foreground" />
@@ -268,7 +343,7 @@ export default function EmployerApplications() {
       },
       {
         accessorKey: "appliedDate",
-        header: "Date",
+        header: copy.date,
         cell: ({ row }: any) => (
           <div className="text-sm text-muted-foreground">
             {row.getValue("appliedDate")}
@@ -277,7 +352,7 @@ export default function EmployerApplications() {
       },
       {
         accessorKey: "applicantPhone",
-        header: "Contact",
+        header: copy.contact,
         cell: ({ row }: any) => (
           <div className="flex items-center gap-1 text-sm">
             <Phone className="h-3 w-3 text-muted-foreground" />
@@ -287,7 +362,7 @@ export default function EmployerApplications() {
       },
       {
         accessorKey: "status",
-        header: "Status",
+        header: copy.status,
         cell: ({ row }: any) => {
           const app = row.original as ApplicationRow;
           return (
@@ -306,7 +381,7 @@ export default function EmployerApplications() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="">
-                <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                <DropdownMenuLabel>{copy.changeStatus}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {(
                   [
@@ -347,7 +422,7 @@ export default function EmployerApplications() {
                 }}
               >
                 <Eye className="h-4 w-4 mr-1" />
-                View
+                {copy.view}
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -360,26 +435,26 @@ export default function EmployerApplications() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuLabel>{copy.actions}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer text-green-600"
                     onClick={() => handleStatusChange(app.id, "accepted")}
                   >
-                    Accept
+                    {copy.accept}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="cursor-pointer text-red-600"
                     onClick={() => handleStatusChange(app.id, "rejected")}
                   >
-                    Reject
+                    {copy.reject}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer text-red-600"
                     onClick={() => handleDelete(app.id)}
                   >
-                    Delete
+                    {copy.delete}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -388,7 +463,7 @@ export default function EmployerApplications() {
         },
       },
     ],
-    [handleStatusChange, handleDelete],
+    [copy.accept, copy.actions, copy.applicant, copy.appliedFor, copy.changeStatus, copy.contact, copy.date, copy.delete, copy.reject, copy.status, copy.view, handleDelete, handleStatusChange],
   );
 
   const table = useReactTable({
@@ -412,9 +487,9 @@ export default function EmployerApplications() {
 
   return (
     <EmployerSidebarLayout breadcrumbTitle="Applications">
-      <h1 className="text-2xl font-bold">Applications</h1>
+      <h1 className="text-2xl font-bold">{copy.title}</h1>
       <p className="text-gray-700 dark:text-gray-400 mb-4">
-        Review and manage all incoming applications.
+        {copy.subtitle}
       </p>
 
       <div className="w-full">

@@ -124,8 +124,110 @@ export const MOCK_SPONSORS: SponsorRow[] = [
 import CreateSponsorUi from "../components/CreateSponsorUi";
 import UpdateSponsorUi from "../components/UpdateSponsorUI";
 import Image from "next/image";
+import { type Language, useI18n } from "@/context/I18nContext";
+
+const superAdminSponsorsCopy: Record<Language, Record<string, string>> = {
+  en: {
+    breadcrumb: "Sponsors",
+    title: "Sponsors",
+    description: "View, manage and organize all platform sponsors.",
+    deleted: "Sponsor deleted successfully",
+    deleteFailed: "Failed to delete sponsor",
+    selectAll: "Select all",
+    selectRow: "Select row",
+    logo: "Logo",
+    sponsorLogoAlt: "Sponsor logo",
+    notAvailable: "N/A",
+    link: "Link",
+    descriptionCol: "Description",
+    ownerId: "Owner ID",
+    status: "Status",
+    active: "Active",
+    inactive: "Inactive",
+    openMenu: "Open menu",
+    actions: "Actions",
+    edit: "Edit",
+    delete: "Delete",
+    statusFilter: "Status",
+    all: "All",
+    columns: "Columns",
+    deleteTitle: "Delete Sponsor",
+    deletePrompt: "Are you sure you want to delete this sponsor? This action cannot be undone.",
+    cancel: "Cancel",
+    noResults: "No results.",
+    selectedRows: "{selected} of {total} row(s) selected.",
+    previous: "Previous",
+    next: "Next",
+  },
+  fr: {
+    breadcrumb: "Sponsors",
+    title: "Sponsors",
+    description: "Afficher, gerer et organiser tous les sponsors de la plateforme.",
+    deleted: "Sponsor supprime avec succes",
+    deleteFailed: "Echec de suppression du sponsor",
+    selectAll: "Tout selectionner",
+    selectRow: "Selectionner la ligne",
+    logo: "Logo",
+    sponsorLogoAlt: "Logo sponsor",
+    notAvailable: "N/A",
+    link: "Lien",
+    descriptionCol: "Description",
+    ownerId: "ID proprietaire",
+    status: "Statut",
+    active: "Actif",
+    inactive: "Inactif",
+    openMenu: "Ouvrir le menu",
+    actions: "Actions",
+    edit: "Modifier",
+    delete: "Supprimer",
+    statusFilter: "Statut",
+    all: "Tous",
+    columns: "Colonnes",
+    deleteTitle: "Supprimer le sponsor",
+    deletePrompt: "Voulez-vous vraiment supprimer ce sponsor ? Cette action est irreversible.",
+    cancel: "Annuler",
+    noResults: "Aucun resultat.",
+    selectedRows: "{selected} sur {total} ligne(s) selectionnee(s).",
+    previous: "Precedent",
+    next: "Suivant",
+  },
+  ar: {
+    breadcrumb: "الرعاة",
+    title: "الرعاة",
+    description: "عرض وادارة وتنظيم جميع رعاة المنصة.",
+    deleted: "تم حذف الراعي بنجاح",
+    deleteFailed: "فشل حذف الراعي",
+    selectAll: "تحديد الكل",
+    selectRow: "تحديد الصف",
+    logo: "الشعار",
+    sponsorLogoAlt: "شعار الراعي",
+    notAvailable: "غير متاح",
+    link: "الرابط",
+    descriptionCol: "الوصف",
+    ownerId: "معرف المالك",
+    status: "الحالة",
+    active: "نشط",
+    inactive: "غير نشط",
+    openMenu: "فتح القائمة",
+    actions: "الاجراءات",
+    edit: "تعديل",
+    delete: "حذف",
+    statusFilter: "الحالة",
+    all: "الكل",
+    columns: "الاعمدة",
+    deleteTitle: "حذف الراعي",
+    deletePrompt: "هل انت متاكد من حذف هذا الراعي؟ لا يمكن التراجع عن هذا الاجراء.",
+    cancel: "الغاء",
+    noResults: "لا توجد نتائج.",
+    selectedRows: "تم تحديد {selected} من {total} صف.",
+    previous: "السابق",
+    next: "التالي",
+  },
+};
 
 export default function SuperAdminSponsors() {
+  const { language, t } = useI18n();
+  const copy = superAdminSponsorsCopy[language];
 //   const { data: sponsorsData, isLoading } = useGetAllSponsorsQuery();
 
 //   useEffect(() => {
@@ -182,9 +284,9 @@ export default function SuperAdminSponsors() {
     if (!sponsorToDelete) return;
     try {
       setData((prev) => prev.filter((s) => s.id !== sponsorToDelete.id));
-      toast.success("Sponsor deleted successfully");
+      toast.success(copy.deleted);
     } catch {
-      toast.error("Failed to delete sponsor");
+      toast.error(copy.deleteFailed);
     } finally {
       setDeleteDialogOpen(false);
       setSponsorToDelete(null);
@@ -197,14 +299,14 @@ export default function SuperAdminSponsors() {
     {
       id: "select",
       header: () => (
-        <Checkbox className="cursor-pointer" aria-label="Select all" />
+        <Checkbox className="cursor-pointer" aria-label={copy.selectAll} />
       ),
       cell: ({ row }) => (
         <Checkbox
           className="cursor-pointer"
           checked={row.getIsSelected()}
           onCheckedChange={(value: boolean | "indeterminate") => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label={copy.selectRow}
         />
       ),
       enableSorting: false,
@@ -214,7 +316,7 @@ export default function SuperAdminSponsors() {
     // Sponsor image + link preview
     {
       accessorKey: "img",
-      header: "Logo",
+      header: copy.logo,
       cell: ({ row }) => {
         const imgSrc: string = row.getValue("img");
         return (
@@ -222,7 +324,7 @@ export default function SuperAdminSponsors() {
             {imgSrc ? (
               <Image
                 src={imgSrc}
-                alt="Sponsor logo"
+                alt={copy.sponsorLogoAlt}
                 width={64}
                 height={40}
                 className="h-full w-full object-contain"
@@ -232,7 +334,7 @@ export default function SuperAdminSponsors() {
                 }}
               />
             ) : (
-              <span className="text-xs text-muted-foreground">N/A</span>
+              <span className="text-xs text-muted-foreground">{copy.notAvailable}</span>
             )}
           </div>
         );
@@ -242,7 +344,7 @@ export default function SuperAdminSponsors() {
     // Sponsor link
     {
       accessorKey: "link",
-      header: "Link",
+      header: copy.link,
       cell: ({ row }) => {
         const href: string = row.getValue("link");
         return href ? (
@@ -256,7 +358,7 @@ export default function SuperAdminSponsors() {
             {href.replace(/^https?:\/\//, "")}
           </a>
         ) : (
-          <span className="text-sm text-muted-foreground">—</span>
+          <span className="text-sm text-muted-foreground">{copy.notAvailable}</span>
         );
       },
     },
@@ -264,10 +366,10 @@ export default function SuperAdminSponsors() {
     // Description
     {
       accessorKey: "description",
-      header: "Description",
+      header: copy.descriptionCol,
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground max-w-50 truncate">
-          {row.getValue("description") || "—"}
+          {row.getValue("description") || copy.notAvailable}
         </div>
       ),
     },
@@ -275,10 +377,10 @@ export default function SuperAdminSponsors() {
     // Owner ID
     {
       accessorKey: "ownerId",
-      header: "Owner ID",
+      header: copy.ownerId,
       cell: ({ row }) => (
         <div className="text-sm font-mono text-muted-foreground">
-          {row.getValue("ownerId") || "—"}
+          {row.getValue("ownerId") || copy.notAvailable}
         </div>
       ),
     },
@@ -286,7 +388,7 @@ export default function SuperAdminSponsors() {
     // isActive badge
     {
       accessorKey: "isActive",
-      header: "Status",
+      header: copy.status,
       cell: ({ row }) => {
         const active: boolean = row.getValue("isActive");
         return (
@@ -298,7 +400,7 @@ export default function SuperAdminSponsors() {
                 : "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300"
             }
           >
-            {active ? "Active" : "Inactive"}
+            {active ? copy.active : copy.inactive}
           </Badge>
         );
       },
@@ -318,12 +420,12 @@ export default function SuperAdminSponsors() {
                 size="lg"
                 className="h-8 w-8 p-0 cursor-pointer"
               >
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{copy.openMenu}</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="" align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{copy.actions}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer"
@@ -333,7 +435,7 @@ export default function SuperAdminSponsors() {
                   setEditSheetOpen(true);
                 }}
               >
-                Edit
+                {copy.edit}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer text-red-600 focus:text-red-600"
@@ -341,7 +443,7 @@ export default function SuperAdminSponsors() {
                 onClick={() => openDeleteDialog(sponsor)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Delete
+                {copy.delete}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -374,10 +476,10 @@ export default function SuperAdminSponsors() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <SuperAdminSidebarLayout breadcrumbTitle="Sponsors">
-      <h1 className="text-2xl font-bold">Sponsors</h1>
+    <SuperAdminSidebarLayout breadcrumbTitle={copy.breadcrumb}>
+      <h1 className="text-2xl font-bold">{copy.title}</h1>
       <p className="text-gray-700 dark:text-gray-400 mb-4">
-        View, manage and organize all platform sponsors.
+        {copy.description}
       </p>
 
       <div className="w-full">
@@ -390,7 +492,7 @@ export default function SuperAdminSponsors() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="lg" className="cursor-pointer">
-                Status <ChevronDown className="ml-2 h-4 w-4" />
+                {copy.statusFilter} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="" align="start">
@@ -400,7 +502,7 @@ export default function SuperAdminSponsors() {
                   table.getColumn("isActive")?.setFilterValue(undefined)
                 }
               >
-                All
+                {copy.all}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
@@ -408,7 +510,7 @@ export default function SuperAdminSponsors() {
                   table.getColumn("isActive")?.setFilterValue(true)
                 }
               >
-                Active
+                {copy.active}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
@@ -416,7 +518,7 @@ export default function SuperAdminSponsors() {
                   table.getColumn("isActive")?.setFilterValue(false)
                 }
               >
-                Inactive
+                {copy.inactive}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -429,7 +531,7 @@ export default function SuperAdminSponsors() {
                 size="lg"
                 className="ml-auto cursor-pointer"
               >
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
+                {copy.columns} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className={""} align="end">
@@ -464,20 +566,19 @@ export default function SuperAdminSponsors() {
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogContent className="sm:max-w-106.25">
             <DialogHeader>
-              <DialogTitle>Delete Sponsor</DialogTitle>
+              <DialogTitle>{copy.deleteTitle}</DialogTitle>
               <DialogDescription className="mb-3">
-                Are you sure you want to delete this sponsor? This action cannot
-                be undone.
+                {copy.deletePrompt}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mt-5">
               <DialogClose asChild>
                 <Button variant="outline" size="lg">
-                  Cancel
+                  {copy.cancel}
                 </Button>
               </DialogClose>
               <Button variant="destructive" size="lg" onClick={handleDelete}>
-                Delete
+                {copy.delete}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -528,7 +629,7 @@ export default function SuperAdminSponsors() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No results.
+                    {copy.noResults}
                   </TableCell>
                 </TableRow>
               )}
@@ -539,8 +640,10 @@ export default function SuperAdminSponsors() {
         {/* Pagination */}
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="text-muted-foreground flex-1 text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {t(copy.selectedRows, {
+              selected: table.getFilteredSelectedRowModel().rows.length,
+              total: table.getFilteredRowModel().rows.length,
+            })}
           </div>
           <div className="space-x-2">
             <Button
@@ -550,7 +653,7 @@ export default function SuperAdminSponsors() {
               disabled={!table.getCanPreviousPage()}
               className="cursor-pointer"
             >
-              Previous
+              {copy.previous}
             </Button>
             <Button
               variant="primary"
@@ -559,7 +662,7 @@ export default function SuperAdminSponsors() {
               disabled={!table.getCanNextPage()}
               className="cursor-pointer"
             >
-              Next
+              {copy.next}
             </Button>
           </div>
         </div>

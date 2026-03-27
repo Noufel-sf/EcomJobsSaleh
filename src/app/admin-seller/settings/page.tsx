@@ -20,10 +20,64 @@ import { useState } from 'react';
 import axiosInstance from '@/lib/Api';
 import toast from 'react-hot-toast';
 import { ButtonLoading } from '@/components/ui/ButtonLoading';
+import { type Language, useI18n } from '@/context/I18nContext';
+
+const settingsCopy: Record<Language, Record<string, string>> = {
+  en: {
+    title: 'Account Settings',
+    subtitle: 'View and update your personal and contact information.',
+    account: 'Account',
+    password: 'Password',
+    accountDesc: "Make changes to your account here. Click save when you're done.",
+    name: 'Name',
+    email: 'Email',
+    saveChanges: 'Save changes',
+    passwordDesc: "Change your password here. After saving, you'll be logged out.",
+    currentPassword: 'Current password',
+    newPassword: 'New password',
+    savePassword: 'Save password',
+    profileUpdated: 'Profile updated!',
+    profileFailed: 'Failed to update profile.',
+  },
+  fr: {
+    title: 'Parametres du compte',
+    subtitle: 'Consultez et mettez a jour vos informations personnelles.',
+    account: 'Compte',
+    password: 'Mot de passe',
+    accountDesc: "Modifiez votre compte ici. Cliquez sur enregistrer a la fin.",
+    name: 'Nom',
+    email: 'Email',
+    saveChanges: 'Enregistrer',
+    passwordDesc: 'Modifiez votre mot de passe ici.',
+    currentPassword: 'Mot de passe actuel',
+    newPassword: 'Nouveau mot de passe',
+    savePassword: 'Enregistrer le mot de passe',
+    profileUpdated: 'Profil mis a jour !',
+    profileFailed: 'Echec de mise a jour du profil.',
+  },
+  ar: {
+    title: 'اعدادات الحساب',
+    subtitle: 'عرض وتحديث المعلومات الشخصية ومعلومات التواصل.',
+    account: 'الحساب',
+    password: 'كلمة المرور',
+    accountDesc: 'قم بتعديل بيانات الحساب ثم احفظ التغييرات.',
+    name: 'الاسم',
+    email: 'البريد الالكتروني',
+    saveChanges: 'حفظ التغييرات',
+    passwordDesc: 'قم بتغيير كلمة المرور من هنا.',
+    currentPassword: 'كلمة المرور الحالية',
+    newPassword: 'كلمة المرور الجديدة',
+    savePassword: 'حفظ كلمة المرور',
+    profileUpdated: 'تم تحديث الملف!',
+    profileFailed: 'فشل تحديث الملف.',
+  },
+};
 
 
 
  export default function AccountSettings() {
+  const { language } = useI18n();
+  const copy = settingsCopy[language];
   const { user, setLoading, loading, setUser } = useAuth();
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -39,10 +93,10 @@ import { ButtonLoading } from '@/components/ui/ButtonLoading';
         name,
         email,
       });
-      toast.success(res.data.message || 'Profile updated!');
+      toast.success(res.data.message || copy.profileUpdated);
       setUser((prev) => ({ ...prev, name, email }));
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to update profile.');
+      toast.error(error.response?.data?.message || copy.profileFailed);
     } finally {
       setLoading(false);
     }
@@ -66,9 +120,9 @@ import { ButtonLoading } from '@/components/ui/ButtonLoading';
 
   return (
     <SidebarLayout breadcrumbTitle="Account Settings">
-      <h1 className="text-2xl font-bold">Account Settings</h1>
+      <h1 className="text-2xl font-bold">{copy.title}</h1>
       <p className="text-gray-700 dark:text-gray-400">
-        View & Update Your Personal and Contact Information.
+        {copy.subtitle}
       </p>
 
       <section className="px-2">
@@ -76,21 +130,21 @@ import { ButtonLoading } from '@/components/ui/ButtonLoading';
           <Tabs defaultValue="account">
             <TabsList>
               <TabsTrigger value="account" className="cursor-pointer">Account</TabsTrigger>
-              <TabsTrigger value="password"className="cursor-pointer">Password</TabsTrigger>
+              <TabsTrigger value="account" className="cursor-pointer">{copy.account}</TabsTrigger>
+              <TabsTrigger value="password"className="cursor-pointer">{copy.password}</TabsTrigger>
             </TabsList>
             <TabsContent value="account">
               <form onSubmit={handleChangeInfo}>
                 <Card>
                   <CardHeader>
-                    <CardTitle>Account</CardTitle>
+                    <CardTitle>{copy.account}</CardTitle>
                     <CardDescription>
-                      Make changes to your account here. Click save when
-                      you&apos;re done.
+                      {copy.accountDesc}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-6">
                     <div className="grid gap-3">
-                      <Label htmlFor="tabs-demo-name">Name</Label>
+                      <Label htmlFor="tabs-demo-name">{copy.name}</Label>
                       <Input
                         id="tabs-demo-name"
                         value={name}
@@ -98,7 +152,7 @@ import { ButtonLoading } from '@/components/ui/ButtonLoading';
                       />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="tabs-demo-email">Email</Label>
+                      <Label htmlFor="tabs-demo-email">{copy.email}</Label>
                       <Input
                         id="tabs-demo-email"
                         value={email}
@@ -110,7 +164,7 @@ import { ButtonLoading } from '@/components/ui/ButtonLoading';
                     {loading ? (
                       <ButtonLoading />
                     ) : (
-                      <Button type="submit" >Save changes</Button>
+                      <Button type="submit" >{copy.saveChanges}</Button>
                     )}
                   </CardFooter>
                 </Card>
@@ -120,16 +174,15 @@ import { ButtonLoading } from '@/components/ui/ButtonLoading';
               <form onSubmit={handleChangePassword}>
                 <Card>
                   <CardHeader>
-                    <CardTitle>Password</CardTitle>
+                    <CardTitle>{copy.password}</CardTitle>
                     <CardDescription>
-                      Change your password here. After saving, you&apos;ll be
-                      logged out.
+                      {copy.passwordDesc}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-6">
                     <div className="grid gap-3">
                       <Label htmlFor="tabs-demo-current">
-                        Current password
+                        {copy.currentPassword}
                       </Label>
                       <Input
                         id="tabs-demo-current"
@@ -139,7 +192,7 @@ import { ButtonLoading } from '@/components/ui/ButtonLoading';
                       />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="tabs-demo-new">New password</Label>
+                      <Label htmlFor="tabs-demo-new">{copy.newPassword}</Label>
                       <Input
                         id="tabs-demo-new"
                         type="password"
@@ -149,7 +202,7 @@ import { ButtonLoading } from '@/components/ui/ButtonLoading';
                     </div>
                   </CardContent>
                   <CardFooter className="mt-4">
-                    <Button>Save password</Button>
+                    <Button>{copy.savePassword}</Button>
                   </CardFooter>
                 </Card>
               </form>

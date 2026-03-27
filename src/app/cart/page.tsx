@@ -16,6 +16,7 @@ import {
 } from "@/Redux/Services/CartApi";
 import toast from "react-hot-toast";
 import CartItem from "@/components/CartItem";
+import { useI18n } from "@/context/I18nContext";
 
 import {
   ShoppingBag,
@@ -27,14 +28,14 @@ import {
 } from "lucide-react";
 
 function CartPage() {
+  const { messages, t } = useI18n();
   const { data: cartData, isLoading } = useGetCartQuery(undefined);
   const [updateCartItem] = useUpdateCartItemMutation();
   const [deleteCartItemMutation] = useDeleteCartItemMutation();
   const [clearCartMutation] = useClearCartMutation();
 
   const cart = cartData?.items || [];
-  console.log("cart" , cart);
-  
+
   const total = cartData?.totalPrice || 0;
 
   const Total = cart.reduce(
@@ -49,38 +50,38 @@ function CartPage() {
       try {
         if (newVal < 1) {
           await deleteCartItemMutation(productId).unwrap();
-          toast.success("Item removed from cart");
+          toast.success(messages.cart.itemRemoved);
         } else {
           const action = newVal > currentVal ? "increment" : "decrement";
           await updateCartItem({ productId, action }).unwrap();
         }
       } catch (error: any) {
-        toast.error(error?.data?.message || "Failed to update cart");
+        toast.error(error?.data?.message || messages.cart.failedToUpdateCart);
       }
     },
-    [deleteCartItemMutation, updateCartItem],
+    [deleteCartItemMutation, messages.cart.failedToUpdateCart, messages.cart.itemRemoved, updateCartItem],
   );
 
   const handleDeleteCartItem = useCallback(
     async (productId: string) => {
       try {
         await deleteCartItemMutation(productId).unwrap();
-        toast.success("Item removed from cart");
+        toast.success(messages.cart.itemRemoved);
       } catch (error: any) {
-        toast.error(error?.data?.message || "Failed to remove item");
+        toast.error(error?.data?.message || messages.cart.failedToRemoveItem);
       }
     },
-    [deleteCartItemMutation],
+    [deleteCartItemMutation, messages.cart.failedToRemoveItem, messages.cart.itemRemoved],
   );
 
   const handleClearCart = useCallback(async () => {
     try {
       await clearCartMutation().unwrap();
-      toast.success("Cart cleared");
+      toast.success(messages.cart.cartCleared);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to clear cart");
+      toast.error(error?.data?.message || messages.cart.failedToClearCart);
     }
-  }, [clearCartMutation]);
+  }, [clearCartMutation, messages.cart.cartCleared, messages.cart.failedToClearCart]);
 
  
   const savings = 0; // Can be used for future promo code feature
@@ -100,10 +101,10 @@ function CartPage() {
             size="sm"
             className="gap-1"
             type="button"
-            aria-label="Continue shopping"
+            aria-label={messages.cart.continueShopping}
           >
             <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-            Continue Shopping
+            {messages.cart.continueShopping}
           </Button>
           </Link>
         </nav>
@@ -112,12 +113,15 @@ function CartPage() {
         <header className="mb-8">
           <h1 className="text-3xl lg:text-4xl font-bold mb-2 flex items-center gap-3">
             <ShoppingBag className="w-8 h-8 text-primary" aria-hidden="true" />
-            Shopping Cart
+            {messages.cart.shoppingCart}
           </h1>
           <p className="text-muted-foreground" role="status" aria-live="polite">
             {isLoading
-              ? "Loading..."
-              : `${cart.length} ${cart.length === 1 ? "item" : "items"} in your cart`}
+              ? messages.cart.loading
+              : t(messages.cart.cartCount, {
+                  count: cart.length,
+                  label: cart.length === 1 ? messages.cart.item : messages.cart.items,
+                })}
           </p>
         </header>
 
@@ -156,7 +160,7 @@ function CartPage() {
                   aria-label="Clear all items from cart"
                 >
                   <Trash2 className="w-4 h-4 mr-2" aria-hidden="true" />
-                  Clear Cart
+                  {messages.cart.clearCart}
                 </Button>
               </>
             ) : (
@@ -170,19 +174,19 @@ function CartPage() {
                   aria-hidden="true"
                 />
                 <h3 className="text-xl font-semibold mb-2">
-                  Your cart is empty
+                  {messages.cart.cartEmptyTitle}
                 </h3>
                 <p className="text-muted-foreground mb-6">
-                  Looks like you haven&apos;t added anything to your cart yet
+                  {messages.cart.cartEmptyDescription}
                 </p>
                 <Link href="/products" className="w-full">
                 <Button
                   size="lg"
-                  variant=""
+                  variant="primary"
                   className=""
                   type="button"
                 >
-                  Start Shopping
+                  {messages.cart.startShopping}
                   <ArrowRight className="ml-2 w-4 h-4" aria-hidden="true" />
                 </Button>
                 </Link>
@@ -199,14 +203,14 @@ function CartPage() {
                 <CardHeader className="">
                   <CardTitle className="flex items-center gap-2">
                     <CreditCard className="w-5 h-5" aria-hidden="true" />
-                    Order Summary
+                    {messages.cart.orderSummary}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Price breakdown */}
                   <dl className="space-y-3 mt-3">
                     <div className="flex justify-between text-sm">
-                      <dt className="text-muted-foreground">Subtotal</dt>
+                      <dt className="text-muted-foreground">{messages.cart.subtotal}</dt>
                       <dd className="font-medium">${total.toFixed(2)}</dd>
                     </div>
 
@@ -220,19 +224,19 @@ function CartPage() {
                     )}
 
                     <div className="flex justify-between text-sm">
-                      <dt className="text-muted-foreground">Shipping</dt>
-                      <dd className="font-medium text-green-600">FREE</dd>
+                      <dt className="text-muted-foreground">{messages.cart.shipping}</dt>
+                      <dd className="font-medium text-green-600">{messages.cart.free}</dd>
                     </div>
 
                     <div className="flex justify-between text-sm">
-                      <dt className="text-muted-foreground">Tax</dt>
+                      <dt className="text-muted-foreground">{messages.cart.tax}</dt>
                       <dd className="font-medium">$0.00</dd>
                     </div>
 
                     <Separator className="" />
 
                     <div className="flex justify-between text-lg">
-                      <dt className="font-bold">Total</dt>
+                      <dt className="font-bold">{messages.cart.total}</dt>
                       <dd className="font-bold text-primary">
                         ${finalTotal.toFixed(2)}
                       </dd>
@@ -247,13 +251,13 @@ function CartPage() {
                       type="button"
                       aria-label="Proceed to complete order"
                     >
-                      Proceed to Complete Order
+                      {messages.cart.proceedToCompleteOrder}
                       <ArrowRight className="ml-2 w-4 h-4" aria-hidden="true" />
                     </Button>
                   </Link>
                   <div className="flex mt-3 items-center justify-center gap-2 text-xs text-muted-foreground">
                     <Lock className="w-3 h-3" aria-hidden="true" />
-                    <span>Secure checkout - Your data is protected</span>
+                    <span>{messages.cart.secureCheckout}</span>
                   </div>
                 </CardContent>
               </Card>

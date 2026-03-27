@@ -34,12 +34,181 @@ import {
   Briefcase,
 } from "lucide-react";
 import Image from "next/image";
+import { type Language, useI18n } from "@/context/I18nContext";
 
 interface EmployerSignupPageProps {
   className?: string;
   params?: { [key: string]: string };
   searchParams?: { [key: string]: string | string[] | undefined };
 }
+
+const employerSignupCopy: Record<Language, Record<string, string>> = {
+  en: {
+    passwordMismatch: "Passwords do not match",
+    passwordMin: "Password must be at least 8 characters",
+    success: "Employer Account Created Successfully!",
+    failed: "Registration failed. Please try again.",
+    pageTitle: "Create Your Employer Account - Saleh Marketplace",
+    heroTitle: "Become an Employer",
+    heroSubtitle: "Post jobs and find the perfect candidates for your company",
+    benefit1: "Post Unlimited Jobs",
+    benefit2: "Access Top Talent",
+    benefit3: "Manage Applications",
+    cardTitle: "Create your employer account",
+    cardDescription: "Fill in your details below to start hiring",
+    formAria: "Employer registration form",
+    personalInfo: "Personal Information",
+    companyName: "Company Name",
+    fullNamePlaceholder: "John Doe",
+    fullNameAria: "Company name",
+    email: "Email Address",
+    emailPlaceholder: "employer@company.com",
+    emailAria: "Email address",
+    password: "Password",
+    confirmPassword: "Confirm Password",
+    passwordAria: "Password",
+    confirmPasswordAria: "Confirm password",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
+    passwordHint: "Password must be at least 8 characters",
+    companyInfo: "Company Information",
+    location: "Location",
+    locationPlaceholder: "New York, NY",
+    locationAria: "Company location",
+    specialization: "Specialization",
+    specializationPlaceholder: "Fintech, E-commerce",
+    specializationAria: "Company specialization",
+    logo: "Logo",
+    logoPreviewAlt: "Logo preview",
+    companyDescription: "Company Description",
+    descriptionPlaceholder: "Tell job seekers about your company...",
+    descriptionAria: "Company description",
+    maxChars: "Maximum 1000 characters",
+    termsPrefix: "By creating an account, you agree to our",
+    terms: "Terms of Service",
+    and: "and",
+    privacy: "Privacy Policy",
+    submitAria: "Create employer account",
+    creating: "Creating Account...",
+    createAccount: "Create Employer Account",
+    alreadyHave: "Already have an employer account?",
+    signIn: "Sign in",
+    lookingForJob: "Looking for a job?",
+    createJobSeeker: "Create a job seeker account",
+    needHelp: "Need help?",
+    contactSupport: "Contact our support team",
+  },
+  fr: {
+    passwordMismatch: "Les mots de passe ne correspondent pas",
+    passwordMin: "Le mot de passe doit contenir au moins 8 caracteres",
+    success: "Compte employeur cree avec succes!",
+    failed: "Echec de l'inscription. Veuillez reessayer.",
+    pageTitle: "Creez votre compte employeur - Saleh Marketplace",
+    heroTitle: "Devenir employeur",
+    heroSubtitle: "Publiez des offres et trouvez les meilleurs candidats",
+    benefit1: "Publiez des offres illimitees",
+    benefit2: "Accedez aux meilleurs talents",
+    benefit3: "Gerez les candidatures",
+    cardTitle: "Creez votre compte employeur",
+    cardDescription: "Remplissez vos informations pour commencer a recruter",
+    formAria: "Formulaire d'inscription employeur",
+    personalInfo: "Informations personnelles",
+    companyName: "Nom de l'entreprise",
+    fullNamePlaceholder: "John Doe",
+    fullNameAria: "Nom de l'entreprise",
+    email: "Adresse e-mail",
+    emailPlaceholder: "employeur@entreprise.com",
+    emailAria: "Adresse e-mail",
+    password: "Mot de passe",
+    confirmPassword: "Confirmer le mot de passe",
+    passwordAria: "Mot de passe",
+    confirmPasswordAria: "Confirmer le mot de passe",
+    showPassword: "Afficher le mot de passe",
+    hidePassword: "Masquer le mot de passe",
+    passwordHint: "Le mot de passe doit contenir au moins 8 caracteres",
+    companyInfo: "Informations de l'entreprise",
+    location: "Emplacement",
+    locationPlaceholder: "Paris, France",
+    locationAria: "Emplacement de l'entreprise",
+    specialization: "Specialisation",
+    specializationPlaceholder: "Fintech, E-commerce",
+    specializationAria: "Specialisation de l'entreprise",
+    logo: "Logo",
+    logoPreviewAlt: "Apercu du logo",
+    companyDescription: "Description de l'entreprise",
+    descriptionPlaceholder: "Parlez de votre entreprise aux candidats...",
+    descriptionAria: "Description de l'entreprise",
+    maxChars: "Maximum 1000 caracteres",
+    termsPrefix: "En creant un compte, vous acceptez nos",
+    terms: "Conditions d'utilisation",
+    and: "et",
+    privacy: "Politique de confidentialite",
+    submitAria: "Creer un compte employeur",
+    creating: "Creation du compte...",
+    createAccount: "Creer un compte employeur",
+    alreadyHave: "Vous avez deja un compte employeur ?",
+    signIn: "Se connecter",
+    lookingForJob: "Vous cherchez un emploi ?",
+    createJobSeeker: "Creer un compte candidat",
+    needHelp: "Besoin d'aide ?",
+    contactSupport: "Contacter notre equipe support",
+  },
+  ar: {
+    passwordMismatch: "كلمتا المرور غير متطابقتين",
+    passwordMin: "يجب ان تتكون كلمة المرور من 8 احرف على الاقل",
+    success: "تم انشاء حساب صاحب العمل بنجاح",
+    failed: "فشل التسجيل. يرجى المحاولة مرة اخرى.",
+    pageTitle: "انشئ حساب صاحب العمل - صالح ماركت",
+    heroTitle: "كن صاحب عمل",
+    heroSubtitle: "انشر وظائف واعثر على المرشحين المناسبين لشركتك",
+    benefit1: "انشر وظائف غير محدودة",
+    benefit2: "الوصول الى افضل المواهب",
+    benefit3: "ادارة طلبات التوظيف",
+    cardTitle: "انشئ حساب صاحب العمل",
+    cardDescription: "املأ بياناتك بالاسفل لبدء التوظيف",
+    formAria: "نموذج تسجيل صاحب العمل",
+    personalInfo: "المعلومات الشخصية",
+    companyName: "اسم الشركة",
+    fullNamePlaceholder: "شركة مثال",
+    fullNameAria: "اسم الشركة",
+    email: "البريد الالكتروني",
+    emailPlaceholder: "employer@company.com",
+    emailAria: "البريد الالكتروني",
+    password: "كلمة المرور",
+    confirmPassword: "تاكيد كلمة المرور",
+    passwordAria: "كلمة المرور",
+    confirmPasswordAria: "تاكيد كلمة المرور",
+    showPassword: "اظهار كلمة المرور",
+    hidePassword: "اخفاء كلمة المرور",
+    passwordHint: "يجب ان تتكون كلمة المرور من 8 احرف على الاقل",
+    companyInfo: "معلومات الشركة",
+    location: "الموقع",
+    locationPlaceholder: "الجزائر، الجزائر",
+    locationAria: "موقع الشركة",
+    specialization: "التخصص",
+    specializationPlaceholder: "التقنية المالية، التجارة الالكترونية",
+    specializationAria: "تخصص الشركة",
+    logo: "الشعار",
+    logoPreviewAlt: "معاينة الشعار",
+    companyDescription: "وصف الشركة",
+    descriptionPlaceholder: "اخبر الباحثين عن العمل عن شركتك...",
+    descriptionAria: "وصف الشركة",
+    maxChars: "الحد الاقصى 1000 حرف",
+    termsPrefix: "بانشاء حساب، فانك توافق على",
+    terms: "شروط الخدمة",
+    and: "و",
+    privacy: "سياسة الخصوصية",
+    submitAria: "انشاء حساب صاحب العمل",
+    creating: "جار انشاء الحساب...",
+    createAccount: "انشاء حساب صاحب العمل",
+    alreadyHave: "لديك حساب صاحب عمل بالفعل؟",
+    signIn: "تسجيل الدخول",
+    lookingForJob: "تبحث عن وظيفة؟",
+    createJobSeeker: "انشئ حساب باحث عن عمل",
+    needHelp: "تحتاج مساعدة؟",
+    contactSupport: "تواصل مع فريق الدعم",
+  },
+};
 
 const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
   className,
@@ -51,6 +220,8 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
 }) => {
   // const dispatch = useAppDispatch();
   const router = useRouter();
+  const { language } = useI18n();
+  const copy = employerSignupCopy[language];
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [logoUrl, setLogoUrl] = useState<File | null>(null);
@@ -71,24 +242,23 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
     }
 
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(copy.passwordMismatch);
       return;
     }
 
     if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
+      toast.error(copy.passwordMin);
       return;
     }
 
     try {
       // @ts-expect-error RTK Query handles FormData at runtime
       await registerEmployerCompany(formData).unwrap();
-      toast.success("Employer Account Created Successfully! 🎉");
+      toast.success(copy.success);
       router.push("/employer");
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
-      const message =
-        err?.data?.message || "Registration failed. Please try again.";
+      const message = err?.data?.message || copy.failed;
       toast.error(message);
     }
   };
@@ -113,7 +283,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
   return (
     <main className="min-h-screen flex flex-col lg:py-12 items-center justify-center px-4 bg-linear-to-br from-background via-background to-muted/30">
       <h1 className="sr-only">
-        Create Your Employer Account - Saleh Marketplace
+        {copy.pageTitle}
       </h1>
 
       <div className={cn("flex flex-col gap-6 w-full max-w-2xl", className)}>
@@ -122,11 +292,11 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
           <div className="flex items-center justify-center gap-2 mb-2">
             <Building2 className="w-10 h-10 text-primary" aria-hidden="true" />
             <h2 className="text-3xl lg:text-4xl font-bold bg-linear-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-              Become an Employer
+              {copy.heroTitle}
             </h2>
           </div>
           <p className="text-muted-foreground text-sm lg:text-base">
-            Post jobs and find the perfect candidates for your company
+            {copy.heroSubtitle}
           </p>
         </div>
 
@@ -134,15 +304,15 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
             <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-            <p className="text-sm font-medium">Post Unlimited Jobs</p>
+            <p className="text-sm font-medium">{copy.benefit1}</p>
           </div>
           <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
             <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-            <p className="text-sm font-medium">Access Top Talent</p>
+            <p className="text-sm font-medium">{copy.benefit2}</p>
           </div>
           <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
             <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-            <p className="text-sm font-medium">Manage Applications</p>
+            <p className="text-sm font-medium">{copy.benefit3}</p>
           </div>
         </div>
 
@@ -154,22 +324,22 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                 <div className="absolute top-0 left-0 w-20 h-20 bg-primary/20 blur-3xl rounded-full opacity-50 -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
 
                 <CardTitle className="text-2xl font-bold text-center">
-                  Create your employer account
+                  {copy.cardTitle}
                 </CardTitle>
                 <CardDescription className="text-center">
-                  Fill in your details below to start hiring
+                  {copy.cardDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent className="">
                 <form
                   onSubmit={handleSubmit}
-                  aria-label="Employer registration form"
+                  aria-label={copy.formAria}
                 >
                   <div className="flex flex-col gap-6">
                     {/* Personal Information Section */}
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold border-b pb-2">
-                        Personal Information
+                        {copy.personalInfo}
                       </h3>
 
                       {/* Full Name */}
@@ -179,7 +349,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                             className="w-4 h-4 inline mr-2"
                             aria-hidden="true"
                           />
-                          Company Name{" "}
+                          {copy.companyName}{" "}
                           <span className="text-destructive">*</span>
                         </Label>
                         <Input
@@ -187,11 +357,11 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                           name="name"
                           type="text"
                           className="h-11"
-                          placeholder="John Doe"
+                          placeholder={copy.fullNamePlaceholder}
                           required
                           autoComplete="name"
                           aria-required="true"
-                          aria-label="Full name"
+                          aria-label={copy.fullNameAria}
                           disabled={isPending}
                         />
                       </div>
@@ -203,7 +373,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                             className="w-4 h-4 inline mr-2"
                             aria-hidden="true"
                           />
-                          Email Address{" "}
+                          {copy.email}{" "}
                           <span className="text-destructive">*</span>
                         </Label>
                         <Input
@@ -211,11 +381,11 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                           name="email"
                           type="email"
                           className="h-11"
-                          placeholder="employer@company.com"
+                          placeholder={copy.emailPlaceholder}
                           required
                           autoComplete="email"
                           aria-required="true"
-                          aria-label="Email address"
+                          aria-label={copy.emailAria}
                           disabled={isPending}
                         />
                       </div>
@@ -232,7 +402,8 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                               className="w-4 h-4 inline mr-2"
                               aria-hidden="true"
                             />
-                            Password <span className="text-destructive">*</span>
+                            {copy.password}{" "}
+                            <span className="text-destructive">*</span>
                           </Label>
                           <div className="relative">
                             <Input
@@ -244,7 +415,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                               required
                               autoComplete="new-password"
                               aria-required="true"
-                              aria-label="Password"
+                              aria-label={copy.passwordAria}
                               disabled={isPending}
                               minLength={8}
                             />
@@ -255,7 +426,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                               className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                               onClick={() => setShowPassword(!showPassword)}
                               aria-label={
-                                showPassword ? "Hide password" : "Show password"
+                                showPassword ? copy.hidePassword : copy.showPassword
                               }
                               disabled={isPending}
                             >
@@ -284,7 +455,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                               className="w-4 h-4 inline mr-2"
                               aria-hidden="true"
                             />
-                            Confirm Password{" "}
+                            {copy.confirmPassword}{" "}
                             <span className="text-destructive">*</span>
                           </Label>
                           <div className="relative">
@@ -297,7 +468,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                               required
                               autoComplete="new-password"
                               aria-required="true"
-                              aria-label="Confirm password"
+                              aria-label={copy.confirmPasswordAria}
                               disabled={isPending}
                               minLength={8}
                             />
@@ -311,8 +482,8 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                               }
                               aria-label={
                                 showConfirmPassword
-                                  ? "Hide password"
-                                  : "Show password"
+                                  ? copy.hidePassword
+                                  : copy.showPassword
                               }
                               disabled={isPending}
                             >
@@ -332,14 +503,14 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Password must be at least 8 characters
+                        {copy.passwordHint}
                       </p>
                     </div>
 
                     {/* Company Information Section */}
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold border-b pb-2">
-                        Company Information
+                        {copy.companyInfo}
                       </h3>
 
                       {/* Location and Specialization */}
@@ -354,17 +525,18 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                               className="w-4 h-4 inline mr-2"
                               aria-hidden="true"
                             />
-                            Location <span className="text-destructive">*</span>
+                            {copy.location}{" "}
+                            <span className="text-destructive">*</span>
                           </Label>
                           <Input
                             id="location"
                             name="location"
                             type="text"
                             className="h-11"
-                            placeholder="New York, NY"
+                            placeholder={copy.locationPlaceholder}
                             required
                             aria-required="true"
-                            aria-label="Company location"
+                            aria-label={copy.locationAria}
                             disabled={isPending}
                           />
                         </div>
@@ -379,7 +551,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                               className="w-4 h-4 inline mr-2"
                               aria-hidden="true"
                             />
-                            Specialization{" "}
+                            {copy.specialization}{" "}
                             <span className="text-destructive">*</span>
                           </Label>
                           <Input
@@ -387,17 +559,17 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                             name="specialization"
                             type="text"
                             className="h-11"
-                            placeholder="Fintech, E-commerce"
+                            placeholder={copy.specializationPlaceholder}
                             required
                             aria-required="true"
-                            aria-label="Company specialization"
+                            aria-label={copy.specializationAria}
                             disabled={isPending}
                           />
                         </div>
                       </div>
                       <div className="grid gap-3">
                         <Label className="" htmlFor="logo">
-                          Logo
+                          {copy.logo}
                         </Label>
                         <Input
                           id="logo"
@@ -414,7 +586,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                               width={400}
                               height={300}
                               src={logoPreview}
-                              alt="Logo preview"
+                              alt={copy.logoPreviewAlt}
                               className="w-48 h-32 object-cover rounded border"
                             />
                             <button
@@ -438,22 +610,22 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                             className="w-4 h-4 inline mr-2"
                             aria-hidden="true"
                           />
-                          Company Description{" "}
+                          {copy.companyDescription}{" "}
                           <span className="text-destructive">*</span>
                         </Label>
                         <Textarea
                           id="description"
                           name="description"
                           className="min-h-25 resize-none"
-                          placeholder="Tell job seekers about your company..."
+                          placeholder={copy.descriptionPlaceholder}
                           required
                           aria-required="true"
-                          aria-label="Company description"
+                          aria-label={copy.descriptionAria}
                           disabled={isPending}
                           maxLength={1000}
                         />
                         <p className="text-xs text-muted-foreground">
-                          Maximum 1000 characters
+                          {copy.maxChars}
                         </p>
                       </div>
                     </div>
@@ -461,19 +633,19 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                     {/* Terms and Conditions */}
                     <div className="flex items-start gap-2 text-sm">
                       <p className="text-muted-foreground leading-relaxed">
-                        By creating an account, you agree to our{" "}
+                        {copy.termsPrefix}{" "}
                         <Link
                           href="/terms"
                           className="text-primary hover:underline font-medium"
                         >
-                          Terms of Service
+                          {copy.terms}
                         </Link>{" "}
-                        and{" "}
+                        {copy.and}{" "}
                         <Link
                           href="/privacy"
                           className="text-primary hover:underline font-medium"
                         >
-                          Privacy Policy
+                          {copy.privacy}
                         </Link>
                       </p>
                     </div>
@@ -484,7 +656,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                       className="w-full h-11 text-base bg-primary hover:bg-primary/90 transition-all duration-200"
                       size="lg"
                       disabled={isPending}
-                      aria-label="Create employer account"
+                      aria-label={copy.submitAria}
                     >
                       {isPending ? (
                         <>
@@ -492,7 +664,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                             className="mr-2 h-4 w-4 animate-spin"
                             aria-hidden="true"
                           />
-                          Creating Account...
+                          {copy.creating}
                         </>
                       ) : (
                         <>
@@ -500,7 +672,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                             className="mr-2 h-4 w-4"
                             aria-hidden="true"
                           />
-                          Create Employer Account
+                          {copy.createAccount}
                         </>
                       )}
                     </Button>
@@ -510,26 +682,26 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                 {/* Login Link */}
                 <div className="mt-6 text-center text-sm">
                   <span className="text-muted-foreground">
-                    Already have an employer account?{" "}
+                    {copy.alreadyHave}{" "}
                   </span>
                   <Link
                     href="/login"
                     className="font-semibold text-primary hover:underline transition-colors"
                   >
-                    Sign in
+                    {copy.signIn}
                   </Link>
                 </div>
 
                 {/* Job Seeker Link */}
                 <div className="mt-4 text-center text-sm">
                   <span className="text-muted-foreground">
-                    Looking for a job?{" "}
+                    {copy.lookingForJob}{" "}
                   </span>
                   <Link
                     href="/register"
                     className="font-semibold text-primary hover:underline transition-colors"
                   >
-                    Create a job seeker account
+                    {copy.createJobSeeker}
                   </Link>
                 </div>
               </CardContent>
@@ -540,9 +712,9 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
         {/* Additional Info */}
         <div className="text-center text-xs text-muted-foreground">
           <p>
-            Need help?{" "}
+            {copy.needHelp}{" "}
             <Link href="/help" className="text-primary hover:underline">
-              Contact our support team
+              {copy.contactSupport}
             </Link>
           </p>
         </div>

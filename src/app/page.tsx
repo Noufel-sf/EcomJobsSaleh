@@ -1,21 +1,12 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
-import { Suspense } from "react";
 
-// Dynamically import Hero component to reduce initial bundle size
+// Dynamically import components with built-in loading UI
 const Hero = dynamic(() => import("@/components/Hero"), {
   loading: () => (
     <div className="h-[500px] animate-pulse bg-muted rounded-lg" />
   ),
 });
-
-// Best selling and sponsored sections - load with priority
-const SponsoredSection = dynamic(
-  () => import("@/components/SponsoredSection"),
-  {
-    loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
-  },
-);
 
 const BestSellingSection = dynamic(
   () => import("@/components/BestSellingSection"),
@@ -23,7 +14,6 @@ const BestSellingSection = dynamic(
     loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
   },
 );
-
 
 const JobsSection = dynamic(() => import("@/components/JobsSection"), {
   loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
@@ -64,34 +54,9 @@ export const metadata: Metadata = {
 const HomePage = () => {
   return (
     <div>
-      {/* <h1 className="sr-only">Saleh Store - Your Trusted Online Marketplace for Quality Products</h1> */}
-      <Suspense
-        fallback={
-          <div className="h-[500px] animate-pulse bg-muted rounded-lg" />
-        }
-      >
-        <Hero />
-      </Suspense>
-
-      <Suspense
-        fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}
-      >
-        <BestSellingSection />
-      </Suspense>
-
-      <Suspense
-        fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}
-      >
-        <SponsoredSection />
-      </Suspense>
-
-
-
-      <Suspense
-        fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}
-      >
-        <JobsSection />
-      </Suspense>
+      <Hero />
+      <BestSellingSection />
+      <JobsSection />
     </div>
   );
 };

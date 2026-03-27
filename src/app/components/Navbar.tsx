@@ -1,6 +1,6 @@
 'use client';
 
-import { memo , useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Moon, Sun, Search, ShoppingCart, User, Menu } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -27,7 +27,8 @@ import { useGetAllClassificationsQuery } from "@/Redux/Services/ClassificationAp
 import { useAppSelector, useAppDispatch } from "@/Redux/hooks";
 import { logout as logoutAction } from "@/Redux/Slices/AuthSlice";
 import toast from "react-hot-toast";
-import { Categorie, Product } from "@/lib/DatabaseTypes";
+import { Product } from "@/lib/DatabaseTypes";
+import { useI18n } from "@/context/I18nContext";
 
 interface ListItemProps {
   name: string;
@@ -55,19 +56,20 @@ const Navbar = memo(function Navbar() {
 
   const [isOpen, setIsOpen] = useState(false);
   const { setTheme } = useTheme();
+  const { messages, t } = useI18n();
 
-   const { data: categoriesData, isLoading } = useGetAllClassificationsQuery();
+  const { data: categoriesData } = useGetAllClassificationsQuery();
    const categories = categoriesData?.content || [];
 
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const [logoutMutation] = useLogoutMutation();
   const { data: cartData } = useGetCartQuery();
-  const [triggerSearch, { data: searchData }] = useLazySearchProductsQuery();
+  const [triggerSearch] = useLazySearchProductsQuery();
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const searchRequestRef = useRef(0);
   
-  const searchResults = searchData?.content || [];
   const totalItems = cartData?.totalItems || 0;
   
   
@@ -82,22 +84,36 @@ const Navbar = memo(function Navbar() {
   };
 
 
-  const handleSearch = async (value: string) => {
-    setSearchTerm(value);
-    if (value.trim() === "") {
-      setSearchOpen(false);
+  useEffect(() => {
+    const normalized = searchTerm.trim();
+
+    if (normalized.length < 2) {
       return;
     }
 
-    try {
-      await triggerSearch({ query: value });
-      setSearchOpen(true);
-    } catch {
-      setSearchOpen(true);
-      toast.error("Search failed");
-    }
-  };
+    const requestId = ++searchRequestRef.current;
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const result = await triggerSearch({ query: normalized }).unwrap();
+        if (requestId !== searchRequestRef.current) {
+          return;
+        }
 
+        setSearchResults(result?.content || []);
+      } catch {
+        if (requestId !== searchRequestRef.current) {
+          return;
+        }
+
+        setSearchResults([]);
+        toast.error("Search failed");
+      }
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [searchTerm, triggerSearch]);
 
   return (
     <nav className="sticky top-0 z-50 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md shadow-sm border-b border-border" role="navigation" aria-label="Main navigation">
@@ -111,27 +127,26 @@ const Navbar = memo(function Navbar() {
 
         {/* Search Bar */}
         <div className="hidden lg:block w-full max-w-md relative">
-          <label htmlFor="product-search" className="sr-only">Search products</label>
+          <label htmlFor="product-search" className="sr-only">{messages.navbar.searchLabel}</label>
           <input
             id="product-search"
             type="search"
             value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            placeholder="Search products..."
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder={messages.navbar.searchPlaceholder}
             className="w-full pl-10 pr-4 py-2 rounded-md bg-zinc-100 dark:bg-zinc-800 text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
             aria-autocomplete="list"
             aria-controls="search-results"
-            aria-expanded={searchOpen}
           />
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-primary text-lg" aria-hidden="true" />
 
           {/* Search Dropdown */}
-          {searchOpen && (
+          {searchTerm.trim().length >= 2 && (
             <div 
               id="search-results"
               className="absolute top-full mt-2 left-0 right-0 bg-white dark:bg-zinc-900 border border-border rounded-md shadow-md z-50 max-h-96 overflow-y-auto"
               role="listbox"
-              aria-label="Search results"
+              aria-label={messages.navbar.searchResultsLabel}
             >
               {searchResults.length > 0 ? (
                 searchResults.map((product : Product) => (
@@ -141,7 +156,6 @@ const Navbar = memo(function Navbar() {
                     className="flex items-center gap-3 px-4 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                     onClick={() => {
                       setSearchTerm("");
-                      setSearchOpen(false);
                     }}
                     role="option"
                   >
@@ -165,7 +179,7 @@ const Navbar = memo(function Navbar() {
                 ))
               ) : (
                 <div className="px-4 py-3 text-sm text-muted-foreground" role="status">
-                  No products found
+                  {messages.navbar.noProductsFound}
                 </div>
               )}
             </div>
@@ -180,21 +194,21 @@ const Navbar = memo(function Navbar() {
                 <NavigationMenuList className="">
                   <Link href="/about" className="mx-2">
                     <span className="font-semibold text-sm cursor-pointer capitalize hover:text-primary transition-colors">
-                      About Us
+                      {messages.navbar.aboutUs}
                     </span>
                   </Link>
                   <Link href="/help" className="mx-2">
                     <span className="font-semibold text-sm cursor-pointer capitalize hover:text-primary transition-colors">
-                      Help Center
+                      {messages.navbar.helpCenter}
                     </span>
                   </Link>
                   <NavigationMenuItem className="">
                     <NavigationMenuTrigger className=" text-sm px-3 mx-2 cursor-pointer bg-transparent hover:text-purple-700 dark:hover:text-purple-300">
-                      Categories
+                      {messages.navbar.categories}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent className="">
-                      <ul className="grid md:w-[400px] md:grid-cols-2 gap-3 p-4">
-                        {categories.map((category:Categorie) => (
+                      <ul className="grid md:w-100 md:grid-cols-2 gap-3 p-4">
+                        {categories.map((category) => (
                           <ListItem
                             key={category.name}
                             name={category.name}
@@ -215,7 +229,7 @@ const Navbar = memo(function Navbar() {
                       className="text-base border-none cursor-pointer"
                       variant="outline"
                       size="default"
-                      aria-label="User account menu"
+                      aria-label={messages.navbar.userMenu}
                     >
                       <User className="text-sm" aria-hidden="true" />
                     </Button>
@@ -226,7 +240,7 @@ const Navbar = memo(function Navbar() {
                   >
                     <Link href="/my-account">
                       <DropdownMenuItem className="cursor-pointer" inset={false}>
-                        My Account
+                        {messages.navbar.myAccount}
                       </DropdownMenuItem>
                     </Link>
                     <DropdownMenuItem
@@ -234,7 +248,7 @@ const Navbar = memo(function Navbar() {
                       onClick={handleLogout}
                       inset={false}
                     >
-                      Logout
+                      {messages.navbar.logout}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -245,9 +259,9 @@ const Navbar = memo(function Navbar() {
                       className="text-base border-none cursor-pointer"
                       variant="outline"
                       size="default"
-                      aria-label="Account options"
+                      aria-label={messages.navbar.accountOptions}
                     >
-                      My Account
+                      {messages.navbar.myAccount}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -256,12 +270,12 @@ const Navbar = memo(function Navbar() {
                   >
                     <Link href="/login">
                       <DropdownMenuItem className="cursor-pointer" inset={false}>
-                        Login
+                        {messages.navbar.login}
                       </DropdownMenuItem>
                     </Link>
                     <Link href="/register">
                       <DropdownMenuItem className="cursor-pointer" inset={false}>
-                        Register
+                        {messages.navbar.register}
                       </DropdownMenuItem>
                     </Link>
                   </DropdownMenuContent>
@@ -270,11 +284,11 @@ const Navbar = memo(function Navbar() {
             </div>
           </div>
           {/* Icons */}
-          <Link href="/cart" className="relative" aria-label={`Shopping cart with ${totalItems} items`}>
+          <Link href="/cart" className="relative" aria-label={t(messages.navbar.cartLabel, { count: totalItems })}>
             <Button variant="ghost" size="icon" className="">
               <ShoppingCart className="text-xl" aria-hidden="true" />
               {totalItems > 0 && (
-                <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center" aria-label={`${totalItems} items in cart`}>
+                <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center" aria-label={t(messages.navbar.cartItemsLabel, { count: totalItems })}>
                   {totalItems}
                 </span>
               )}
@@ -287,7 +301,7 @@ const Navbar = memo(function Navbar() {
               <Button variant="ghost" size="icon" className="relative">
                 <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" aria-hidden="true" />
                 <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" aria-hidden="true" />
-                <span className="sr-only">Toggle theme</span>
+                <span className="sr-only">{messages.navbar.toggleTheme}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -299,21 +313,21 @@ const Navbar = memo(function Navbar() {
                 onClick={() => setTheme("light")}
                 inset={false}
               >
-                Light
+                {messages.navbar.light}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => setTheme("dark")}
                 inset={false}
               >
-                Dark
+                {messages.navbar.dark}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => setTheme("system")}
                 inset={false}
               >
-                System
+                {messages.navbar.system}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -324,7 +338,7 @@ const Navbar = memo(function Navbar() {
             size="default"
             className="block md:hidden"
             onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle mobile menu"
+            aria-label={messages.navbar.mobileMenuLabel}
             aria-expanded={isOpen}
           >
             <Menu aria-hidden="true" />
@@ -336,22 +350,22 @@ const Navbar = memo(function Navbar() {
         <div className="md:hidden px-6 py-3 pb-4 flex flex-col gap-2 animate-in slide-in-from-top-2 fade-in duration-200 shadow-sm border-t border-border">
           <div className="flex flex-col gap-1">
             <div className="px-3 py-1 text-sm font-semibold text-muted-foreground">
-              Categories
+              {messages.navbar.categories}
             </div>
             {categories.map((category) => (
               <Button
-                key={category.title}
+                key={category.id}
                 variant="ghost"
                 size="default"
                 className="justify-start px-3 w-full text-left"
                 onClick={() => setIsOpen(false)}
               >
-                <Link href={category.href} className="flex flex-col w-full">
+                <Link href={`/products?classification=${category.id}`} className="flex flex-col w-full">
                   <span className="text-base font-medium text-zinc-900 dark:text-white">
-                    {category.title}
+                    {category.name}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {category.description}
+                    {category.desc ?? ''}
                   </span>
                 </Link>
               </Button>
@@ -362,7 +376,7 @@ const Navbar = memo(function Navbar() {
 
           <div className="flex flex-col gap-1">
             <div className="px-3 py-1 text-sm font-semibold text-muted-foreground">
-              My Account
+              {messages.navbar.myAccount}
             </div>
 
             {user ? (
@@ -375,10 +389,10 @@ const Navbar = memo(function Navbar() {
                 >
                   <Link href="/my-account" className="flex flex-col w-full">
                     <span className="text-base font-medium text-zinc-900 dark:text-white">
-                      My Account
+                      {messages.navbar.myAccount}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      Access your orders, wishlist, and more.
+                      {messages.navbar.mobileAccountHint}
                     </span>
                   </Link>
                 </Button>
@@ -389,17 +403,17 @@ const Navbar = memo(function Navbar() {
                   onClick={handleLogout}
                 >
                   <span className="text-base font-medium text-zinc-900 dark:text-white">
-                    Logout
+                    {messages.navbar.logout}
                   </span>
                 </Button>
                 <Link href="/about" className="px-3 py-2">
                   <span className="font-semibold cursor-pointer capitalize hover:text-primary transition-colors">
-                    About Us
+                    {messages.navbar.aboutUs}
                   </span>
                 </Link>
                 <Link href="/help" className="px-3 py-2">
                   <span className="font-semibold cursor-pointer capitalize hover:text-primary transition-colors">
-                    Help Center
+                    {messages.navbar.helpCenter}
                   </span>
                 </Link>
               </>
@@ -413,10 +427,10 @@ const Navbar = memo(function Navbar() {
                 >
                   <Link href="/login" className="flex flex-col w-full">
                     <span className="text-base font-medium text-zinc-900 dark:text-white">
-                      Login
+                      {messages.navbar.login}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      Access your orders, wishlist, and more.
+                      {messages.navbar.mobileAccountHint}
                     </span>
                   </Link>
                 </Button>
@@ -429,10 +443,10 @@ const Navbar = memo(function Navbar() {
                 >
                   <Link href="/register" className="flex flex-col w-full">
                     <span className="text-base font-medium text-zinc-900 dark:text-white">
-                      Register
+                      {messages.navbar.register}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      Create a new account to start shopping.
+                      {messages.navbar.mobileCreateAccountHint}
                     </span>
                   </Link>
                 </Button>

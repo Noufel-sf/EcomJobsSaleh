@@ -62,16 +62,6 @@ export const authApi = createApi({
       invalidatesTags: ["Auth"],
     }),
 
-    // Register mutation
-    register: builder.mutation<AuthResponse, RegisterRequest>({
-      query: (userData) => ({
-        url: "/auth/register",
-        method: "POST",
-        body: userData,
-      }),
-      invalidatesTags: ["Auth"],
-    }),
-
     // Seller Register mutation
     registerSeller: builder.mutation<AuthResponse, FormData>({
       query: (sellerData :FormData) => ({
@@ -111,7 +101,6 @@ export const authApi = createApi({
 
 export const {
   useLoginMutation,
-  useRegisterMutation,
   useRegisterSellerMutation,
   useRegisterEmployerCompanyMutation,
   useGetProfileQuery,

@@ -44,6 +44,124 @@ import { MoreHorizontal, ChevronDown, ExternalLink, ShieldOff, Trash2 } from "lu
 import SuperAdminSidebarLayout from "@/components/SuperAdminSidebarLayout";
 import toast from "react-hot-toast";
 import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
+import { type Language, useI18n } from "@/context/I18nContext";
+
+const superAdminUsersCopy: Record<Language, Record<string, string>> = {
+  en: {
+    breadcrumb: "Users",
+    title: "Users",
+    description: "Manage all registered employers and sellers.",
+    suspendedToast: "{name} has been suspended.",
+    reactivatedToast: "{name} has been reactivated.",
+    deletedToast: "{name} has been deleted.",
+    visitingProfileToast: "Visiting profile of {name}",
+    selectAll: "Select all",
+    selectRow: "Select row",
+    name: "Name",
+    phone: "Phone",
+    role: "Role",
+    status: "Status",
+    joined: "Joined",
+    profile: "Profile",
+    view: "View",
+    openMenu: "Open menu",
+    actions: "Actions",
+    visitProfile: "Visit Profile",
+    suspend: "Suspend",
+    reactivate: "Reactivate",
+    delete: "Delete",
+    filterByNameOrEmail: "Filter by name or email...",
+    roleFilter: "Role",
+    allRoles: "All Roles",
+    employers: "Employers",
+    sellers: "Sellers",
+    columns: "Columns",
+    deleteUser: "Delete User",
+    deletePromptPrefix: "Are you sure you want to delete",
+    deletePromptSuffix: "? This action cannot be undone.",
+    cancel: "Cancel",
+    noResults: "No results.",
+    selectedRows: "{selected} of {total} row(s) selected.",
+    previous: "Previous",
+    next: "Next",
+  },
+  fr: {
+    breadcrumb: "Utilisateurs",
+    title: "Utilisateurs",
+    description: "Gerez tous les employeurs et vendeurs inscrits.",
+    suspendedToast: "{name} a ete suspendu.",
+    reactivatedToast: "{name} a ete reactive.",
+    deletedToast: "{name} a ete supprime.",
+    visitingProfileToast: "Ouverture du profil de {name}",
+    selectAll: "Tout selectionner",
+    selectRow: "Selectionner la ligne",
+    name: "Nom",
+    phone: "Telephone",
+    role: "Role",
+    status: "Statut",
+    joined: "Inscrit le",
+    profile: "Profil",
+    view: "Voir",
+    openMenu: "Ouvrir le menu",
+    actions: "Actions",
+    visitProfile: "Visiter le profil",
+    suspend: "Suspendre",
+    reactivate: "Reactiver",
+    delete: "Supprimer",
+    filterByNameOrEmail: "Filtrer par nom ou e-mail...",
+    roleFilter: "Role",
+    allRoles: "Tous les roles",
+    employers: "Employeurs",
+    sellers: "Vendeurs",
+    columns: "Colonnes",
+    deleteUser: "Supprimer l'utilisateur",
+    deletePromptPrefix: "Voulez-vous vraiment supprimer",
+    deletePromptSuffix: "? Cette action est irreversible.",
+    cancel: "Annuler",
+    noResults: "Aucun resultat.",
+    selectedRows: "{selected} sur {total} ligne(s) selectionnee(s).",
+    previous: "Precedent",
+    next: "Suivant",
+  },
+  ar: {
+    breadcrumb: "المستخدمون",
+    title: "المستخدمون",
+    description: "ادارة جميع اصحاب العمل والبائعين المسجلين.",
+    suspendedToast: "تم ايقاف {name}.",
+    reactivatedToast: "تمت اعادة تفعيل {name}.",
+    deletedToast: "تم حذف {name}.",
+    visitingProfileToast: "جار فتح ملف {name}",
+    selectAll: "تحديد الكل",
+    selectRow: "تحديد الصف",
+    name: "الاسم",
+    phone: "الهاتف",
+    role: "الدور",
+    status: "الحالة",
+    joined: "تاريخ الانضمام",
+    profile: "الملف",
+    view: "عرض",
+    openMenu: "فتح القائمة",
+    actions: "الاجراءات",
+    visitProfile: "زيارة الملف",
+    suspend: "ايقاف",
+    reactivate: "اعادة التفعيل",
+    delete: "حذف",
+    filterByNameOrEmail: "تصفية حسب الاسم او البريد...",
+    roleFilter: "الدور",
+    allRoles: "كل الادوار",
+    employers: "اصحاب العمل",
+    sellers: "البائعون",
+    columns: "الاعمدة",
+    deleteUser: "حذف المستخدم",
+    deletePromptPrefix: "هل تريد حذف",
+    deletePromptSuffix: "؟ لا يمكن التراجع عن هذا الاجراء.",
+    cancel: "الغاء",
+    noResults: "لا توجد نتائج.",
+    selectedRows: "تم تحديد {selected} من {total} صف.",
+    previous: "السابق",
+    next: "التالي",
+  },
+};
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -81,6 +199,8 @@ const MOCK_USERS: User[] = [
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function SuperAdminUsers() {
+  const { language, t } = useI18n();
+  const copy = superAdminUsersCopy[language];
   const [data, setData] = useState<User[]>(MOCK_USERS);
   const [isLoading, setIsLoading] = useState(false);
   const [sorting, setSorting] = useState([]);
@@ -101,8 +221,8 @@ export default function SuperAdminUsers() {
     );
     toast.success(
       nextStatus === "suspended"
-        ? `${user.name} has been suspended.`
-        : `${user.name} has been reactivated.`
+        ? t(copy.suspendedToast, { name: user.name })
+        : t(copy.reactivatedToast, { name: user.name })
     );
   };
 
@@ -114,14 +234,14 @@ export default function SuperAdminUsers() {
   const handleDelete = () => {
     if (!userToDelete) return;
     setData((prev) => prev.filter((u) => u.id !== userToDelete.id));
-    toast.success(`${userToDelete.name} has been deleted.`);
+    toast.success(t(copy.deletedToast, { name: userToDelete.name }));
     setDeleteDialogOpen(false);
     setUserToDelete(null);
   };
 
   const handleVisitProfile = (user: User) => {
     // In a real app: router.push(`/admin/users/${user.id}`)
-    toast(`Visiting profile of ${user.name}`, { icon: "👤" });
+    toast(t(copy.visitingProfileToast, { name: user.name }), { icon: "👤" });
   };
 
   // ── Columns ─────────────────────────────────────────────────────────────────
@@ -130,14 +250,14 @@ export default function SuperAdminUsers() {
     {
       id: "select",
       header: ({ table }) => (
-        <Checkbox className="cursor-pointer" aria-label="Select all" />
+        <Checkbox className="cursor-pointer" aria-label={copy.selectAll} />
       ),
       cell: ({ row }) => (
         <Checkbox
           className="cursor-pointer"
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label={copy.selectRow}
         />
       ),
       enableSorting: false,
@@ -145,7 +265,7 @@ export default function SuperAdminUsers() {
     },
     {
       accessorKey: "name",
-      header: "Name",
+      header: copy.name,
       cell: ({ row }) => {
         const user: User = row.original;
         return (
@@ -163,14 +283,14 @@ export default function SuperAdminUsers() {
     },
     {
       accessorKey: "phone",
-      header: "Phone",
+      header: copy.phone,
       cell: ({ row }) => (
         <div className="text-sm">{row.getValue("phone")}</div>
       ),
     },
     {
       accessorKey: "role",
-      header: "Role",
+      header: copy.role,
       cell: ({ row }) => {
         const role: UserRole = row.getValue("role");
         return (
@@ -189,7 +309,7 @@ export default function SuperAdminUsers() {
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: copy.status,
       cell: ({ row }) => {
         const status: UserStatus = row.getValue("status");
         return (
@@ -208,7 +328,7 @@ export default function SuperAdminUsers() {
     },
     {
       accessorKey: "createdAt",
-      header: "Joined",
+      header: copy.joined,
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
           {new Date(row.getValue("createdAt")).toLocaleDateString("en-GB", {
@@ -221,7 +341,7 @@ export default function SuperAdminUsers() {
     },
     {
       id: "profile",
-      header: "Profile",
+      header: copy.profile,
       enableHiding: false,
       cell: ({ row }) => {
         const user: User = row.original;
@@ -233,7 +353,7 @@ export default function SuperAdminUsers() {
             onClick={() => handleVisitProfile(user)}
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            View
+            {copy.view}
           </Button>
         );
       },
@@ -251,12 +371,12 @@ export default function SuperAdminUsers() {
                 size="lg"
                 className="h-8 w-8 p-0 cursor-pointer"
               >
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{copy.openMenu}</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{copy.actions}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer"
@@ -264,7 +384,7 @@ export default function SuperAdminUsers() {
                 onClick={() => handleVisitProfile(user)}
               >
                 <ExternalLink className="mr-2 h-4 w-4" />
-                Visit Profile
+                {copy.visitProfile}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
@@ -272,7 +392,7 @@ export default function SuperAdminUsers() {
                 onClick={() => handleSuspend(user)}
               >
                 <ShieldOff className="mr-2 h-4 w-4" />
-                {user.status === "active" ? "Suspend" : "Reactivate"}
+                {user.status === "active" ? copy.suspend : copy.reactivate}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -281,7 +401,7 @@ export default function SuperAdminUsers() {
                 onClick={() => openDeleteDialog(user)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Delete
+                {copy.delete}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -314,17 +434,17 @@ export default function SuperAdminUsers() {
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <SuperAdminSidebarLayout breadcrumbTitle="Users">
-      <h1 className="text-2xl font-bold">Users</h1>
+    <SuperAdminSidebarLayout breadcrumbTitle={copy.breadcrumb}>
+      <h1 className="text-2xl font-bold">{copy.title}</h1>
       <p className="text-gray-700 dark:text-gray-400 mb-4">
-        Manage all registered employers and sellers.
+        {copy.description}
       </p>
 
       <div className="w-full">
         {/* Toolbar */}
         <div className="flex items-center py-4 gap-3">
           <Input
-            placeholder="Filter by name or email..."
+            placeholder={copy.filterByNameOrEmail}
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(e) =>
               table.getColumn("name")?.setFilterValue(e.target.value)
@@ -336,7 +456,7 @@ export default function SuperAdminUsers() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="lg" className="cursor-pointer">
-                Role <ChevronDown className="ml-2 h-4 w-4" />
+                {copy.roleFilter} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
@@ -346,7 +466,7 @@ export default function SuperAdminUsers() {
                   table.getColumn("role")?.setFilterValue(undefined)
                 }
               >
-                All Roles
+                {copy.allRoles}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
@@ -354,7 +474,7 @@ export default function SuperAdminUsers() {
                   table.getColumn("role")?.setFilterValue("employer")
                 }
               >
-                Employers
+                {copy.employers}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
@@ -362,7 +482,7 @@ export default function SuperAdminUsers() {
                   table.getColumn("role")?.setFilterValue("seller")
                 }
               >
-                Sellers
+                {copy.sellers}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -375,7 +495,7 @@ export default function SuperAdminUsers() {
                 size="lg"
                 className="ml-auto cursor-pointer"
               >
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
+                {copy.columns} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -402,19 +522,19 @@ export default function SuperAdminUsers() {
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Delete User</DialogTitle>
+              <DialogTitle>{copy.deleteUser}</DialogTitle>
               <DialogDescription className="mb-3">
-                Are you sure you want to delete{" "}
+                {copy.deletePromptPrefix}{" "}
                 <span className="font-semibold text-foreground">
                   {userToDelete?.name}
                 </span>
-                ? This action cannot be undone.
+                {copy.deletePromptSuffix}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mt-5">
               <DialogClose asChild>
                 <Button variant="outline" size="lg">
-                  Cancel
+                  {copy.cancel}
                 </Button>
               </DialogClose>
               <Button
@@ -422,7 +542,7 @@ export default function SuperAdminUsers() {
                 size="lg"
                 onClick={handleDelete}
               >
-                Delete
+                {copy.delete}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -472,7 +592,7 @@ export default function SuperAdminUsers() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No results.
+                    {copy.noResults}
                   </TableCell>
                 </TableRow>
               )}
@@ -483,8 +603,10 @@ export default function SuperAdminUsers() {
         {/* Pagination */}
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="text-muted-foreground flex-1 text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {t(copy.selectedRows, {
+              selected: table.getFilteredSelectedRowModel().rows.length,
+              total: table.getFilteredRowModel().rows.length,
+            })}
           </div>
           <div className="space-x-2">
             <Button
@@ -494,7 +616,7 @@ export default function SuperAdminUsers() {
               disabled={!table.getCanPreviousPage()}
               className="cursor-pointer"
             >
-              Previous
+              {copy.previous}
             </Button>
             <Button
               variant="primary"
@@ -503,7 +625,7 @@ export default function SuperAdminUsers() {
               disabled={!table.getCanNextPage()}
               className="cursor-pointer"
             >
-              Next
+              {copy.next}
             </Button>
           </div>
         </div>

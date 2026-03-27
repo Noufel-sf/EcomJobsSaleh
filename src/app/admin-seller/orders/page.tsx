@@ -35,10 +35,70 @@ import { getColumns } from "@/components/AdminOrderRow";
 import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
 import OrderDetailsModal from "@/components/OrderDetailsModal";
 import type { Order } from "@/lib/DatabaseTypes";
+import { type Language, useI18n } from "@/context/I18nContext";
+
+const ordersCopy: Record<Language, Record<string, string>> = {
+  en: {
+    title: "Orders",
+    subtitle: "View and track all user orders.",
+    searchPlaceholder: "Search by first name...",
+    export: "Export to CSV",
+    columns: "Columns",
+    noResults: "No results.",
+    selectedRows: "{selected} of {total} row(s) selected.",
+    previous: "Previous",
+    next: "Next",
+    updated: "Order status updated successfully",
+    updateFailed: "Failed to update status",
+    deleted: "Order deleted successfully",
+    deleteFailed: "Failed to delete order",
+    noDataExport: "No data to export",
+    exported: "Orders exported successfully!",
+    exportFailed: "Failed to export orders",
+  },
+  fr: {
+    title: "Commandes",
+    subtitle: "Consultez et suivez toutes les commandes utilisateurs.",
+    searchPlaceholder: "Rechercher par prenom...",
+    export: "Exporter en CSV",
+    columns: "Colonnes",
+    noResults: "Aucun resultat.",
+    selectedRows: "{selected} sur {total} ligne(s) selectionnee(s).",
+    previous: "Precedent",
+    next: "Suivant",
+    updated: "Statut de commande mis a jour",
+    updateFailed: "Echec de mise a jour du statut",
+    deleted: "Commande supprimee",
+    deleteFailed: "Echec de suppression de commande",
+    noDataExport: "Aucune donnee a exporter",
+    exported: "Commandes exportees avec succes !",
+    exportFailed: "Echec de l'export des commandes",
+  },
+  ar: {
+    title: "الطلبات",
+    subtitle: "عرض وتتبع جميع طلبات المستخدمين.",
+    searchPlaceholder: "ابحث بالاسم الاول...",
+    export: "تصدير CSV",
+    columns: "الاعمدة",
+    noResults: "لا توجد نتائج.",
+    selectedRows: "تم تحديد {selected} من {total} صف.",
+    previous: "السابق",
+    next: "التالي",
+    updated: "تم تحديث حالة الطلب بنجاح",
+    updateFailed: "فشل تحديث الحالة",
+    deleted: "تم حذف الطلب بنجاح",
+    deleteFailed: "فشل حذف الطلب",
+    noDataExport: "لا توجد بيانات للتصدير",
+    exported: "تم تصدير الطلبات بنجاح!",
+    exportFailed: "فشل تصدير الطلبات",
+  },
+};
 
 
 
 export default function AdminAllOrders() {
+  const { language, t } = useI18n();
+  const copy = ordersCopy[language];
 
   const { data: ordersData, isLoading: ordersLoading } = useGetSellerOrdersQuery({Seller_id: "019d17a3-6d61-771a-abf9-8b588f9c6f83", size: 10});
   const orders = ordersData?.content || [];
@@ -63,10 +123,10 @@ export default function AdminAllOrders() {
     
     try {
       await updateOrderStatus({ orderId: orderId, status: newStatus }).unwrap();
-      toast.success("Order status updated successfully");
+      toast.success(copy.updated);
     } catch (error: any) {
       setData(previousData);
-      toast.error(error?.data?.message || "Failed to update status");
+      toast.error(error?.data?.message || copy.updateFailed);
     }
   };
 
@@ -74,17 +134,17 @@ export default function AdminAllOrders() {
     try {
       await deleteOrderMutation(String(orderId)).unwrap();
       setData(prevData => prevData.filter(order => order.id !== orderId));
-      toast.success("Order deleted successfully");
+      toast.success(copy.deleted);
       setDialogOpen(false);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to delete order");
+      toast.error(error?.data?.message || copy.deleteFailed);
     }
   }
  
   const exportToExcel = () => {
   try {
     if (!orders || orders.length === 0) {
-      toast.error("No data to export");
+      toast.error(copy.noDataExport);
       return;
     }
 
@@ -152,9 +212,9 @@ export default function AdminAllOrders() {
     link.click();
     document.body.removeChild(link);
 
-    toast.success("Orders exported successfully!");
+    toast.success(copy.exported);
   } catch (error) {
-    toast.error("Failed to export orders");
+    toast.error(copy.exportFailed);
     console.error("Export error:", error);
   }
   };
@@ -193,20 +253,20 @@ export default function AdminAllOrders() {
 
   return (
     <AdminSidebarLayout breadcrumbTitle="Orders">
-      <h1 className="text-2xl font-bold">Orders</h1>
+      <h1 className="text-2xl font-bold">{copy.title}</h1>
       <p className="text-gray-700 dark:text-gray-400 mb-4">
-        View & Track All User Orders.
+        {copy.subtitle}
       </p>
       <div className="w-full">
         <div className="flex items-center justify-between py-4">
           <Input
             type="text"
-            placeholder="Search By First Name.."
+            placeholder={copy.searchPlaceholder}
             value={table.getColumn("firstName")?.getFilterValue() ?? ""}
             onChange={(event: any) =>
               table.getColumn("firstName")?.setFilterValue(event.target.value)
             }
-            className="max-w-sm"
+            className="max-w-sm hidden md:block"
           />
           <div className="flex items-center justify-between gap-3">
 
@@ -217,13 +277,13 @@ export default function AdminAllOrders() {
             className="ml-auto cursor-pointer"
           >
             <Download className="mr-2 h-4 w-4" />
-            Export to Excel
+            {copy.export}
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="default" className="ml-auto cursor-pointer">
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
+                {copy.columns} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="">
@@ -291,7 +351,7 @@ export default function AdminAllOrders() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No results.
+                    {copy.noResults}
                   </TableCell>
                 </TableRow>
               )}
@@ -307,8 +367,10 @@ export default function AdminAllOrders() {
 
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="text-muted-foreground flex-1 text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {t(copy.selectedRows, {
+              selected: table.getFilteredSelectedRowModel().rows.length,
+              total: table.getFilteredRowModel().rows.length,
+            })}
           </div>
           <div className="space-x-2">
             <Button
@@ -318,7 +380,7 @@ export default function AdminAllOrders() {
               disabled={!table.getCanPreviousPage()}
               className="cursor-pointer"
             >
-              Previous
+              {copy.previous}
             </Button>
             <Button
               variant="primary"
@@ -327,7 +389,7 @@ export default function AdminAllOrders() {
               disabled={!table.getCanNextPage()}
               className="cursor-pointer"
             >
-              Next
+              {copy.next}
             </Button>
           </div>
         </div>
