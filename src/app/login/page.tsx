@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useLoginMutation } from '@/Redux/Services/AuthApi';
 import { useAppDispatch } from '@/Redux/hooks';
-import { setCredentials } from '@/Redux/Slices/AuthSlice';
+import { setCredentials } from '@/Redux/slices/AuthSlice';
 import { Lock, Mail, Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react';
 import { type Language, useI18n } from '@/context/I18nContext';
 

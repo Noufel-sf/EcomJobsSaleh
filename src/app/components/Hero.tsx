@@ -18,7 +18,7 @@ const Hero = () => {
 
   return (
     <>
-      <section className="px-6 py-12 mx-auto container flex items-stretch gap-5 min-h-[500px]">
+      <section className="px-6 py-12 mx-auto container flex items-stretch gap-5 min-h-125">
         <Swiper
           navigation={{
             prevEl: '.custom-prev',
@@ -33,13 +33,14 @@ const Hero = () => {
         >
           {heroImages.map((image, index) => {
             return (
-              <SwiperSlide key={index}>
+              <SwiperSlide key={index} className="relative!">
                 <Image 
                   src={image} 
                   alt={`Hero banner ${index + 1}`}
                   className="w-full h-full cursor-pointer object-cover" 
                   fill 
                   priority={index === 0}
+                  fetchPriority={index === 0 ? 'high' : 'auto'}
                   sizes="(max-width: 768px) 100vw, 80vw"
                 />
               </SwiperSlide>

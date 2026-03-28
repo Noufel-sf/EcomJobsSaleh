@@ -25,7 +25,7 @@ import {  useLazySearchProductsQuery } from "@/Redux/Services/ProductsApi";
 import { useLogoutMutation } from "@/Redux/Services/AuthApi";
 import { useGetAllClassificationsQuery } from "@/Redux/Services/ClassificationApi";
 import { useAppSelector, useAppDispatch } from "@/Redux/hooks";
-import { logout as logoutAction } from "@/Redux/Slices/AuthSlice";
+import { logout as logoutAction } from "@/Redux/slices/AuthSlice";
 import toast from "react-hot-toast";
 import { Product } from "@/lib/DatabaseTypes";
 import { useI18n } from "@/context/I18nContext";

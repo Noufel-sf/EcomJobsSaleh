@@ -7,7 +7,8 @@ import { classificationApi } from "./Services/ClassificationApi";
 import { shippingApi } from "./Services/ShippingApi";
 import { jobApi } from "./Services/JobApi";
 import { sellerApi } from "./Services/SellerApi";
-import authReducer from "./Slices/AuthSlice";
+import { usersApi } from "./Services/UsersApi";
+import authReducer from "./slices/AuthSlice";
 import { sponsorApi } from "./Services/SponsorApi";
 
 export const store = configureStore({
@@ -22,6 +23,7 @@ export const store = configureStore({
     [sponsorApi.reducerPath]: sponsorApi.reducer,
     [jobApi.reducerPath]: jobApi.reducer,
     [sellerApi.reducerPath]: sellerApi.reducer,
+    [usersApi.reducerPath]: usersApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -35,6 +37,7 @@ export const store = configureStore({
       shippingApi.middleware,
       jobApi.middleware,
       sellerApi.middleware,
+      usersApi.middleware,
     ),
 });
 

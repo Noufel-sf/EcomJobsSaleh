@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
+import dynamic from "next/dynamic";
 import "./globals.css";
 import ClientProviders from "@/lib/ClientProviders";
-import { Toaster } from "@/components/Toaster";
+
+const DeferredToaster = dynamic(
+  () => import("@/components/Toaster").then((mod) => mod.Toaster),
+  // { ssr: false },
+);
 
 
 const outfit = Outfit({
@@ -77,7 +82,7 @@ export default function RootLayout({
         <ClientProviders>
           {children}
         </ClientProviders>
-        <Toaster />
+        <DeferredToaster />
       </body>
     </html>
   );

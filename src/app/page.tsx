@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 // Dynamically import components with built-in loading UI
 const Hero = dynamic(() => import("@/components/Hero"), {
   loading: () => (
-    <div className="h-[500px] animate-pulse bg-muted rounded-lg" />
+    <div className="h-125 animate-pulse bg-muted rounded-lg" />
   ),
 });
 

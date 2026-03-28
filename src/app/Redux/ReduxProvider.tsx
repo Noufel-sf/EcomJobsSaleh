@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 import { useEffect } from "react";
 import { useGetProfileQuery } from "./Services/AuthApi";
-import { setCredentials, setLoading } from "./Slices/AuthSlice";
+import { setCredentials, setLoading } from "./slices/AuthSlice";
 import { useAppDispatch } from "./hooks";
 
 function AuthInitializer({ children }: { children: React.ReactNode }) {

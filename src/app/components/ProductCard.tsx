@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { memo, useTransition } from "react";
+import { memo } from "react";
 import {
   Card,
   CardContent,
   CardHeader,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Loader2 } from "lucide-react";
 import type { Product } from "@/lib/DatabaseTypes";
 
 export const ProductCard = memo(function ProductCard({
@@ -33,18 +31,19 @@ export const ProductCard = memo(function ProductCard({
       <Link href={`/productdetails/${product.id}`} className="block">
         <CardHeader className="p-0 relative">
           {/* Product Image */}
-          <Image
-            src={product.mainImage}
-            alt={product.mainImage}
-            className="w-full h-38 object-contain"
-            width={400}
-            height={300}
-            loading="lazy"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+          <div className="relative h-38 w-full">
+            <Image
+              src={product.mainImage}
+              alt={product.name}
+              className="w-full h-full object-contain"
+              fill
+              loading="lazy"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            />
+          </div>
         </CardHeader>
 
-        <CardContent className="p-4 space-y-1">
+        <CardContent className="p-4 space-y-1 min-h-28">
 
         
           <h3 className="text-sm font-medium line-clamp-2">
@@ -63,7 +62,7 @@ export const ProductCard = memo(function ProductCard({
         </CardContent>
       </Link>
 
-      <div className="px-4 flex items-center w-full  gap-2">
+      <div className="px-4 flex items-center w-full gap-2 min-h-12">
         <Link href={`/productdetails/${product.id}`} className="w-full">
         <Button
           variant="default"

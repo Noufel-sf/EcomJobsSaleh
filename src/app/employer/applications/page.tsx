@@ -161,7 +161,6 @@ const applicationsCopy: Record<Language, Record<string, string>> = {
   },
 };
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EmployerApplications() {
   const { language, t } = useI18n();

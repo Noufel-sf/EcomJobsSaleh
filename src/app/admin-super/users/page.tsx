@@ -51,6 +51,11 @@ import SuperAdminSidebarLayout from "@/components/SuperAdminSidebarLayout";
 import toast from "react-hot-toast";
 import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
 import { type Language, useI18n } from "@/context/I18nContext";
+import {
+  useDeleteAdminUserMutation,
+  useGetAdminUsersQuery,
+  useUpdateAdminUserStatusMutation,
+} from "@/Redux/Services/UsersApi";
 
 const superAdminUsersCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -171,8 +176,10 @@ const superAdminUsersCopy: Record<Language, Record<string, string>> = {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type UserRole = "employer" | "seller";
-type UserStatus = "active" | "suspended";
+const ENABLE_SUPER_ADMIN_USERS_API = false;
+
+type UserRole = "employer" | "seller" | string;
+type UserStatus = "active" | "suspended" | string;
 
 interface User {
   id: string;
@@ -220,7 +227,7 @@ export default function SuperAdminUsers() {
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
-  const handleSuspend = (user: User) => {
+  const handleSuspend = async (user: User) => {
     const nextStatus: UserStatus = user.status === "active" ? "suspended" : "active";
     setData((prev) =>
       prev.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u)),

@@ -4,7 +4,6 @@ export interface Sponsor {
   _id: string;
   name: string;
   image?: string;
-  website?: string;
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -13,8 +12,10 @@ export interface Sponsor {
 export interface SponsorPayload {
   name: string;
   image?: string;
-  website?: string;
+  sponsorLink?: string;
+  description?: string;
   isActive?: boolean;
+  ownerId: boolean;
 }
 export interface GetAllsponsorsParams {
   page?: number;
@@ -33,7 +34,7 @@ export const sponsorApi = createApi({
   }),
   tagTypes: ["Sponsor"],
   endpoints: (builder) => ({
-    getAllsponsors: builder.query<Sponsor[], GetAllsponsorsParams | void>({
+    getsponsors: builder.query<Sponsor[], GetAllsponsorsParams | void>({
       query: (params) => ({
         url: "",
         params: params
@@ -95,9 +96,10 @@ export const sponsorApi = createApi({
 });
 
 export const {
-  useGetSponsorsQuery,
+  useGetsponsorsQuery,
   useGetSponsorByIdQuery,
   useCreateSponsorMutation,
   useUpdateSponsorMutation,
   useDeleteSponsorMutation,
 } = sponsorApi;
+
