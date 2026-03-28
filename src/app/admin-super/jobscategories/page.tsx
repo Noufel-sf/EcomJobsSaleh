@@ -1,13 +1,18 @@
 "use client";
+"use no memo";
 import { useState, useEffect } from "react";
-
-import React from "react";
 import {
+  type ColumnFiltersState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  type Row,
+  type RowSelectionState,
+  type SortingState,
+  type Table as TanstackTable,
   useReactTable,
+  type VisibilityState,
   flexRender,
 } from "@tanstack/react-table";
 
@@ -44,7 +49,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MoreHorizontal, ChevronDown } from "lucide-react";
 import SuperAdminSidebarLayout from "@/components/SuperAdminSidebarLayout";
-import { useAppSelector } from "@/Redux/hooks";
 import toast from "react-hot-toast";
 import { ButtonLoading } from "@/components/ui/ButtonLoading";
 import {
@@ -167,15 +171,13 @@ export default function SuperAdminJobsCategories() {
   const { language, t } = useI18n();
   const copy = superAdminJobCategoriesCopy[language];
   const { data: categoriesData, isLoading } = useGetAllCategoriesQuery();
-  const categories = categoriesData?.content || [];
+  const [data, setData] = useState<JobCategory[]>([]);
 
   useEffect(() => {
     if (categoriesData?.content) {
       setData(categoriesData.content);
     }
   }, [categoriesData]);
-
-  const [data, setData] = useState(categories);
   const [editMode, setEditMode] = useState(false);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<JobCategory | null>(
@@ -193,37 +195,43 @@ export default function SuperAdminJobsCategories() {
     e.preventDefault();
 
     try {
-      const newCategory = await createCategory({
+      await createCategory({
+        content: title,
         categories: title,
         description: description,
       }).unwrap();
-      setData((prev) => [...prev, newCategory]);
       toast.success(copy.created);
       setOpen(false);
       setTitle("");
       setDescription("");
     } catch (error: unknown) {
-      toast.error(error?.data?.message);
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.updateFailed);
     }
   };
 
-  const handleUpdate = async (
-    e: React.FormEvent<HTMLFormElement>,
-    id: string,
-  ) => {
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedCategory) return;
 
     try {
-      const updated = await updateCategory({
+      await updateCategory({
         id: selectedCategory.id,
+        content: title,
         categories: title,
         description: description,
       }).unwrap();
 
       setData((prev) =>
         prev.map((category) =>
-          category.id === id ? { ...category, ...updated } : category,
+          category.id === selectedCategory.id
+            ? {
+                ...category,
+                content: title,
+                categories: title,
+                description,
+              }
+            : category,
         ),
       );
       setTitle("");
@@ -233,8 +241,9 @@ export default function SuperAdminJobsCategories() {
       setSelectedCategory(null);
       setEditSheetOpen(false);
       setEditMode(false);
-    } catch (error: any) {
-      toast.error(error?.data?.message || copy.updateFailed);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.updateFailed);
     }
   };
 
@@ -243,28 +252,40 @@ export default function SuperAdminJobsCategories() {
       await deleteCategory(categoryId).unwrap();
       setData((prev) => prev.filter((c) => c.id !== categoryId));
       toast.success(copy.deleted);
-    } catch (error: any) {
-      toast.error(error?.data?.message || copy.deleteFailed);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.deleteFailed);
     }
   };
 
-  const user = useAppSelector((state) => state.auth.user);
-  const [sorting, setSorting] = useState([]);
-  const [columnFilters, setColumnFilters] = useState([]);
-  const [columnVisibility, setColumnVisibility] = useState({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const columns = [
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox className="cursor-pointer" aria-label={copy.selectAll} />
+      header: ({ table }: { table: TanstackTable<JobCategory> }) => (
+        <Checkbox
+          className="cursor-pointer"
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value: boolean | "indeterminate") =>
+            table.toggleAllPageRowsSelected(!!value)
+          }
+          aria-label={copy.selectAll}
+        />
       ),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: Row<JobCategory> }) => (
         <Checkbox
           className="cursor-pointer"
           checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          onCheckedChange={(value: boolean | "indeterminate") =>
+            row.toggleSelected(!!value)
+          }
           aria-label={copy.selectRow}
         />
       ),
@@ -275,14 +296,14 @@ export default function SuperAdminJobsCategories() {
     {
       accessorKey: "categories",
       header: copy.name,
-      cell: ({ row }) => (
+      cell: ({ row }: { row: Row<JobCategory> }) => (
         <div className="font-medium">{row.getValue("categories")}</div>
       ),
     },
     {
       accessorKey: "description",
       header: copy.desc,
-      cell: ({ row }) => (
+      cell: ({ row }: { row: Row<JobCategory> }) => (
         <div className="text-sm text-muted-foreground">
           {row.getValue("description") || "-"}
         </div>
@@ -292,7 +313,7 @@ export default function SuperAdminJobsCategories() {
     {
       id: "actions",
       enableHiding: false,
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<JobCategory> }) => {
         const category = row.original;
         return (
           <DropdownMenu>
@@ -311,7 +332,7 @@ export default function SuperAdminJobsCategories() {
               <DropdownMenuSeparator className={""} />
               <DropdownMenuItem
                 className="cursor-pointer"
-                inset=""
+                inset
                 onClick={() => {
                   setSelectedCategory(category);
                   setTitle(category.categories);
@@ -324,7 +345,7 @@ export default function SuperAdminJobsCategories() {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
-                inset=""
+                inset
                 onClick={() => handleDelete(category.id)}
               >
                 {copy.delete}
@@ -369,7 +390,7 @@ export default function SuperAdminJobsCategories() {
                 {copy.createNew}
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-106.25">
               <form onSubmit={handleCreate}>
                 <DialogHeader className="">
                   <DialogTitle className="">

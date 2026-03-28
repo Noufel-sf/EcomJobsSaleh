@@ -1,12 +1,17 @@
 "use client";
+"use no memo";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
+  type ColumnFiltersState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  type RowSelectionState,
+  type SortingState,
   useReactTable,
+  type VisibilityState,
   flexRender,
 } from "@tanstack/react-table";
 
@@ -43,9 +48,10 @@ import {
   useDeleteProductMutation,
   useUpdateProductStatusMutation,
 } from "@/Redux/Services/ProductsApi";
+import { useAppSelector } from "@/Redux/hooks";
 
 import { useGetAllClassificationsQuery } from "@/Redux/Services/ClassificationApi";
-import { Product } from "@/lib/DatabaseTypes";
+import { Categorie, Product } from "@/lib/DatabaseTypes";
 import { type Language, useI18n } from "@/context/I18nContext";
 
 const productsCopy: Record<Language, Record<string, string>> = {
@@ -105,22 +111,30 @@ const productsCopy: Record<Language, Record<string, string>> = {
 export default function AdminProducts() {
   const { language, t } = useI18n();
   const copy = productsCopy[language];
+  const user = useAppSelector((state) => state.auth.user);
+  const ownerId = user?.userId ?? "";
   const { data: categoriesData } = useGetAllClassificationsQuery(undefined);
-  const categories = categoriesData?.content || [];
+  const categories = useMemo<Categorie[]>(
+    () =>
+      (categoriesData?.content ?? []).map((category) => ({
+        ...category,
+        desc: category.desc ?? null,
+      })),
+    [categoriesData],
+  );
 
   const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const [updateProductStatus] = useUpdateProductStatusMutation();
 
-  const [data, setData] = useState<Product[]>([]);
   const { data: productsData, isLoading } = useGetAllProductsQuery(undefined);
-  const products = productsData?.content || [];
+  const products = useMemo(() => productsData?.content ?? [], [productsData]);
 
-  const [sorting, setSorting] = useState<any[]>([]);
-  const [columnFilters, setColumnFilters] = useState<any[]>([]);
-  const [columnVisibility, setColumnVisibility] = useState<any>({});
-  const [rowSelection, setRowSelection] = useState<any>({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
@@ -128,54 +142,39 @@ export default function AdminProducts() {
 
   const handleCreate = async (formData: FormData) => {
     try {
-      const newProduct = await createProduct(formData).unwrap();
-      setData((prev) => [...prev, newProduct]);
+      await createProduct(formData).unwrap();
       toast.success(copy.created);
       setOpenCreate(false);
-    } catch (error: any) {
-      toast.error(error?.data?.message);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.updateFailed);
     }
   };
 
   const handleUpdate = async (id: string, formData: FormData) => {
     try {
-      const updated = await updateProduct({ id, formData }).unwrap();
-
-      setData((prev) =>
-        prev.map((product) =>
-          product.id === id ? { ...product, ...updated } : product,
-        ),
-      );
+      await updateProduct({ id, formData }).unwrap();
 
       toast.success(copy.updated);
       setOpenEdit(false);
       setSelectedProduct(null);
-    } catch (error: any) {
-      toast.error(error?.data?.message || copy.updateFailed);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.updateFailed);
     }
   };
 
   const handleDelete = async (productId: string) => {
     try {
       await deleteProduct(productId).unwrap();
-      setData((prev) => prev.filter((p) => p.id !== productId));
       toast.success(copy.deleted);
-    } catch (error: any) {
-      toast.error(error?.data?.message || copy.deleteFailed);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.deleteFailed);
     }
   };
 
   const handleStatusChange = async (productId: string, newStatus: string) => {
-    const previousData = [...data];
-
-    setData((prev) =>
-      prev.map((product) =>
-        product.id === productId
-          ? { ...product, available: newStatus === "active" }
-          : product,
-      ),
-    );
-
     try {
       await updateProductStatus({
         id: productId,
@@ -183,9 +182,9 @@ export default function AdminProducts() {
       }).unwrap();
 
       toast.success(copy.statusUpdated);
-    } catch (error: any) {
-      setData(previousData);
-      toast.error(error?.data?.message || copy.statusFailed);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.statusFailed);
     }
   };
 
@@ -230,8 +229,8 @@ export default function AdminProducts() {
           <Input
             type="text"
             placeholder={copy.search}
-            value={table.getColumn("name")?.getFilterValue() ?? ""}
-            onChange={(event: any) =>
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
               table.getColumn("name")?.setFilterValue(event.target.value)
             }
             className="max-w-sm hidden md:block"
@@ -244,7 +243,7 @@ export default function AdminProducts() {
               categories={categories}
               onSubmit={handleCreate}
               loading={isCreating}
-              ownerId={"019d17a3-6d61-771a-abf9-8b588f9c6f83"}
+              ownerId={ownerId}
             />
 
             <DropdownMenu>
@@ -262,7 +261,7 @@ export default function AdminProducts() {
                       key={column.id}
                       className="capitalize"
                       checked={column.getIsVisible()}
-                      onCheckedChange={(value: any) =>
+                      onCheckedChange={(value: boolean | "indeterminate") =>
                         column.toggleVisibility(!!value)
                       }
                     >
@@ -277,9 +276,9 @@ export default function AdminProducts() {
         <UpdateProductUi
           open={openEdit}
           onOpenChange={setOpenEdit}
-          ownerId={"019d17a3-6d61-771a-abf9-8b588f9c6f83"}
+          ownerId={ownerId}
           categories={categories}
-          initialProduct={selectedProduct}
+          initialProduct={selectedProduct ? { ...selectedProduct, prod_class: selectedProduct.prod_class ?? undefined } : null}
           onSubmit={handleUpdate}
           loading={isUpdating}
         />

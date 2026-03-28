@@ -5,11 +5,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { OrderItem , Order } from "@/lib/DatabaseTypes";
+import { Order } from "@/lib/DatabaseTypes";
 interface OrderDetailsModalProps {
   dialogOpen: boolean;
   setDialogOpen: (open: boolean) => void;
-  selectedOrder: Order;
+  selectedOrder: Order | null;
 }
 
 export default function OrderDetailsModal({
@@ -17,6 +17,10 @@ export default function OrderDetailsModal({
   setDialogOpen,
   selectedOrder,
 }: OrderDetailsModalProps) {
+  if (!selectedOrder) {
+    return null;
+  }
+
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -49,11 +53,11 @@ export default function OrderDetailsModal({
           <div className="pt-2">
             <p className="text-muted-foreground text-sm">Status</p>
             <span className={`inline-block text-xs px-3 py-1 rounded-full mt-1 ${
-              selectedOrder?.status === 'COMPLETED' 
+              selectedOrder?.status === 'Delivered' 
                 ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                 : selectedOrder?.status === 'New'
                 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
-                : selectedOrder?.status === 'CANCELED'
+                : selectedOrder?.status === 'Canceled'
                 ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300'
             }`}>

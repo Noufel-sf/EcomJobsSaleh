@@ -1,13 +1,20 @@
 "use client";
+"use no memo";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import {
+  type ColumnFiltersState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  type Row,
+  type RowSelectionState,
+  type SortingState,
+  type Table as TanstackTable,
   useReactTable,
+  type VisibilityState,
   flexRender,
 } from "@tanstack/react-table";
 
@@ -63,6 +70,7 @@ import {
   useDeleteApplicationMutation,
   useGetAllJobsQuery,
 } from "@/Redux/Services/JobApi";
+import { useAppSelector } from "@/Redux/hooks";
 import { JobApplication } from "@/lib/DatabaseTypes";
 import { type Language, useI18n } from "@/context/I18nContext";
 
@@ -158,12 +166,13 @@ const applicationsCopy: Record<Language, Record<string, string>> = {
 export default function EmployerApplications() {
   const { language, t } = useI18n();
   const copy = applicationsCopy[language];
+  const user = useAppSelector((state) => state.auth.user);
   const searchParams = useSearchParams();
   const preFilterJobId = searchParams.get("jobId") || "all";
-  const companyid = "019d0373-9de1-78b4-b177-2274fe9377ff"; // TODO: get from auth context
+  const companyId = user?.userId ?? "";
 
   const { data: applicationsData, isLoading: isLoadingApplications } =
-    useGetAllApplicationsQuery(companyid);
+    useGetAllApplicationsQuery(companyId, { skip: !companyId });
   const { data: jobsData } = useGetAllJobsQuery();
 
   const [updateApplicationStatus] = useUpdateApplicationStatusMutation();
@@ -193,6 +202,10 @@ export default function EmployerApplications() {
   const [selectedApplication, setSelectedApplication] =
     useState<ApplicationRow | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+
+  useEffect(() => {
+    setSelectedJobFilter(preFilterJobId);
+  }, [preFilterJobId]);
 
   // Build jobs filter list
   const jobsFilterList = useMemo(
@@ -278,32 +291,47 @@ export default function EmployerApplications() {
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
+    const objectUrl = URL.createObjectURL(blob);
+    link.href = objectUrl;
     link.download = `applications_${new Date().toISOString().split("T")[0]}.csv`;
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(objectUrl);
     toast.success(copy.exported);
   }, [copy.exported, copy.noData, filteredData]);
 
-  const [sorting, setSorting] = useState<any[]>([]);
-  const [columnFilters, setColumnFilters] = useState<any[]>([]);
-  const [columnVisibility, setColumnVisibility] = useState({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const columns = useMemo(
     () => [
       {
         id: "select",
-        header: () => <Checkbox className="cursor-pointer" />,
-        cell: ({ row }: any) => (
+        header: ({ table }: { table: TanstackTable<ApplicationRow> }) => (
+          <Checkbox
+            className="cursor-pointer"
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={(v: boolean | "indeterminate") =>
+              table.toggleAllPageRowsSelected(!!v)
+            }
+            aria-label="Select all"
+          />
+        ),
+        cell: ({ row }: { row: Row<ApplicationRow> }) => (
           <Checkbox
             className="cursor-pointer"
             checked={row.getIsSelected()}
             onCheckedChange={(v: boolean | "indeterminate") =>
               row.toggleSelected(!!v)
             }
+            aria-label="Select row"
           />
         ),
         enableSorting: false,
@@ -312,29 +340,32 @@ export default function EmployerApplications() {
       {
         accessorKey: "applicantName",
         header: copy.applicant,
-        cell: ({ row }: any) => (
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-              {row
-                .getValue("applicantName")
-                ?.split(" ")
-                .map((n: string) => n[0])
-                .join("")
-                .toUpperCase()}
-            </div>
-          <div>
-              <div className="font-medium">{row.getValue("applicantName")}</div>
-              <div className="text-xs text-muted-foreground">
-                {row.original.applicantEmail}
+        cell: ({ row }: { row: Row<ApplicationRow> }) => {
+          const applicantName = String(row.getValue("applicantName") || "");
+
+          return (
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                {applicantName
+                  .split(" ")
+                  .map((n: string) => n[0])
+                  .join("")
+                  .toUpperCase()}
+              </div>
+              <div>
+                <div className="font-medium">{applicantName}</div>
+                <div className="text-xs text-muted-foreground">
+                  {row.original.applicantEmail}
+                </div>
               </div>
             </div>
-          </div>
-        ),
+          );
+        },
       },
       {
         accessorKey: "jobTitle",
         header: copy.appliedFor,
-        cell: ({ row }: any) => (
+        cell: ({ row }: { row: Row<ApplicationRow> }) => (
           <div className="flex items-center gap-1 text-sm">
             <Briefcase className="h-3 w-3 text-muted-foreground" />
             {row.getValue("jobTitle")}
@@ -344,7 +375,7 @@ export default function EmployerApplications() {
       {
         accessorKey: "appliedDate",
         header: copy.date,
-        cell: ({ row }: any) => (
+        cell: ({ row }: { row: Row<ApplicationRow> }) => (
           <div className="text-sm text-muted-foreground">
             {row.getValue("appliedDate")}
           </div>
@@ -353,7 +384,7 @@ export default function EmployerApplications() {
       {
         accessorKey: "applicantPhone",
         header: copy.contact,
-        cell: ({ row }: any) => (
+        cell: ({ row }: { row: Row<ApplicationRow> }) => (
           <div className="flex items-center gap-1 text-sm">
             <Phone className="h-3 w-3 text-muted-foreground" />
             {row.getValue("applicantPhone") || "N/A"}
@@ -363,7 +394,7 @@ export default function EmployerApplications() {
       {
         accessorKey: "status",
         header: copy.status,
-        cell: ({ row }: any) => {
+        cell: ({ row }: { row: Row<ApplicationRow> }) => {
           const app = row.original as ApplicationRow;
           return (
             <DropdownMenu>
@@ -408,7 +439,7 @@ export default function EmployerApplications() {
       {
         id: "actions",
         enableHiding: false,
-        cell: ({ row }: any) => {
+        cell: ({ row }: { row: Row<ApplicationRow> }) => {
           const app = row.original as ApplicationRow;
           return (
             <div className="flex items-center gap-1">

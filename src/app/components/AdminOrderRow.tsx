@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button";
+import type { Dispatch, SetStateAction } from "react";
+import type { Row } from "@tanstack/react-table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,28 +9,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { OrderItem } from "@/lib/DatabaseTypes";
+import { Order } from "@/lib/DatabaseTypes";
 import { MoreHorizontal } from "lucide-react";
 
-interface Order {
-  id: number;
-  user?: {
-    id: number;
-    name: string;
-    phone: string;
-    email: string;
-  };
-  totalPrice: number;
-  status: string;
-  createdAt: string;
-  orderItems?: OrderItem[];
-}
-
 interface AdminOrderRowProps {
-  handleStatusChange: (orderId: number, newStatus: string) => void;
-  setSelectedOrder: (order: Order) => void;
+  handleStatusChange: (orderId: string, newStatus: Order["status"]) => void;
+  setSelectedOrder: Dispatch<SetStateAction<Order | null>>;
   setDialogOpen: (open: boolean) => void;
-  deleteOrder: (orderId: number) => void;
+  deleteOrder: (orderId: string) => void;
 }
 
 export function getColumns({
@@ -58,8 +46,8 @@ export function getColumns({
     {
       id: "firstName",
       header: "Client",
-      accessorFn: (row) => row.firstName,
-      cell: ({ row }: any) => (
+      accessorFn: (row: Order) => row.firstName,
+      cell: ({ row }: { row: Row<Order> }) => (
         <div className="font-medium">{row.getValue("firstName") + " " + row.original.lastName}</div>
       ),
     },
@@ -67,23 +55,23 @@ export function getColumns({
       id: "state",
       header: () => <span className="hidden md:inline">state</span>,
       accessorFn: (row: Order) => row.state,
-      cell: ({ row }: any) => (
+      cell: ({ row }: { row: Row<Order> }) => (
         <div className="font-medium hidden md:block">{row.getValue("state")}</div>
       ),
     },
     {
       accessorKey: "totalCost",
       header: () => <span className="hidden md:inline">Total</span>,
-      cell: ({ row }: any) => (
+      cell: ({ row }: { row: Row<Order> }) => (
         <div className="font-medium hidden md:block text-green-500">
-          {row.getValue("totalCost").toFixed(2)}
+          {row.getValue<number>("totalCost").toFixed(2)}
         </div>
       ),
     },
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }: any) => {
+      cell: ({ row }: { row: Row<Order> }) => {
         const order = row.original;
         const status = order.status;
 
@@ -146,7 +134,7 @@ export function getColumns({
     {
       id: "actions",
       enableHiding: false,
-      cell: ({ row }: any) => {
+      cell: ({ row }: { row: Row<Order> }) => {
         const order = row.original;
         return (
           <DropdownMenu>

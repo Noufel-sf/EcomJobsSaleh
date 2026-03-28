@@ -1,14 +1,20 @@
 'use client';
+"use no memo";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useAppSelector } from "@/Redux/hooks";
 import { useGetSellerOrdersQuery,useUpdateOrderStatusMutation, useDeleteOrderMutation } from "@/Redux/Services/OrderApi";
 
 import {
+  type ColumnFiltersState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  type RowSelectionState,
+  type SortingState,
   useReactTable,
+  type VisibilityState,
   flexRender,
 } from "@tanstack/react-table";
 
@@ -99,45 +105,41 @@ const ordersCopy: Record<Language, Record<string, string>> = {
 export default function AdminAllOrders() {
   const { language, t } = useI18n();
   const copy = ordersCopy[language];
+  const user = useAppSelector((state) => state.auth.user);
+  const sellerId = user?.userId ?? "";
 
-  const { data: ordersData, isLoading: ordersLoading } = useGetSellerOrdersQuery({Seller_id: "019d17a3-6d61-771a-abf9-8b588f9c6f83", size: 10});
-  const orders = ordersData?.content || [];
+  const { data: ordersData, isLoading: ordersLoading } = useGetSellerOrdersQuery(
+    { Seller_id: sellerId, size: 10 },
+    { skip: !sellerId },
+  );
+  const orders = useMemo(() => ordersData?.content ?? [], [ordersData]);
   const [deleteOrderMutation] = useDeleteOrderMutation();
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
 
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [data, setData] = useState<Order[]>(orders);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   
 
-  const handleStatusChange = async (orderId: string, newStatus: string) => {
-
-    const previousData = [...orders ];
-    setData(prevData => 
-      prevData.map(order => 
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
-    );
-    
+  const handleStatusChange = async (orderId: string, newStatus: Order["status"]) => {
     try {
       await updateOrderStatus({ orderId: orderId, status: newStatus }).unwrap();
       toast.success(copy.updated);
-    } catch (error: any) {
-      setData(previousData);
-      toast.error(error?.data?.message || copy.updateFailed);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.updateFailed);
     }
   };
 
   const deleteOrder = async (orderId: string) => {
     try {
       await deleteOrderMutation(String(orderId)).unwrap();
-      setData(prevData => prevData.filter(order => order.id !== orderId));
       toast.success(copy.deleted);
       setDialogOpen(false);
-    } catch (error: any) {
-      toast.error(error?.data?.message || copy.deleteFailed);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.deleteFailed);
     }
   }
  
@@ -160,14 +162,14 @@ export default function AdminAllOrders() {
 
       "Products": order.products
         ?.map(
-          (item: any) =>
-            `${item.product?.name || "Unknown"} (x${item.prodNb}) - Size: ${
+          (item) =>
+            `${item.name || "Unknown"} (x${item.prodNb}) - Size: ${
               item.size || "-"
             } - Color: ${item.color || "-"}`
         )
         .join(" | ") || "N/A",
 
-      "Products Cost": `${order.productsCost?.toFixed(2) || "0.00"} DA`,
+      "Products Cost": `${order.products.reduce((sum, item) => sum + item.priceAtTime * item.prodNb, 0).toFixed(2)} DA`,
       "Delivery Cost": `${order.deliveryCost?.toFixed(2) || "0.00"} DA`,
       "Total Cost": `${order.totalCost?.toFixed(2) || "0.00"} DA`,
 
@@ -176,11 +178,11 @@ export default function AdminAllOrders() {
           order.status?.slice(1).toLowerCase() || "N/A",
     }));
 
-    const headers = Object.keys(exportData[0]);
+    const headers = Object.keys(exportData[0]) as Array<keyof (typeof exportData)[0]>;
 
     const csvContent = [
       headers.join(","),
-      ...exportData.map((row: any) =>
+      ...exportData.map((row) =>
         headers
           .map((header) => {
             const value = row[header];
@@ -211,6 +213,7 @@ export default function AdminAllOrders() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 
     toast.success(copy.exported);
   } catch (error) {
@@ -220,10 +223,10 @@ export default function AdminAllOrders() {
   };
 
 
-  const [sorting, setSorting] = useState<any[]>([]);
-  const [columnFilters, setColumnFilters] = useState<any[]>([]);
-  const [columnVisibility, setColumnVisibility] = useState<any>({});
-  const [rowSelection, setRowSelection] = useState<any>({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const columns = getColumns({
     handleStatusChange,
@@ -233,7 +236,7 @@ export default function AdminAllOrders() {
   });
 
   const table = useReactTable({
-    data:orders,
+    data: orders,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -262,8 +265,8 @@ export default function AdminAllOrders() {
           <Input
             type="text"
             placeholder={copy.searchPlaceholder}
-            value={table.getColumn("firstName")?.getFilterValue() ?? ""}
-            onChange={(event: any) =>
+            value={(table.getColumn("firstName")?.getFilterValue() as string) ?? ""}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
               table.getColumn("firstName")?.setFilterValue(event.target.value)
             }
             className="max-w-sm hidden md:block"
@@ -295,7 +298,7 @@ export default function AdminAllOrders() {
                     key={column.id}
                     className="capitalize cursor-pointer"
                     checked={column.getIsVisible()}
-                    onCheckedChange={(value: any) =>
+                    onCheckedChange={(value: boolean | "indeterminate") =>
                       column.toggleVisibility(!!value)
                     }
                   >

@@ -1,12 +1,19 @@
 "use client";
+"use no memo";
 
 import { useState, useMemo, useCallback } from "react";
 import {
+  type ColumnFiltersState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  type Row,
+  type RowSelectionState,
+  type SortingState,
+  type Table as TanstackTable,
   useReactTable,
+  type VisibilityState,
   flexRender,
 } from "@tanstack/react-table";
 
@@ -146,8 +153,8 @@ export default function SuperAdminJobs() {
   const { data: jobsData, isLoading } = useGetAllJobsQuery();
   const [deleteJob] = useDeleteJobMutation();
 
-  const jobs = jobsData?.content || [];
-
+  const jobs = jobsData?.content ?? [];
+  
   const handleDelete = useCallback(
     async (jobId: string) => {
       try {
@@ -173,19 +180,29 @@ export default function SuperAdminJobs() {
     },
     [copy.toggleFailed, copy.toggled, deleteJob],
   );
-  const [sorting, setSorting] = useState<any[]>([]);
-  const [columnFilters, setColumnFilters] = useState<any[]>([]);
-  const [columnVisibility, setColumnVisibility] = useState({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const columns = useMemo(
     () => [
       {
         id: "select",
-        header: () => (
-          <Checkbox className="cursor-pointer" aria-label={copy.selectAll} />
+        header: ({ table }: { table: TanstackTable<Job> }) => (
+          <Checkbox
+            className="cursor-pointer"
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={(value: boolean | "indeterminate") =>
+              table.toggleAllPageRowsSelected(!!value)
+            }
+            aria-label={copy.selectAll}
+          />
         ),
-        cell: ({ row }: any) => (
+        cell: ({ row }: { row: Row<Job> }) => (
           <Checkbox
             className="cursor-pointer"
             checked={row.getIsSelected()}
@@ -199,14 +216,14 @@ export default function SuperAdminJobs() {
       {
         accessorKey: "title",
         header: copy.jobTitle,
-        cell: ({ row }: any) => (
+        cell: ({ row }: { row: Row<Job> }) => (
           <div className="font-medium">{row.getValue("title")}</div>
         ),
       },
       {
         accessorKey: "location",
         header: copy.location,
-        cell: ({ row }: any) => (
+        cell: ({ row }: { row: Row<Job> }) => (
           <div className="text-sm text-muted-foreground">
             {row.getValue("location")}
           </div>
@@ -215,9 +232,9 @@ export default function SuperAdminJobs() {
       {
         accessorKey: "type",
         header: copy.type,
-        cell: ({ row }: any) => (
+        cell: ({ row }: { row: Row<Job> }) => (
           <span
-            className={`text-xs px-2 py-1 rounded-full font-medium ${typeStyles[row.getValue("type")] || ""}`}
+            className={`text-xs px-2 py-1 rounded-full font-medium ${typeStyles[row.getValue("type") as string] || ""}`}
           >
             {row.getValue("type")}
           </span>
@@ -228,7 +245,7 @@ export default function SuperAdminJobs() {
         id: "actions",
         header: copy.actions,
         enableHiding: false,
-        cell: ({ row }: any) => {
+        cell: ({ row }: { row: Row<Job> }) => {
           const job = row.original as Job;
           return (
             <div className="flex items-center gap-2">

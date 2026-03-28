@@ -1,16 +1,20 @@
 "use client";
+"use no memo";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
+  type ColumnFiltersState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  type Row,
+  type RowSelectionState,
+  type SortingState,
+  type Table as TanstackTable,
   useReactTable,
   flexRender,
-  SortingState,
-  ColumnFiltersState,
-  VisibilityState,
+  type VisibilityState,
 } from "@tanstack/react-table";
 
 import {
@@ -24,7 +28,6 @@ import {
 
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -45,25 +48,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  ChevronDown,
-  MapPin,
-  DollarSign,
-  CheckCircle,
-  XCircle,
-  Edit,
-  AlertCircle,
-} from "lucide-react";
+import { MapPin, Edit } from "lucide-react";
 import AdminSidebarLayout from "@/components/AdminSidebarLayout";
 import toast from "react-hot-toast";
-import { ButtonLoading } from "@/components/ui/ButtonLoading";
 import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
 import {
   useGetAllShippingSellerStatesQuery,
   useUpdateShippingsMutation,
   ShippingState,
 } from "@/Redux/Services/ShippingApi";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAppSelector } from "@/Redux/hooks";
 import { type Language, useI18n } from "@/context/I18nContext";
 
 const shippingCopy: Record<Language, Record<string, string>> = {
@@ -140,14 +134,14 @@ const getStatusStyle = (status: string) => {
 export default function ShippingManagement() {
   const { language } = useI18n();
   const copy = shippingCopy[language];
-  const ownerId = "019c52df-1e7a-7006-ac12-aa2be28f77b4";
+  const user = useAppSelector((state) => state.auth.user);
+  const ownerId = user?.userId ?? "";
 
   const { data: statesData, isLoading } =
-    useGetAllShippingSellerStatesQuery(ownerId);
+    useGetAllShippingSellerStatesQuery(ownerId, { skip: !ownerId });
 
   const [updatePrice, { isLoading: isUpdating }] = useUpdateShippingsMutation();
 
-  // 🔥 Editable Local State
   const [editableStates, setEditableStates] = useState<ShippingState[]>([]);
 
   useEffect(() => {
@@ -159,20 +153,13 @@ export default function ShippingManagement() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedState, setSelectedState] = useState<ShippingState | null>(
     null,
   );
   const [priceInput, setPriceInput] = useState("");
-
-  const statistics = useMemo(() => {
-    const total = editableStates.length;
-    const active = editableStates.filter((s) => s.available).length;
-    const inactive = total - active;
-    return { total, active, inactive };
-  }, [editableStates]);
 
   // 🔥 Update price locally
   const handleUpdatePrice = (e: React.FormEvent) => {
@@ -199,7 +186,7 @@ export default function ShippingManagement() {
       const payload = editableStates.map((state) => ({
         stateID: state.id,
         price: state.price,
-        available: state.availavle,
+        available: state.available,
       }));
 
       await updatePrice({
@@ -208,26 +195,36 @@ export default function ShippingManagement() {
       }).unwrap();
 
       toast.success(copy.allUpdated);
-    } catch (error: any) {
-      toast.error(error?.data?.message || copy.updateFailed);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.updateFailed);
     }
   };
 
   const columns = [
     {
       id: "select",
-      header: ({ table }: any) => (
+      header: ({ table }: { table: TanstackTable<ShippingState> }) => (
         <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value: boolean | "indeterminate") =>
+            table.toggleAllPageRowsSelected(!!value)
+          }
           className="cursor-pointer"
+          aria-label="Select all"
         />
       ),
-      cell: ({ row }: any) => (
+      cell: ({ row }: { row: Row<ShippingState> }) => (
         <Checkbox
           checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          onCheckedChange={(value: boolean | "indeterminate") =>
+            row.toggleSelected(!!value)
+          }
           className="cursor-pointer"
+          aria-label="Select row"
         />
       ),
       enableSorting: false,
@@ -240,7 +237,7 @@ export default function ShippingManagement() {
     {
       accessorKey: "name",
       header: copy.stateName,
-      cell: ({ row }: any) => (
+      cell: ({ row }: { row: Row<ShippingState> }) => (
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-muted-foreground" />
           <div>
@@ -255,7 +252,7 @@ export default function ShippingManagement() {
     {
       accessorKey: "price",
       header: copy.price,
-      cell: ({ row }: any) => (
+      cell: ({ row }: { row: Row<ShippingState> }) => (
         <div className="flex items-center gap-2">
           <span className="font-semibold text-green-600">
             {row.original.price.toFixed(2)} DA
@@ -264,11 +261,11 @@ export default function ShippingManagement() {
       ),
     },
     {
-      accessorKey: "availavle",
+      accessorKey: "available",
       header: copy.status,
-      cell: ({ row }: any) => {
+      cell: ({ row }: { row: Row<ShippingState> }) => {
         const state = row.original;
-        const status = state.availavle ? copy.active : copy.inactive;
+        const status = state.available ? copy.active : copy.inactive;
 
         return (
           <DropdownMenu>
@@ -283,14 +280,14 @@ export default function ShippingManagement() {
                 </span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="">
               <DropdownMenuLabel>{copy.changeStatus}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() =>
                   setEditableStates((prev) =>
                     prev.map((s) =>
-                      s.id === state.id ? { ...s, availavle: true } : s,
+                      s.id === state.id ? { ...s, available: true } : s,
                     ),
                   )
                 }
@@ -316,7 +313,7 @@ export default function ShippingManagement() {
     {
       id: "actions",
       header: copy.actions,
-      cell: ({ row }: any) => (
+      cell: ({ row }: { row: Row<ShippingState> }) => (
         <Button
           variant="primary"
           size="sm"

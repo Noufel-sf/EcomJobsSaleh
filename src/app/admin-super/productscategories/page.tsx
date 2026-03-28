@@ -1,13 +1,18 @@
 "use client";
+"use no memo";
 import { useState, useEffect } from "react";
-
-import React from "react";
 import {
+  type ColumnFiltersState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  type Row,
+  type RowSelectionState,
+  type SortingState,
+  type Table as TanstackTable,
   useReactTable,
+  type VisibilityState,
   flexRender,
 } from "@tanstack/react-table";
 
@@ -44,7 +49,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MoreHorizontal, ChevronDown } from "lucide-react";
 import SuperAdminSidebarLayout from "@/components/SuperAdminSidebarLayout";
-import { useAppSelector } from "@/Redux/hooks";
 import toast from "react-hot-toast";
 import { ButtonLoading } from "@/components/ui/ButtonLoading";
 import {
@@ -167,15 +171,18 @@ export default function SuperAdminCategories() {
   const { language, t } = useI18n();
   const copy = superAdminProductCategoriesCopy[language];
   const { data: categoriesData, isLoading } = useGetAllClassificationsQuery();
-  const categories = categoriesData?.content || [];
+  const [data, setData] = useState<Classification[]>([]);
 
   useEffect(() => {
     if (categoriesData?.content) {
-      setData(categoriesData.content);
+      setData(
+        categoriesData.content.map((category) => ({
+          ...category,
+          desc: category.desc ?? null,
+        })),
+      );
     }
   }, [categoriesData]);
-
-  const [data, setData] = useState(categories);
   const [editMode, setEditMode] = useState(false);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] =
@@ -195,26 +202,23 @@ export default function SuperAdminCategories() {
         name: title,
         desc: description,
       }).unwrap();
-      setData((prev) => [...prev, newCategory]);
+      setData((prev) => [...prev, { ...newCategory, desc: newCategory.desc ?? null }]);
       toast.success(copy.created);
       setOpen(false);
       setTitle("");
       setDescription("");
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
-      toast.error(err?.data?.message);
+      toast.error(err?.data?.message || copy.updateFailed);
     }
   };
 
-  const handleUpdate = async (
-    e: React.FormEvent<HTMLFormElement>,
-    id: string,
-  ) => {
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedCategory) return;
 
     try {
-      const updated = await updateCategory({
+      await updateCategory({
         id: selectedCategory.id,
         name: title,
         desc: description,
@@ -222,7 +226,9 @@ export default function SuperAdminCategories() {
 
       setData((prev) =>
         prev.map((category) =>
-          category.id === id ? { ...category, ...updated } : category,
+          category.id === selectedCategory.id
+            ? { ...category, name: title, desc: description }
+            : category,
         ),
       );
       setTitle("");
@@ -232,8 +238,9 @@ export default function SuperAdminCategories() {
       setSelectedCategory(null);
       setEditSheetOpen(false);
       setEditMode(false);
-    } catch (error: any) {
-      toast.error(error?.data?.message || copy.updateFailed);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.updateFailed);
     }
   };
 
@@ -242,28 +249,40 @@ export default function SuperAdminCategories() {
       await deleteCategory(categoryId).unwrap();
       setData((prev) => prev.filter((c) => c.id !== categoryId));
       toast.success(copy.deleted);
-    } catch (error: any) {
-      toast.error(error?.data?.message || copy.deleteFailed);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.deleteFailed);
     }
   };
 
-  const user = useAppSelector((state) => state.auth.user);
-  const [sorting, setSorting] = useState([]);
-  const [columnFilters, setColumnFilters] = useState([]);
-  const [columnVisibility, setColumnVisibility] = useState({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const columns = [
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox className="cursor-pointer" aria-label={copy.selectAll} />
+      header: ({ table }: { table: TanstackTable<Classification> }) => (
+        <Checkbox
+          className="cursor-pointer"
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value: boolean | "indeterminate") =>
+            table.toggleAllPageRowsSelected(!!value)
+          }
+          aria-label={copy.selectAll}
+        />
       ),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: Row<Classification> }) => (
         <Checkbox
           className="cursor-pointer"
           checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          onCheckedChange={(value: boolean | "indeterminate") =>
+            row.toggleSelected(!!value)
+          }
           aria-label={copy.selectRow}
         />
       ),
@@ -274,14 +293,14 @@ export default function SuperAdminCategories() {
     {
       accessorKey: "name",
       header: copy.name,
-      cell: ({ row }) => (
+      cell: ({ row }: { row: Row<Classification> }) => (
         <div className="font-medium">{row.getValue("name")}</div>
       ),
     },
     {
       accessorKey: "desc",
       header: copy.desc,
-      cell: ({ row }) => (
+      cell: ({ row }: { row: Row<Classification> }) => (
         <div className="text-sm text-muted-foreground">
           {row.getValue("desc")}
         </div>
@@ -291,7 +310,7 @@ export default function SuperAdminCategories() {
     {
       id: "actions",
       enableHiding: false,
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<Classification> }) => {
         const category = row.original;
         return (
           <DropdownMenu>
@@ -310,11 +329,11 @@ export default function SuperAdminCategories() {
               <DropdownMenuSeparator className={""} />
               <DropdownMenuItem
                 className="cursor-pointer"
-                inset=""
+                inset
                 onClick={() => {
                   setSelectedCategory(category);
                   setTitle(category.name);
-                  setDescription(category.desc);
+                  setDescription(category.desc ?? "");
                   setEditMode(true);
                   setEditSheetOpen(true);
                 }}
@@ -323,7 +342,7 @@ export default function SuperAdminCategories() {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
-                inset=""
+                inset
                 onClick={() => handleDelete(category.id)}
               >
                 {copy.delete}
@@ -368,7 +387,7 @@ export default function SuperAdminCategories() {
                 {copy.createNew}
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-106.25">
               <form onSubmit={handleCreate}>
                 <DialogHeader className="">
                   <DialogTitle className="">

@@ -1,12 +1,18 @@
 "use client";
-import { useState, useEffect } from "react";
-import React from "react";
+"use no memo";
+import { useState } from "react";
 import {
+  type ColumnFiltersState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  type Row,
+  type RowSelectionState,
+  type SortingState,
+  type Table as TanstackTable,
   useReactTable,
+  type VisibilityState,
   flexRender,
 } from "@tanstack/react-table";
 
@@ -202,11 +208,11 @@ export default function SuperAdminUsers() {
   const { language, t } = useI18n();
   const copy = superAdminUsersCopy[language];
   const [data, setData] = useState<User[]>(MOCK_USERS);
-  const [isLoading, setIsLoading] = useState(false);
-  const [sorting, setSorting] = useState([]);
-  const [columnFilters, setColumnFilters] = useState([]);
-  const [columnVisibility, setColumnVisibility] = useState({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [isLoading] = useState(false);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   // Delete confirmation dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -217,7 +223,7 @@ export default function SuperAdminUsers() {
   const handleSuspend = (user: User) => {
     const nextStatus: UserStatus = user.status === "active" ? "suspended" : "active";
     setData((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u))
+      prev.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u)),
     );
     toast.success(
       nextStatus === "suspended"
@@ -249,14 +255,24 @@ export default function SuperAdminUsers() {
   const columns = [
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox className="cursor-pointer" aria-label={copy.selectAll} />
+      header: ({ table }: { table: TanstackTable<User> }) => (
+        <Checkbox
+          className="cursor-pointer"
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value: boolean | "indeterminate") =>
+            table.toggleAllPageRowsSelected(!!value)
+          }
+          aria-label={copy.selectAll}
+        />
       ),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: Row<User> }) => (
         <Checkbox
           className="cursor-pointer"
           checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          onCheckedChange={(value: boolean | "indeterminate") => row.toggleSelected(!!value)}
           aria-label={copy.selectRow}
         />
       ),
@@ -266,7 +282,7 @@ export default function SuperAdminUsers() {
     {
       accessorKey: "name",
       header: copy.name,
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<User> }) => {
         const user: User = row.original;
         return (
           <div className="flex items-center gap-3">
@@ -284,15 +300,15 @@ export default function SuperAdminUsers() {
     {
       accessorKey: "phone",
       header: copy.phone,
-      cell: ({ row }) => (
+      cell: ({ row }: { row: Row<User> }) => (
         <div className="text-sm">{row.getValue("phone")}</div>
       ),
     },
     {
       accessorKey: "role",
       header: copy.role,
-      cell: ({ row }) => {
-        const role: UserRole = row.getValue("role");
+      cell: ({ row }: { row: Row<User> }) => {
+        const role = row.getValue("role") as UserRole;
         return (
           <Badge
             variant="outline"
@@ -310,8 +326,8 @@ export default function SuperAdminUsers() {
     {
       accessorKey: "status",
       header: copy.status,
-      cell: ({ row }) => {
-        const status: UserStatus = row.getValue("status");
+      cell: ({ row }: { row: Row<User> }) => {
+        const status = row.getValue("status") as UserStatus;
         return (
           <Badge
             variant="outline"
@@ -329,7 +345,7 @@ export default function SuperAdminUsers() {
     {
       accessorKey: "createdAt",
       header: copy.joined,
-      cell: ({ row }) => (
+      cell: ({ row }: { row: Row<User> }) => (
         <div className="text-sm text-muted-foreground">
           {new Date(row.getValue("createdAt")).toLocaleDateString("en-GB", {
             day: "2-digit",
@@ -343,7 +359,7 @@ export default function SuperAdminUsers() {
       id: "profile",
       header: copy.profile,
       enableHiding: false,
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<User> }) => {
         const user: User = row.original;
         return (
           <Button
@@ -361,7 +377,7 @@ export default function SuperAdminUsers() {
     {
       id: "actions",
       enableHiding: false,
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<User> }) => {
         const user: User = row.original;
         return (
           <DropdownMenu>
@@ -375,12 +391,12 @@ export default function SuperAdminUsers() {
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="">
               <DropdownMenuLabel>{copy.actions}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer"
-                inset=""
+                inset
                 onClick={() => handleVisitProfile(user)}
               >
                 <ExternalLink className="mr-2 h-4 w-4" />
@@ -388,7 +404,7 @@ export default function SuperAdminUsers() {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
-                inset=""
+                inset
                 onClick={() => handleSuspend(user)}
               >
                 <ShieldOff className="mr-2 h-4 w-4" />
@@ -397,7 +413,7 @@ export default function SuperAdminUsers() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer text-red-600 focus:text-red-600"
-                inset=""
+                inset
                 onClick={() => openDeleteDialog(user)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -459,7 +475,7 @@ export default function SuperAdminUsers() {
                 {copy.roleFilter} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent align="start" className="">
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() =>
@@ -498,7 +514,7 @@ export default function SuperAdminUsers() {
                 {copy.columns} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="">
               {table
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
@@ -520,7 +536,7 @@ export default function SuperAdminUsers() {
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-106.25">
             <DialogHeader>
               <DialogTitle>{copy.deleteUser}</DialogTitle>
               <DialogDescription className="mb-3">

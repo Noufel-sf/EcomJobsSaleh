@@ -43,7 +43,7 @@ export const shippingApi = createApi({
 
     
 
-    getAllShippingSellerStates: builder.query<{ data: ShippingState[]  }, void>({
+    getAllShippingSellerStates: builder.query<ShippingState[], string>({
       query: (id) => `/${id}`,
       providesTags: ["ShippingStates"],
 

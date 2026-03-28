@@ -30,6 +30,7 @@ import { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { type Language, useI18n } from '@/context/I18nContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import DashboardStats from './components/DashboardStats';
 
 const adminOverviewCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -102,11 +103,6 @@ const adminOverviewCopy: Record<Language, Record<string, string>> = {
     projections: 'متوافق مع التوقعات',
   },
 };
-
-// Dynamic imports for better code splitting
-const DashboardStats = dynamic(() => import('./components/DashboardStats'), {
-  loading: () => <div className="h-32 animate-pulse bg-muted rounded-lg" />,
-});
 
 const ChartAreaInteractive = dynamic(() => import('./chart-area-interactive').then(mod => ({ default: mod.ChartAreaInteractive })), {
   loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,

@@ -1,12 +1,17 @@
 "use client";
+"use no memo";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
+  type ColumnFiltersState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  type RowSelectionState,
+  type SortingState,
   useReactTable,
+  type VisibilityState,
   flexRender,
 } from "@tanstack/react-table";
 
@@ -39,7 +44,6 @@ import {
   useUpdateProductStatusMutation,
 } from "@/Redux/Services/ProductsApi";
 
-import { Product } from "@/lib/DatabaseTypes";
 import SuperAdminSidebarLayout from "@/components/SuperAdminSidebarLayout";
 import { type Language, useI18n } from "@/context/I18nContext";
 
@@ -95,37 +99,26 @@ export default function AdminProducts() {
   const [deleteProduct] = useDeleteProductMutation();
   const [updateProductStatus] = useUpdateProductStatusMutation();
 
-  const [data, setData] = useState<Product[]>([]);
   const { data: productsData, isLoading } = useGetAllProductsQuery(undefined);
-  const products = productsData?.content || [];
+  const products = productsData?.content ?? [];
 
-  const [sorting, setSorting] = useState<any[]>([]);
-  const [columnFilters, setColumnFilters] = useState<any[]>([]);
-  const [columnVisibility, setColumnVisibility] = useState<any>({});
-  const [rowSelection, setRowSelection] = useState<any>({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
 
   const handleDelete = async (productId: string) => {
     try {
       await deleteProduct(productId).unwrap();
-      setData((prev) => prev.filter((p) => p.id !== productId));
       toast.success(copy.deleted);
-    } catch (error: any) {
-      toast.error(error?.data?.message || copy.deleteFailed);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.deleteFailed);
     }
   };
 
   const handleStatusChange = async (productId: string, newStatus: string) => {
-    const previousData = [...data];
-
-    setData((prev) =>
-      prev.map((product) =>
-        product.id === productId
-          ? { ...product, available: newStatus === "active" }
-          : product,
-      ),
-    );
-
     try {
       await updateProductStatus({
         id: productId,
@@ -133,9 +126,9 @@ export default function AdminProducts() {
       }).unwrap();
 
       toast.success(copy.updated);
-    } catch (error: any) {
-      setData(previousData);
-      toast.error(error?.data?.message || copy.updateFailed);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || copy.updateFailed);
     }
   };
 
@@ -177,8 +170,8 @@ export default function AdminProducts() {
           <Input
             type="text"
             placeholder={copy.searchByName}
-            value={table.getColumn("name")?.getFilterValue() ?? ""}
-            onChange={(event: any) =>
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
               table.getColumn("name")?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
@@ -202,7 +195,7 @@ export default function AdminProducts() {
                       key={column.id}
                       className="capitalize"
                       checked={column.getIsVisible()}
-                      onCheckedChange={(value: any) =>
+                      onCheckedChange={(value: boolean | "indeterminate") =>
                         column.toggleVisibility(!!value)
                       }
                     >

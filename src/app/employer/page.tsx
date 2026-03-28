@@ -27,9 +27,10 @@ import { useAppSelector } from '@/Redux/hooks';
 import { EmployerAppSidebar } from './EmployerAppSidebar';
 import Link from 'next/link';
 import { useMemo } from 'react';
-import dynamic from 'next/dynamic';
 import { type Language, useI18n } from '@/context/I18nContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import EmployerDashboardStats from './components/EmployerDashboardStats';
+import QuickLinks from './components/QuickLinks';
 
 const employerOverviewCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -102,15 +103,6 @@ const employerOverviewCopy: Record<Language, Record<string, string>> = {
     pendingSub: 'يتطلب اجراء',
   },
 };
-
-// Dynamic imports for better code splitting
-const EmployerDashboardStats = dynamic(() => import('./components/EmployerDashboardStats'), {
-  loading: () => <div className="h-32 animate-pulse bg-muted rounded-lg" />,
-});
-
-const QuickLinks = dynamic(() => import('./components/QuickLinks'), {
-  loading: () => <div className="h-48 animate-pulse bg-muted rounded-lg" />,
-});
 
 export default function EmployerOverview() {
   const { setTheme } = useTheme();
