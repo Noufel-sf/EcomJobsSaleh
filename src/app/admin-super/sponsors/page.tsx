@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -41,7 +41,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
   MoreHorizontal,
@@ -58,6 +57,7 @@ type SponsorRow = Sponsor & { isActive: boolean };
 import {
   useDeleteSponsorMutation,
   useGetsponsorsQuery,
+  useUpdateSponsorStatusMutation,
 } from "@/Redux/Services/SponsorApi";
 
 import CreateSponsorModal from "./components/CreateSponsorModal";
@@ -72,6 +72,8 @@ const superAdminSponsorsCopy: Record<Language, Record<string, string>> = {
     description: "View, manage and organize all platform sponsors.",
     deleted: "Sponsor deleted successfully",
     deleteFailed: "Failed to delete sponsor",
+    statusUpdated: "Sponsor status updated successfully",
+    statusUpdateFailed: "Failed to update sponsor status",
     selectAll: "Select all",
     selectRow: "Select row",
     logo: "Logo",
@@ -86,6 +88,8 @@ const superAdminSponsorsCopy: Record<Language, Record<string, string>> = {
     openMenu: "Open menu",
     actions: "Actions",
     edit: "Edit",
+    activate: "Activate",
+    deactivate: "Deactivate",
     delete: "Delete",
     statusFilter: "Status",
     all: "All",
@@ -106,6 +110,8 @@ const superAdminSponsorsCopy: Record<Language, Record<string, string>> = {
       "Afficher, gerer et organiser tous les sponsors de la plateforme.",
     deleted: "Sponsor supprime avec succes",
     deleteFailed: "Echec de suppression du sponsor",
+    statusUpdated: "Statut du sponsor mis a jour avec succes",
+    statusUpdateFailed: "Echec de mise a jour du statut du sponsor",
     selectAll: "Tout selectionner",
     selectRow: "Selectionner la ligne",
     logo: "Logo",
@@ -120,6 +126,8 @@ const superAdminSponsorsCopy: Record<Language, Record<string, string>> = {
     openMenu: "Ouvrir le menu",
     actions: "Actions",
     edit: "Modifier",
+    activate: "Activer",
+    deactivate: "Desactiver",
     delete: "Supprimer",
     statusFilter: "Statut",
     all: "Tous",
@@ -139,6 +147,8 @@ const superAdminSponsorsCopy: Record<Language, Record<string, string>> = {
     description: "عرض وادارة وتنظيم جميع رعاة المنصة.",
     deleted: "تم حذف الراعي بنجاح",
     deleteFailed: "فشل حذف الراعي",
+    statusUpdated: "تم تحديث حالة الراعي بنجاح",
+    statusUpdateFailed: "فشل تحديث حالة الراعي",
     selectAll: "تحديد الكل",
     selectRow: "تحديد الصف",
     logo: "الشعار",
@@ -153,6 +163,8 @@ const superAdminSponsorsCopy: Record<Language, Record<string, string>> = {
     openMenu: "فتح القائمة",
     actions: "الاجراءات",
     edit: "تعديل",
+    activate: "تفعيل",
+    deactivate: "تعطيل",
     delete: "حذف",
     statusFilter: "الحالة",
     all: "الكل",
@@ -174,6 +186,7 @@ export default function SuperAdminSponsors() {
   const { data: sponsorsData, isLoading, isFetching } = useGetsponsorsQuery();
   const sponsors = sponsorsData?.content ?? [];
   const [deleteSponsor] = useDeleteSponsorMutation();
+  const [updateSponsorStatus] = useUpdateSponsorStatusMutation();
 
   const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState<SponsorRow | null>(
@@ -210,6 +223,18 @@ export default function SuperAdminSponsors() {
       setSponsorToDelete(null);
     }
   };
+
+  const handleToggleStatus = useCallback(async (sponsor: SponsorRow) => {
+    try {
+      await updateSponsorStatus({
+        id: sponsor.id,
+        status: sponsor.status === "active" ? "inactive" : "active",
+      }).unwrap();
+      toast.success(copy.statusUpdated);
+    } catch {
+      toast.error(copy.statusUpdateFailed);
+    }
+  }, [copy.statusUpdateFailed, copy.statusUpdated, updateSponsorStatus]);
 
   // ── Columns ───────────────────────────────────────────────────────────────
 
@@ -333,6 +358,13 @@ export default function SuperAdminSponsors() {
                   {copy.edit}
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  className="cursor-pointer"
+                  inset
+                  onClick={() => handleToggleStatus(sponsor)}
+                >
+                  {sponsor.isActive ? copy.deactivate : copy.activate}
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   className="cursor-pointer text-red-600 focus:text-red-600"
                   inset
                   onClick={() => openDeleteDialog(sponsor)}
@@ -346,7 +378,7 @@ export default function SuperAdminSponsors() {
         },
       },
     ],
-    [copy],
+    [copy, handleToggleStatus],
   );
 
   // ── Table ─────────────────────────────────────────────────────────────────

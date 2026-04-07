@@ -72,6 +72,21 @@ export const sponsorApi = createApi({
       ],
     }),
 
+    updateSponsorStatus: builder.mutation<
+      Sponsor,
+      { id: string; status: string }
+    >({
+      query: ({ id, status }) => ({
+        url: `/sponsoreds`,
+        method: "PATCH",
+        body: { id, status },
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "Sponsor", id: arg.id },
+        { type: "Sponsor", id: "LIST" },
+      ],
+    }),
+
     deleteSponsor: builder.mutation<
       { success: boolean; message?: string },
       string
@@ -93,6 +108,7 @@ export const {
   useGetSponsorByIdQuery,
   useCreateSponsorMutation,
   useUpdateSponsorMutation,
+  useUpdateSponsorStatusMutation,
   useDeleteSponsorMutation,
 } = sponsorApi;
 

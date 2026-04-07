@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ButtonLoading } from "@/components/ui/ButtonLoading";
 import { useUpdateSponsorMutation } from "@/Redux/Services/SponsorApi";
 import toast from "react-hot-toast";
@@ -21,17 +20,17 @@ import { type Language, useI18n } from "@/context/I18nContext";
 
 type SponsorSheetModel = {
   id?: string;
-  _id?: string;
+  name?: string;
   image?: string;
   sponsorLink?: string;
   description?: string | null;
-  isActive?: boolean;
-  ownerId?: string;
 };
 
 const updateSponsorCopy: Record<Language, Record<string, string>> = {
   en: {
     updated: "Sponsor updated successfully",
+    name: "Name",
+    namePlaceholder: "Sponsor name",
     updateFailed: "Failed to update sponsor",
     editTitle: "Edit Sponsor",
     editDescription: "Update sponsor details. Click save when done.",
@@ -40,15 +39,14 @@ const updateSponsorCopy: Record<Language, Record<string, string>> = {
     sponsorLink: "Sponsor Link",
     description: "Description",
     descriptionPlaceholder: "Short description of the sponsor",
-    ownerId: "Owner ID",
-    ownerPlaceholder: "User or organization ID",
-    activeLabel: "Active (visible to users)",
     cancel: "Cancel",
     save: "Save changes",
   },
   fr: {
     updated: "Sponsor mis a jour avec succes",
     updateFailed: "Echec de mise a jour du sponsor",
+    name: "Nom",
+    namePlaceholder: "Nom du sponsor",
     editTitle: "Modifier le sponsor",
     editDescription: "Mettez a jour les details puis enregistrez.",
     imageUrl: "URL de l'image",
@@ -56,14 +54,13 @@ const updateSponsorCopy: Record<Language, Record<string, string>> = {
     sponsorLink: "Lien du sponsor",
     description: "Description",
     descriptionPlaceholder: "Courte description du sponsor",
-    ownerId: "ID proprietaire",
-    ownerPlaceholder: "ID utilisateur ou organisation",
-    activeLabel: "Actif (visible pour les utilisateurs)",
     cancel: "Annuler",
     save: "Enregistrer",
   },
   ar: {
     updated: "تم تحديث الراعي بنجاح",
+    name: "الاسم",
+    namePlaceholder: "اسم الراعي",
     updateFailed: "فشل تحديث الراعي",
     editTitle: "تعديل الراعي",
     editDescription: "قم بتحديث التفاصيل ثم اضغط حفظ.",
@@ -72,9 +69,6 @@ const updateSponsorCopy: Record<Language, Record<string, string>> = {
     sponsorLink: "رابط الراعي",
     description: "الوصف",
     descriptionPlaceholder: "وصف قصير للراعي",
-    ownerId: "معرف المالك",
-    ownerPlaceholder: "معرف المستخدم او المؤسسة",
-    activeLabel: "نشط (مرئي للمستخدمين)",
     cancel: "الغاء",
     save: "حفظ التغييرات",
   },
@@ -96,9 +90,8 @@ export default function UpdateSponsorUi({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState(sponsor?.image || "");
   const [link, setLink] = useState(sponsor?.sponsorLink || "");
+  const [name, setName] = useState(sponsor?.name || "");
   const [description, setDescription] = useState(sponsor?.description || "");
-  const [isActive, setIsActive] = useState(sponsor?.isActive ?? true);
-  const [ownerId, setOwnerId] = useState(sponsor?.ownerId || "");
 
   const [updateSponsor, { isLoading }] = useUpdateSponsorMutation();
 
@@ -135,13 +128,12 @@ export default function UpdateSponsorUi({
       formData.append("image", imageFile);
     }
     formData.append("sponsorLink", link);
-    formData.append("isActive", String(isActive));
+    formData.append("name", name);
     if (description.trim()) formData.append("description", description.trim());
-    if (ownerId.trim()) formData.append("ownerId", ownerId.trim());
 
     try {
       await updateSponsor({
-        id: sponsor.id || sponsor._id || "",
+        id: sponsor.id || "",
         body: formData,
       }).unwrap();
 
@@ -161,8 +153,8 @@ export default function UpdateSponsorUi({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="">
-        <form onSubmit={handleUpdate}>
+      <SheetContent className="h-full overflow-hidden p-0 sm:max-w-120">
+        <form onSubmit={handleUpdate} className="flex h-full flex-col">
           <SheetHeader className="">
             <SheetTitle className="">{copy.editTitle}</SheetTitle>
             <SheetDescription className="">
@@ -170,7 +162,7 @@ export default function UpdateSponsorUi({
             </SheetDescription>
           </SheetHeader>
 
-          <div className="grid gap-4 py-4 px-6">
+          <div className="grid flex-1 gap-4 overflow-y-auto px-6 py-4">
             {/* Image URL */}
             <div className="grid gap-3">
               <Label htmlFor="edit-img">{copy.imageUrl}</Label>
@@ -206,6 +198,17 @@ export default function UpdateSponsorUi({
               />
             </div>
 
+            {/* name*/}
+            <div className="grid gap-3">
+              <Label htmlFor="edit-name">{copy.name}</Label>
+              <Input
+                id="edit-name"
+                placeholder={copy.namePlaceholder}
+                value={name}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+              />
+            </div>
+
             {/* Description */}
             <div className="grid gap-3">
               <Label htmlFor="edit-description">{copy.description}</Label>
@@ -217,36 +220,9 @@ export default function UpdateSponsorUi({
               />
             </div>
 
-            {/* Owner ID */}
-            <div className="grid gap-3">
-              <Label htmlFor="edit-ownerId">{copy.ownerId}</Label>
-              <Input
-                id="edit-ownerId"
-                placeholder={copy.ownerPlaceholder}
-                value={ownerId}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setOwnerId(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* isActive toggle */}
-            <div className="flex items-center gap-3 py-1">
-              <Checkbox
-                id="edit-isActive"
-                checked={isActive}
-                onCheckedChange={(val: boolean | "indeterminate") => setIsActive(!!val)}
-                className="cursor-pointer"
-              />
-              <Label
-                htmlFor="edit-isActive"
-                className="cursor-pointer font-normal"
-              >
-                {copy.activeLabel}
-              </Label>
-            </div>
           </div>
 
-          <SheetFooter className="space-y-2">
+          <SheetFooter className="space-y-2 border-t px-6 py-4">
             <SheetClose asChild>
               <Button variant="outline" type="button">
                 {copy.cancel}
