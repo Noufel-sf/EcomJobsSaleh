@@ -82,7 +82,7 @@ export const usersApi = createApi({
         UpdateAdminUserStatusPayload
       >({
         query: ({ id, status }) => ({
-          url: `/users/company`,
+          url: `/users/compnay`,
           method: "PATCH",
           body: { status , id },
         }),

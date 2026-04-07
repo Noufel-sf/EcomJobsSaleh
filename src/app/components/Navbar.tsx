@@ -31,22 +31,26 @@ import { Product } from "@/lib/DatabaseTypes";
 import { useI18n } from "@/context/I18nContext";
 
 interface ListItemProps {
+  id: string;
   name: string;
   children: React.ReactNode;
 }
 
-function ListItem({ name, children }: ListItemProps) {
+function ListItem({ id, name, children }: ListItemProps) {
   return (
     <li>
       <NavigationMenuLink asChild className="">
-        <div  className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+        <Link
+          href={`/products?classification=${id}`}
+          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+        >
           <div className="text-sm font-medium leading-none">
             {name}
           </div>
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>
-        </div>
+        </Link>
       </NavigationMenuLink>
     </li>
   );
@@ -121,7 +125,7 @@ const Navbar = memo(function Navbar() {
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/" aria-label="Go to homepage">
-            <h2 className="text-xl font-bold">Shopping <span className="text-primary">Jobs</span></h2>
+            <h2 className="text-xl font-bold">Ch <span className="text-primary">Jobs</span></h2>
           </Link>
         </div>
 
@@ -210,6 +214,7 @@ const Navbar = memo(function Navbar() {
                       <ul className="grid md:w-100 md:grid-cols-2 gap-3 p-4">
                         {categories.map((category) => (
                           <ListItem
+                            id={category.id}
                             key={category.name}
                             name={category.name}
                           >

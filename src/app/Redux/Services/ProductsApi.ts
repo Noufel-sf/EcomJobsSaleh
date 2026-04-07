@@ -19,6 +19,12 @@ export interface GetAllProductsResponse {
   totalPages: number;
 }
 
+export interface GetProductsByClassificationArgs {
+  classificationID: string;
+  page?: number;
+  size?: number;
+}
+
 export const productsApi = createApi({
   reducerPath: "productsApi",
   baseQuery: fetchBaseQuery({
@@ -38,17 +44,25 @@ export const productsApi = createApi({
           ...(params.page && { page: params.page }),
           ...(params.size && { size: params.size }),
           ...(params.prod_class && { prod_class: params.prod_class }),
-          ...(params.minPrice && { minPrice: params.minPrice }),
-          ...(params.maxPrice && { maxPrice: params.maxPrice }),
+          // ...(params.minPrice && { minPrice: params.minPrice }),
+          // ...(params.maxPrice && { maxPrice: params.maxPrice }),
         } : undefined,
       }),
       providesTags: ["Products"],
     }),
 
-    getProductsbyCategory: builder.query<{ content: Product[] }, string>({
-      query: (categoryId) => `/classifications/${categoryId}`,
+       
+    getProductsByClassification: builder.query<GetAllProductsResponse, GetProductsByClassificationArgs>({
+      query: ({ classificationID, page, size }) => ({
+        url: `/ByClassification/${classificationID}`,
+        params: {
+          ...(page && { page }),
+          ...(size && { size }),
+        },
+      }),
       providesTags: ["Products"],
     }),
+
 
     getElectronicsProducts: builder.query<{ content: Product[] }, void>({
       query: () => "/electronics",
@@ -146,6 +160,7 @@ export const {
   useGetSellerProductsQuery,
   useSearchProductsQuery,
   useLazySearchProductsQuery,
+  useGetProductsByClassificationQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,

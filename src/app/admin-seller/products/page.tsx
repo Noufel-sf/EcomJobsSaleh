@@ -112,7 +112,7 @@ export default function AdminProducts() {
   const { language, t } = useI18n();
   const copy = productsCopy[language];
   const user = useAppSelector((state) => state.auth.user);
-  const ownerId = user?.userId ?? "";
+  const ownerId = user?.userId ?? "c0a83801-9d64-19f8-819d-64cb20910000";
   const { data: categoriesData } = useGetAllClassificationsQuery(undefined);
   const categories = useMemo<Categorie[]>(
     () =>

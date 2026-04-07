@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { memo, useMemo } from 'react';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import { Autoplay, Navigation } from 'swiper/modules';
-import hero1 from '@assets/hero1.png';
-import hero2 from '@assets/hero2.png';
-import hero3 from '@assets/hero3.png';
-import hero4 from '@assets/hero4.png';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
+import { Swiper, SwiperSlide } from "swiper/react";
+import { memo } from "react";
+import "swiper/css";
+import "swiper/css/navigation";
+import { Autoplay, Navigation } from "swiper/modules";
+import { useGetsponsorsQuery } from "@/Redux/Services/SponsorApi";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
 
 const Hero = () => {
   // Memoize hero images array to prevent recreation on every render
-  const heroImages = useMemo(() => [hero1, hero2, hero3, hero4], []);
+
+  const { data: sponsorsData, isLoading } = useGetsponsorsQuery();
+  const sponsors = sponsorsData?.content ?? [];
 
   return (
     <>
       <section className="px-6 py-12 mx-auto container flex items-stretch gap-5 min-h-125">
         <Swiper
           navigation={{
-            prevEl: '.custom-prev',
-            nextEl: '.custom-next',
+            prevEl: ".custom-prev",
+            nextEl: ".custom-next",
           }}
           autoplay={{
             delay: 2500,
@@ -31,18 +31,24 @@ const Hero = () => {
           modules={[Navigation, Autoplay]}
           className="mySwiper rounded-sm shadow-lg flex-1"
         >
-          {heroImages.map((image, index) => {
+          {sponsors.map((sponsor, index) => {
             return (
               <SwiperSlide key={index} className="relative!">
-                <Image 
-                  src={image} 
-                  alt={`Hero banner ${index + 1}`}
-                  className="w-full h-full cursor-pointer object-cover" 
-                  fill 
-                  priority={index === 0}
-                  fetchPriority={index === 0 ? 'high' : 'auto'}
-                  sizes="(max-width: 768px) 100vw, 80vw"
-                />
+                <Link
+                  href={sponsor.sponsorLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Image
+                    src={sponsor.image}
+                    alt={sponsor.description || `Sponsor banner ${index + 1}`}
+                    className="w-full h-full cursor-pointer object-cover"
+                    fill
+                    priority={index === 0}
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                    sizes="(max-width: 768px) 100vw, 80vw"
+                  />
+                </Link>
               </SwiperSlide>
             );
           })}
@@ -56,11 +62,11 @@ const Hero = () => {
           </button>
         </Swiper>
         <div className="hidden lg:flex max-w-[20%]  items-center cursor-pointer relative">
-          <Image 
-            src="/sp2.png" 
-            alt="Sponsored advertisement" 
-            className="w-full h-full object-cover rounded-sm shadow-lg" 
-            fill 
+          <Image
+            src="/sp2.png"
+            alt="Sponsored advertisement"
+            className="w-full h-full object-cover rounded-sm shadow-lg"
+            fill
             loading="lazy"
             sizes="20vw"
           />

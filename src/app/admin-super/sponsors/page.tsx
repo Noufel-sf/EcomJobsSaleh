@@ -84,7 +84,7 @@ const superAdminSponsorsCopy: Record<Language, Record<string, string>> = {
     ownerId: "Owner ID",
     status: "Status",
     active: "Active",
-    inactive: "Inactive",
+    suspended: "Suspended",
     openMenu: "Open menu",
     actions: "Actions",
     edit: "Edit",
@@ -122,7 +122,7 @@ const superAdminSponsorsCopy: Record<Language, Record<string, string>> = {
     ownerId: "ID proprietaire",
     status: "Statut",
     active: "Actif",
-    inactive: "Inactif",
+    suspended: "Suspendu",
     openMenu: "Ouvrir le menu",
     actions: "Actions",
     edit: "Modifier",
@@ -159,7 +159,7 @@ const superAdminSponsorsCopy: Record<Language, Record<string, string>> = {
     ownerId: "معرف المالك",
     status: "الحالة",
     active: "نشط",
-    inactive: "غير نشط",
+    suspended: "معلق",
     openMenu: "فتح القائمة",
     actions: "الاجراءات",
     edit: "تعديل",
@@ -228,7 +228,7 @@ export default function SuperAdminSponsors() {
     try {
       await updateSponsorStatus({
         id: sponsor.id,
-        status: sponsor.status === "active" ? "inactive" : "active",
+        isActive: !sponsor.isActive,
       }).unwrap();
       toast.success(copy.statusUpdated);
     } catch {
@@ -322,7 +322,7 @@ export default function SuperAdminSponsors() {
                   : "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300"
               }
             >
-              {active ? copy.active : copy.inactive}
+              {active ? copy.active : copy.suspended}
             </Badge>
           );
         },
@@ -447,7 +447,7 @@ export default function SuperAdminSponsors() {
                   table.getColumn("isActive")?.setFilterValue(false)
                 }
               >
-                {copy.inactive}
+                {copy.suspended}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
