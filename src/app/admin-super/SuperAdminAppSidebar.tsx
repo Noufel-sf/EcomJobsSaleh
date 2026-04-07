@@ -24,7 +24,8 @@ const superAdminSidebarCopy: Record<Language, Record<string, string>> = {
     products: "Products",
     productsCategories: "Products Categories",
     jobsCategories: "Job Categories",
-    users: "Users",
+    sellers: "Sellers",
+    employers: "Employers",
     sponsors: "Sponsors",
   },
   fr: {
@@ -34,6 +35,8 @@ const superAdminSidebarCopy: Record<Language, Record<string, string>> = {
     products: "Produits",
     productsCategories: "Categories produits",
     jobsCategories: "Categories emplois",
+    employers :"Employers" ,
+    sellers :"Sellers" , 
     users: "Utilisateurs",
     sponsors: "Sponsors",
   },
@@ -44,6 +47,8 @@ const superAdminSidebarCopy: Record<Language, Record<string, string>> = {
     products: "المنتجات",
     productsCategories: "فئات المنتجات",
     jobsCategories: "فئات الوظائف",
+    employers: "أصحاب العمل",
+    sellers: "البائعين",
     users: "المستخدمون",
     sponsors: "الرعاة",
   },
@@ -81,8 +86,12 @@ export function SuperAdminAppSidebar({ ...props }) {
             url: "/admin-super/jobscategories",
           },
           {
-            title: copy.users,
-            url: "/admin-super/users",
+            title: copy.employers,
+            url: "/admin-super/employers",
+          },
+          {
+            title: copy.sellers,
+            url: "/admin-super/sellers",
           },
           {
             title: copy.sponsors,

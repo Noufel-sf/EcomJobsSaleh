@@ -1,12 +1,13 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://wadkniss-r6ar.onrender.com/api/v1";
+
 
 export type AdminUserRole =
   | "employer"
   | "seller"
   | string;
-export type AdminUserStatus = "active" | "suspended" | "pending" | string;
+export type AdminUserStatus = "active" | "suspended" | string;
 
 export interface AdminUser {
   id: string;
@@ -18,6 +19,11 @@ export interface AdminUser {
   createdAt: string;
 }
 
+interface PaginatedAdminUsersResponse {
+  content?: AdminUser[];
+  data?: AdminUser[];
+}
+
 export interface GetAdminUsersParams {
   search?: string;
   role?: "employer" | "seller";
@@ -27,7 +33,7 @@ export interface GetAdminUsersParams {
 }
 
 interface UpdateAdminUserStatusPayload {
-  userId: string;
+  id: string;
   status: "active" | "suspended";
 }
 
@@ -40,11 +46,11 @@ export const usersApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: API_URL,
   }),
-  tagTypes: ["Users"],
+  tagTypes: ["Sellers", "Employers"],
   endpoints: (builder) => ({
-    getAdminUsers: builder.query<AdminUser[], GetAdminUsersParams | void>({
+    getAllSellers: builder.query<PaginatedAdminUsersResponse, GetAdminUsersParams | void>({
       query: (params) => ({
-        url: "",
+        url: "/users/sellers",
         params: params
           ? {
               ...(params.page && { page: params.page }),
@@ -52,39 +58,73 @@ export const usersApi = createApi({
             }
           : undefined,
       }),
-      providesTags: ["Users"],
+      providesTags: [
+        { type: "Sellers", id: "LIST" },
+      ],
     }),
-
-    updateAdminUserStatus: builder.mutation<
-      AdminUser,
-      UpdateAdminUserStatusPayload
-    >({
-      query: ({ userId, status }) => ({
-        url: `/users/${userId}/status`,
-        method: "PATCH",
-        body: { status },
+    getAllEmployers: builder.query<PaginatedAdminUsersResponse, GetAdminUsersParams | void>({
+      query: (params) => ({
+        url: "/users/company",
+        params: params
+          ? {
+              ...(params.page && { page: params.page }),
+              ...(params.limit && { limit: params.limit }),
+            }
+          : undefined,
       }),
-      invalidatesTags: (_result, _error, { userId }) => [
-        { type: "Users", id: userId },
-        { type: "Users", id: "LIST" },
+      providesTags: [
+        { type: "Employers", id: "LIST" },
       ],
     }),
 
+      updateAdminEmployersStatus: builder.mutation<
+        AdminUser,
+        UpdateAdminUserStatusPayload
+      >({
+        query: ({ id, status }) => ({
+          url: `/users/company`,
+          method: "PATCH",
+          body: { status , id },
+        }),
+        invalidatesTags: (_result, _error, { id }) => [
+          { type: "Employers", id: id },
+          { type: "Employers", id: "LIST" },
+        ],
+      }),
+      updateAdminSellersStatus: builder.mutation<
+        AdminUser,
+        UpdateAdminUserStatusPayload
+      >({
+        query: ({ id, status }) => ({
+          url: `/users/seller`,
+          method: "PATCH",
+          body: { status , id },
+        }),
+        invalidatesTags: (_result, _error, { id }) => [
+          { type: "Sellers", id: id },
+          { type: "Sellers", id: "LIST" },
+        ],
+      }),
+
     deleteAdminUser: builder.mutation<DeleteAdminUserResponse, string>({
-      query: (userId) => ({
-        url: `/users/${userId}`,
+      query: (id) => ({
+        url: `/users/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: (_result, _error, userId) => [
-        { type: "Users", id: userId },
-        { type: "Users", id: "LIST" },
+        { type: "Employers", id: userId },
+        { type: "Employers", id: "LIST" },
+        { type: "Sellers", id: userId },
+        { type: "Sellers", id: "LIST" },
       ],
     }),
   }),
 });
 
 export const {
-  useGetAdminUsersQuery,
-  useUpdateAdminUserStatusMutation,
+  useGetAllSellersQuery,
+  useUpdateAdminSellersStatusMutation,
+  useGetAllEmployersQuery,
+  useUpdateAdminEmployersStatusMutation,
   useDeleteAdminUserMutation,
 } = usersApi;

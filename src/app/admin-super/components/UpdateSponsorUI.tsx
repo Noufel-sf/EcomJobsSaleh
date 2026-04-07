@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, type ChangeEvent } from "react";
 import {
   Sheet,
   SheetClose,
@@ -14,11 +14,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ButtonLoading } from "@/components/ui/ButtonLoading";
-// import { useUpdateSponsorMutation } from "@/Redux/Services/SponsorApi";
+import { useUpdateSponsorMutation } from "@/Redux/Services/SponsorApi";
 import toast from "react-hot-toast";
-import { Sponsor } from "@/lib/DatabaseTypes";
 import Image from "next/image";
 import { type Language, useI18n } from "@/context/I18nContext";
+
+type SponsorSheetModel = {
+  id?: string;
+  _id?: string;
+  image?: string;
+  sponsorLink?: string;
+  description?: string | null;
+  isActive?: boolean;
+  ownerId?: string;
+};
 
 const updateSponsorCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -74,56 +83,79 @@ const updateSponsorCopy: Record<Language, Record<string, string>> = {
 interface UpdateSponsorUiProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  sponsor: Sponsor | null;
-  onUpdated: (updated: Sponsor) => void;
+  sponsor: SponsorSheetModel | null;
 }
 
 export default function UpdateSponsorUi({
   open,
   onOpenChange,
   sponsor,
-  onUpdated,
 }: UpdateSponsorUiProps) {
   const { language } = useI18n();
   const copy = updateSponsorCopy[language];
-  const [imgUrl, setImgUrl] = useState("");
-  const [link, setLink] = useState("");
-  const [description, setDescription] = useState("");
-  const [isActive, setIsActive] = useState(true);
-  const [ownerId, setOwnerId] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState(sponsor?.image || "");
+  const [link, setLink] = useState(sponsor?.sponsorLink || "");
+  const [description, setDescription] = useState(sponsor?.description || "");
+  const [isActive, setIsActive] = useState(sponsor?.isActive ?? true);
+  const [ownerId, setOwnerId] = useState(sponsor?.ownerId || "");
 
-//   const [updateSponsor, { isLoading }] = useUpdateSponsorMutation();
+  const [updateSponsor, { isLoading }] = useUpdateSponsorMutation();
 
-  // Populate form when a sponsor is selected
   useEffect(() => {
-    if (sponsor) {
-      setImgUrl(sponsor.img || "");
-      setLink(sponsor.link || "");
-      setDescription(sponsor.description || "");
-      setIsActive(sponsor.isActive ?? true);
-      setOwnerId(sponsor.ownerId || "");
+    return () => {
+      if (imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+
+    if (imagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
     }
-  }, [sponsor]);
+
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+      return;
+    }
+
+    setImagePreview(sponsor?.image || "");
+  };
 
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!sponsor) return;
 
+    const formData = new FormData();
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
+    formData.append("sponsorLink", link);
+    formData.append("isActive", String(isActive));
+    if (description.trim()) formData.append("description", description.trim());
+    if (ownerId.trim()) formData.append("ownerId", ownerId.trim());
+
     try {
-      const updated = await updateSponsor({
-        id: sponsor.id,
-        img: imgUrl,
-        link,
-        description,
-        isActive,
-        ownerId,
+      await updateSponsor({
+        id: sponsor.id || sponsor._id || "",
+        body: formData,
       }).unwrap();
 
-      onUpdated(updated);
       toast.success(copy.updated);
       onOpenChange(false);
-    } catch (error: any) {
-      toast.error(error?.data?.message || copy.updateFailed);
+    } catch (error: unknown) {
+      const message =
+        typeof error === "object" &&
+        error !== null &&
+        "data" in error &&
+        typeof (error as { data?: { message?: string } }).data?.message === "string"
+          ? (error as { data: { message: string } }).data.message
+          : copy.updateFailed;
+      toast.error(message);
     }
   };
 
@@ -131,9 +163,9 @@ export default function UpdateSponsorUi({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="">
         <form onSubmit={handleUpdate}>
-          <SheetHeader>
-            <SheetTitle>{copy.editTitle}</SheetTitle>
-            <SheetDescription>
+          <SheetHeader className="">
+            <SheetTitle className="">{copy.editTitle}</SheetTitle>
+            <SheetDescription className="">
               {copy.editDescription}
             </SheetDescription>
           </SheetHeader>
@@ -144,25 +176,22 @@ export default function UpdateSponsorUi({
               <Label htmlFor="edit-img">{copy.imageUrl}</Label>
               <Input
                 id="edit-img"
-                placeholder="https://example.com/logo.png"
-                value={imgUrl}
-                onChange={(e) => setImgUrl(e.target.value)}
-                required
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
               />
-              {imgUrl && (
+              {imagePreview ? (
                 <div className="flex items-center justify-center h-20 w-full rounded-md border bg-muted overflow-hidden">
                   <Image
-                    src={imgUrl}
+                    src={imagePreview}
                     alt={copy.sponsorPreviewAlt}
-                    className="h-full object-contain"
-                    width={120}
-                    height={40}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
+                    width={240}
+                    height={80}
+                    unoptimized
+                    className="h-full w-full object-contain p-2"
                   />
                 </div>
-              )}
+              ) : null}
             </div>
 
             {/* Link */}
@@ -172,7 +201,7 @@ export default function UpdateSponsorUi({
                 id="edit-link"
                 placeholder="https://sponsor-website.com"
                 value={link}
-                onChange={(e) => setLink(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setLink(e.target.value)}
                 required
               />
             </div>
@@ -184,7 +213,7 @@ export default function UpdateSponsorUi({
                 id="edit-description"
                 placeholder={copy.descriptionPlaceholder}
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)}
               />
             </div>
 
@@ -195,7 +224,7 @@ export default function UpdateSponsorUi({
                 id="edit-ownerId"
                 placeholder={copy.ownerPlaceholder}
                 value={ownerId}
-                onChange={(e) => setOwnerId(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setOwnerId(e.target.value)}
                 required
               />
             </div>
@@ -205,7 +234,7 @@ export default function UpdateSponsorUi({
               <Checkbox
                 id="edit-isActive"
                 checked={isActive}
-                onCheckedChange={(val) => setIsActive(!!val)}
+                onCheckedChange={(val: boolean | "indeterminate") => setIsActive(!!val)}
                 className="cursor-pointer"
               />
               <Label
@@ -223,13 +252,13 @@ export default function UpdateSponsorUi({
                 {copy.cancel}
               </Button>
             </SheetClose>
-            {/* {isLoading ? (
+            {isLoading ? (
               <ButtonLoading />
-            ) : ( */}
+            ) : (
               <Button type="submit" size="lg" variant="primary">
                 {copy.save}
               </Button>
-            {/* )} */}
+            )}
           </SheetFooter>
         </form>
       </SheetContent>

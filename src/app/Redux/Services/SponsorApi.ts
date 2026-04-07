@@ -1,12 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface Sponsor {
-  _id: string;
   name: string;
   image?: string;
-  isActive?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  description ?: string;
+  sponsorLink?: string;
 }
 
 export interface SponsorPayload {
@@ -15,17 +13,15 @@ export interface SponsorPayload {
   sponsorLink?: string;
   description?: string;
   isActive?: boolean;
-  ownerId: boolean;
+  // ownerId: boolean;
 }
 export interface GetAllsponsorsParams {
   page?: number;
+  content?: Sponsor[];
   size?: number;
-  prod_class?: string;
-  minPrice?: number;
-  maxPrice?: number;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://wadkniss-r6ar.onrender.com/api/v1" ;
 
 export const sponsorApi = createApi({
   reducerPath: "sponsorApi",
@@ -36,28 +32,25 @@ export const sponsorApi = createApi({
   endpoints: (builder) => ({
     getsponsors: builder.query<Sponsor[], GetAllsponsorsParams | void>({
       query: (params) => ({
-        url: "",
+        url: "/sponsoreds",
         params: params
           ? {
               ...(params.page && { page: params.page }),
               ...(params.size && { size: params.size }),
-              ...(params.prod_class && { prod_class: params.prod_class }),
-              ...(params.minPrice && { minPrice: params.minPrice }),
-              ...(params.maxPrice && { maxPrice: params.maxPrice }),
             }
           : undefined,
       }),
-      providesTags: ["Sponsor"],
+      providesTags: [{ type: "Sponsor", id: "LIST" }],
     }),
 
     getSponsorById: builder.query<Sponsor, string>({
-      query: (id) => `/sponsors/${id}`,
+      query: (id) => `/sponsoreds/${id}`,
       providesTags: (_result, _error, id) => [{ type: "Sponsor", id }],
     }),
 
     createSponsor: builder.mutation<Sponsor, FormData>({
       query: (payload: FormData) => ({
-        url: "/sponsors",
+        url: "/sponsoreds",
         method: "POST",
         body: payload,
       }),
@@ -66,10 +59,10 @@ export const sponsorApi = createApi({
 
     updateSponsor: builder.mutation<
       Sponsor,
-      { id: string; body: Partial<FormData> }
+      { id: string; body: FormData }
     >({
-      query: ({ id, body }: { id: string; body: Partial<FormData> }) => ({
-        url: `/sponsors/${id}`,
+      query: ({ id, body }: { id: string; body: FormData }) => ({
+        url: `/sponsoreds/${id}`,
         method: "PUT",
         body,
       }),
@@ -84,7 +77,7 @@ export const sponsorApi = createApi({
       string
     >({
       query: (id) => ({
-        url: `/sponsors/${id}`,
+        url: `/sponsoreds/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: (_result, _error, id) => [

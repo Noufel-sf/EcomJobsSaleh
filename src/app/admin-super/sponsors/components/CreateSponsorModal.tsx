@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+
+import { useEffect, useState, type ChangeEvent } from "react";
 import {
   Dialog,
   DialogClose,
@@ -17,9 +18,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ButtonLoading } from "@/components/ui/ButtonLoading";
 import { useCreateSponsorMutation } from "@/Redux/Services/SponsorApi";
 import toast from "react-hot-toast";
-import { Sponsor } from "@/lib/DatabaseTypes";
 import Image from "next/image";
 import { type Language, useI18n } from "@/context/I18nContext";
+
 
 const createSponsorCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -28,8 +29,9 @@ const createSponsorCopy: Record<Language, Record<string, string>> = {
     addNew: "Add New Sponsor",
     createTitle: "Create Sponsor",
     createDescription: "Fill in the sponsor details. Click save when you are done.",
+    name: "Name",
+    namePlaceholder: "Sponsor name",
     imageUrl: "Image URL",
-    previewAlt: "Preview",
     sponsorLink: "Sponsor Link",
     description: "Description",
     descriptionPlaceholder: "Short description of the sponsor",
@@ -45,8 +47,9 @@ const createSponsorCopy: Record<Language, Record<string, string>> = {
     addNew: "Ajouter un sponsor",
     createTitle: "Creer un sponsor",
     createDescription: "Renseignez les details du sponsor puis enregistrez.",
+    name: "Nom",
+    namePlaceholder: "Nom du sponsor",
     imageUrl: "URL de l'image",
-    previewAlt: "Apercu",
     sponsorLink: "Lien du sponsor",
     description: "Description",
     descriptionPlaceholder: "Courte description du sponsor",
@@ -62,8 +65,9 @@ const createSponsorCopy: Record<Language, Record<string, string>> = {
     addNew: "اضافة راع جديد",
     createTitle: "انشاء راع",
     createDescription: "املأ تفاصيل الراعي ثم اضغط حفظ.",
+    name: "الاسم",
+    namePlaceholder: "اسم الراعي",
     imageUrl: "رابط الصورة",
-    previewAlt: "معاينة",
     sponsorLink: "رابط الراعي",
     description: "الوصف",
     descriptionPlaceholder: "وصف قصير للراعي",
@@ -75,44 +79,84 @@ const createSponsorCopy: Record<Language, Record<string, string>> = {
   },
 };
 
-export default function CreateSponsorUi() {
+
+export default function CreateSponsorModal() {
   const { language } = useI18n();
   const copy = createSponsorCopy[language];
   const [open, setOpen] = useState(false);
-  const [imgUrl, setImgUrl] = useState("");
-  const [link, setLink] = useState("");
+  const [name, setName] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [sponsorLink, setSponsorLink] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
-  const [ownerId, setOwnerId] = useState("");
 
   const [createSponsor, { isLoading }] = useCreateSponsorMutation();
 
+  useEffect(() => {
+    return () => {
+      if (imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const handleActiveChange = (checked: boolean | "indeterminate") => {
+    setIsActive(!!checked);
+  };
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+
+    if (imagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImagePreview("");
+    }
+  };
+
   const resetForm = () => {
-    setImgUrl("");
-    setLink("");
+    setName("");
+    setImageFile(null);
+    if (imagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImagePreview("");
+    setSponsorLink("");
     setDescription("");
     setIsActive(true);
-    setOwnerId("");
   };
 
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    try {
-      const formData = new FormData() ; 
-      formData.append("image",imgUrl);
-      formData.append("sponsorLink",link);
-      formData.append("description",description);
-      formData.append("isActive",isActive.toString());
-      formData.append("ownerId",ownerId);
-      await createSponsor({
-        payload: formData,
-      }).unwrap();
+    if (!imageFile) return;
 
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("image", imageFile);
+    formData.append("sponsorLink", sponsorLink);
+    formData.append("isActive", String(isActive));
+    if (description.trim()) formData.append("description", description.trim());
+
+    try {
+       await createSponsor(formData).unwrap();
       toast.success(copy.created);
       setOpen(false);
       resetForm();
-    } catch (error: any) {
-      toast.error(error?.data?.message || copy.createFailed);
+    } catch (error: unknown) {
+      const message =
+        typeof error === "object" &&
+        error !== null &&
+        "data" in error &&
+        typeof (error as { data?: { message?: string } }).data?.message === "string"
+          ? (error as { data: { message: string } }).data.message
+          : copy.createFailed;
+      toast.error(message);
     }
   };
 
@@ -124,85 +168,81 @@ export default function CreateSponsorUi() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-120">
         <form onSubmit={handleCreate}>
           <DialogHeader>
             <DialogTitle>{copy.createTitle}</DialogTitle>
-            <DialogDescription className="mb-3">
-              {copy.createDescription}
-            </DialogDescription>
+            <DialogDescription className="mb-3">{copy.createDescription}</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4">
-            {/* Image URL */}
             <div className="grid gap-3">
-              <Label htmlFor="img">{copy.imageUrl}</Label>
+              <Label htmlFor="name">{copy.name}</Label>
               <Input
-                id="img"
-                name="img"
-                placeholder="https://example.com/logo.png"
-                value={imgUrl}
-                onChange={(e) => setImgUrl(e.target.value)}
+                id="name"
+                value={name}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setName(e.target.value)
+                }
+                placeholder={copy.namePlaceholder}
                 required
               />
-              {imgUrl && (
+            </div>
+
+            <div className="grid gap-3">
+              <Label htmlFor="image">{copy.imageUrl}</Label>
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                required
+              />
+              {imagePreview ? (
                 <div className="flex items-center justify-center h-20 w-full rounded-md border bg-muted overflow-hidden">
                   <Image
-                    src={imgUrl}
-                    alt={copy.previewAlt}
-                    className="h-full object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
+                    src={imagePreview}
+                    alt="Preview"
+                    width={240}
+                    height={80}
+                    unoptimized
+                    className="h-full w-full object-contain p-2"
                   />
                 </div>
-              )}
+              ) : null}
             </div>
 
-            {/* Link */}
             <div className="grid gap-3">
-              <Label htmlFor="link">{copy.sponsorLink}</Label>
+              <Label htmlFor="sponsorLink">{copy.sponsorLink}</Label>
               <Input
-                id="link"
-                name="link"
+                id="sponsorLink"
+                value={sponsorLink}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setSponsorLink(e.target.value)
+                }
                 placeholder="https://sponsor-website.com"
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
                 required
               />
             </div>
 
-            {/* Description */}
             <div className="grid gap-3">
               <Label htmlFor="description">{copy.description}</Label>
               <Input
                 id="description"
-                name="description"
-                placeholder={copy.descriptionPlaceholder}
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setDescription(e.target.value)
+                }
+                placeholder={copy.descriptionPlaceholder}
               />
             </div>
 
-            {/* Owner ID */}
-            <div className="grid gap-3">
-              <Label htmlFor="ownerId">{copy.ownerId}</Label>
-              <Input
-                id="ownerId"
-                name="ownerId"
-                placeholder={copy.ownerPlaceholder}
-                value={ownerId}
-                onChange={(e) => setOwnerId(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* isActive toggle */}
+        
             <div className="flex items-center gap-3 py-1">
               <Checkbox
                 id="isActive"
                 checked={isActive}
-                onCheckedChange={(val) => setIsActive(!!val)}
+                onCheckedChange={handleActiveChange}
                 className="cursor-pointer"
               />
               <Label htmlFor="isActive" className="cursor-pointer font-normal">
@@ -217,13 +257,13 @@ export default function CreateSponsorUi() {
                 {copy.cancel}
               </Button>
             </DialogClose>
-            {/* {isLoading ? (
-              <ButtonLoading /> */}
-            {/* ) : ( */}
+            {isLoading ? (
+              <ButtonLoading />
+            ) : (
               <Button type="submit" variant="primary" size="lg">
                 {copy.save}
               </Button>
-            {/* )} */}
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

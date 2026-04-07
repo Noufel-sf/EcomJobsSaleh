@@ -47,6 +47,8 @@ export const sellerApi = createApi({
   endpoints: (builder) => ({
     // Get seller information
 
+    
+
     createSellerInfo: builder.query<SellerInfo, void>({
       query: (sellerdata) => ({
         url: "/store",
