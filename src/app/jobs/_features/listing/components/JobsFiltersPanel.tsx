@@ -27,7 +27,7 @@ export function JobsFiltersPanel({
   searchQuery: string;
   selectedCategories: string[];
   selectedTypes: string[];
-  categories: Array<{ id: string; label: string; value: string }>;
+  categories: Array<{ id: string; label: string }>;
   onSearchChange: (query: string) => void;
   onToggleCategory: (categoryValue: string) => void;
   onToggleType: (type: string) => void;
@@ -70,8 +70,8 @@ export function JobsFiltersPanel({
             <div key={category.id} className="flex items-center space-x-2">
               <Checkbox
                 id={`category-${category.id}`}
-                checked={selectedCategories.includes(category.value)}
-                onCheckedChange={() => onToggleCategory(category.value)}
+                checked={selectedCategories.includes(category.id)}
+                onCheckedChange={() => onToggleCategory(category.id)}
                 className=""
               />
               <label

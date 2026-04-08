@@ -2,12 +2,15 @@ import { Job, JobApplication } from "@/lib/DatabaseTypes";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { JobCategory } from "@/lib/DatabaseTypes";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://wadkniss-r6ar.onrender.com/api/v1";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://wadkniss-r6ar.onrender.com/api/v1";
 
 export interface GetAllJobsParams {
   page?: number;
   size?: number;
   type?: string;
+  categoryid?: string;
   location?: string;
   minSalary?: number;
   maxSalary?: number;
@@ -15,10 +18,10 @@ export interface GetAllJobsParams {
 
 export interface GetAllCategoriesResponse {
   content: JobCategory[];
-  page : number;
-  size : number;
-  totalPages : number;
-  totalCategories : number;
+  page: number;
+  size: number;
+  totalPages: number;
+  totalCategories: number;
 }
 
 export interface GetAllJobsResponse {
@@ -77,7 +80,14 @@ export const jobApi = createApi({
     baseUrl: `${API_URL}`,
   }),
 
-  tagTypes: ["Jobs", "Job", "Applications", "Application", "Profile", "JobsCategories"],
+  tagTypes: [
+    "Jobs",
+    "Job",
+    "Applications",
+    "Application",
+    "Profile",
+    "JobsCategories",
+  ],
 
   endpoints: (builder) => ({
     getAllJobs: builder.query<GetAllJobsResponse, GetAllJobsParams | void>({
@@ -93,6 +103,17 @@ export const jobApi = createApi({
               ...(params.maxSalary && { maxSalary: params.maxSalary }),
             }
           : undefined,
+      }),
+      providesTags: ["Jobs"],
+    }),
+
+    getJobsByCategory: builder.query<GetAllJobsResponse, GetAllJobsParams>({
+      query: ({ categoryid, page, size }) => ({
+        url: `/jobs/ByCategory/${categoryid}`,
+        params: {
+          ...(page && { page }),
+          ...(size && { size }),
+        },
       }),
       providesTags: ["Jobs"],
     }),
@@ -128,7 +149,6 @@ export const jobApi = createApi({
       invalidatesTags: ["JobsCategories"],
     }),
 
-
     getJobById: builder.query<Job, string>({
       query: (id) => `/jobs/${id}`,
       providesTags: (result, error, id) => [{ type: "Job", id }],
@@ -162,10 +182,7 @@ export const jobApi = createApi({
         method: "PUT",
         body: jobData,
       }),
-      invalidatesTags: (result, error, { id }) => [
-        "Jobs",
-        { type: "Job", id },
-      ],
+      invalidatesTags: (result, error, { id }) => ["Jobs", { type: "Job", id }],
     }),
 
     deleteJob: builder.mutation({
@@ -221,8 +238,6 @@ export const jobApi = createApi({
       invalidatesTags: ["Applications"],
     }),
 
-   
-
     updateEmployerProfile: builder.mutation<
       { message?: string },
       UpdateEmployerProfilePayload | FormData
@@ -246,12 +261,11 @@ export const jobApi = createApi({
       }),
     }),
   }),
-
-  
 });
 
 export const {
   useGetAllJobsQuery,
+  useGetJobsByCategoryQuery,
   useGetJobByIdQuery,
   useSearchJobsQuery,
   useCreateJobMutation,

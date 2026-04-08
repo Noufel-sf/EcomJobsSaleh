@@ -38,7 +38,7 @@ export function JobsToolbar({
 }: {
   totalFiltered: number;
   totalShown: number;
-  categories: Array<{ id: string; label: string; value: string }>;
+  categories: Array<{ id: string; label: string }>;
   selectedCategories: string[];
   selectedTypes: string[];
   searchQuery: string;
@@ -56,22 +56,36 @@ export function JobsToolbar({
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-1">All Jobs</h1>
-          <p className="text-sm text-muted-foreground">Showing {totalShown} of {totalFiltered} jobs</p>
+          <p className="text-sm text-muted-foreground">
+            Showing {totalShown} of {totalFiltered} jobs
+          </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Sheet open={mobileFiltersOpen} onOpenChange={onMobileFiltersChange}>
             <SheetTrigger asChild>
-              <Button variant="outline" className="lg:hidden" size="lg" aria-label="Open filters menu">
-                <SlidersHorizontal className="w-4 h-4 mr-2" aria-hidden="true" />
+              <Button
+                variant="outline"
+                className="lg:hidden"
+                size="lg"
+                aria-label="Open filters menu"
+              >
+                <SlidersHorizontal
+                  className="w-4 h-4 mr-2"
+                  aria-hidden="true"
+                />
                 Filters
-                {(selectedCategories.length > 0 || selectedTypes.length > 0 || searchQuery) && (
+                {(selectedCategories.length > 0 ||
+                  selectedTypes.length > 0 ||
+                  searchQuery) && (
                   <Badge
                     variant="destructive"
                     className="ml-2 px-1.5 py-0.5 text-xs"
                     aria-label={`${selectedCategories.length + selectedTypes.length + (searchQuery ? 1 : 0)} active filters`}
                   >
-                    {selectedCategories.length + selectedTypes.length + (searchQuery ? 1 : 0)}
+                    {selectedCategories.length +
+                      selectedTypes.length +
+                      (searchQuery ? 1 : 0)}
                   </Badge>
                 )}
               </Button>
@@ -82,7 +96,9 @@ export function JobsToolbar({
                   <Filter className="w-5 h-5" aria-hidden="true" />
                   Filters
                 </SheetTitle>
-                <SheetDescription className="">Filter jobs by type and more</SheetDescription>
+                <SheetDescription className="">
+                  Filter jobs by type and more
+                </SheetDescription>
               </SheetHeader>
               <div className="mt-6">
                 <JobsFiltersPanel
@@ -104,21 +120,38 @@ export function JobsToolbar({
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent className="">
-              <SelectItem value="featured" className="">Featured</SelectItem>
-              <SelectItem value="newest" className="">Newest</SelectItem>
-              <SelectItem value="salary-asc" className="">Salary: Low to High</SelectItem>
-              <SelectItem value="salary-desc" className="">Salary: High to Low</SelectItem>
+              <SelectItem value="featured" className="">
+                Featured
+              </SelectItem>
+              <SelectItem value="newest" className="">
+                Newest
+              </SelectItem>
+              <SelectItem value="salary-asc" className="">
+                Salary: Low to High
+              </SelectItem>
+              <SelectItem value="salary-desc" className="">
+                Salary: High to Low
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
       </header>
 
-      {(selectedCategories.length > 0 || selectedTypes.length > 0 || searchQuery) && (
-        <div className="flex flex-wrap items-center gap-2 mb-6" role="region" aria-label="Active filters">
+      {(selectedCategories.length > 0 ||
+        selectedTypes.length > 0 ||
+        searchQuery) && (
+        <div
+          className="flex flex-wrap items-center gap-2 mb-6"
+          role="region"
+          aria-label="Active filters"
+        >
           <span className="text-sm font-medium" id="active-filters-label">
             Active filters:
           </span>
-          <div className="flex flex-wrap gap-2" aria-labelledby="active-filters-label">
+          <div
+            className="flex flex-wrap gap-2"
+            aria-labelledby="active-filters-label"
+          >
             {selectedCategories.map((category) => (
               <Badge
                 key={category}
@@ -133,9 +166,10 @@ export function JobsToolbar({
                     onToggleCategory(category);
                   }
                 }}
-                aria-label={`Remove ${category} filter`}
+                aria-label={`Remove ${categories.find((item) => item.id === category)?.label ?? category} filter`}
               >
-                {category}
+                {categories.find((item) => item.id === category)?.label ??
+                  category}
                 <X className="w-3 h-3 ml-1" aria-hidden="true" />
               </Badge>
             ))}
