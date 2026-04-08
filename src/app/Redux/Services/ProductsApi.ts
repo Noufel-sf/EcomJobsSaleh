@@ -88,7 +88,7 @@ export const productsApi = createApi({
       GetAllProductsParams
     >({
       query: (params) => ({
-        url: `/sponsoreds`,
+        url: `/sponsored`,
         params: {
           ...(params?.page && { page: params.page }),
           ...(params?.size && { size: params.size }),

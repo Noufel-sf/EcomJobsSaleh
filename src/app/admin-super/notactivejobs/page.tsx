@@ -220,17 +220,7 @@ export default function SuperAdminNotActiveJobs() {
 
           return (
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="cursor-pointer"
-              >
-                <Link href={`/employer/applications?jobId=${job.id}`}>
-                  <Eye className="h-4 w-4 mr-1" />
-                  {copy.viewApps}
-                </Link>
-              </Button>
+       
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
