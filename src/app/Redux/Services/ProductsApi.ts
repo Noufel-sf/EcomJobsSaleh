@@ -1,7 +1,9 @@
 import { Product } from "@/lib/DatabaseTypes";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://wadkniss-r6ar.onrender.com/api/v1";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://wadkniss-r6ar.onrender.com/api/v1";
 
 export interface GetAllProductsParams {
   page?: number;
@@ -28,31 +30,49 @@ export interface GetProductsByClassificationArgs {
 export const productsApi = createApi({
   reducerPath: "productsApi",
   baseQuery: fetchBaseQuery({
-    baseUrl:   `${API_URL}/products`,
+    baseUrl: `${API_URL}/products`,
     // credentials: "include",
   }),
 
   tagTypes: ["Products", "Product", "Categories"],
 
   endpoints: (builder) => ({
-    
-    
-    getAllProducts: builder.query<GetAllProductsResponse, GetAllProductsParams | void> ({
+    getAllProducts: builder.query<
+      GetAllProductsResponse,
+      GetAllProductsParams | void
+    >({
       query: (params) => ({
         url: "",
-        params: params ? {
-          ...(params.page && { page: params.page }),
-          ...(params.size && { size: params.size }),
-          ...(params.prod_class && { prod_class: params.prod_class }),
-          // ...(params.minPrice && { minPrice: params.minPrice }),
-          // ...(params.maxPrice && { maxPrice: params.maxPrice }),
-        } : undefined,
+        params: params
+          ? {
+              ...(params.page && { page: params.page }),
+              ...(params.size && { size: params.size }),
+              ...(params.prod_class && { prod_class: params.prod_class }),
+            }
+          : undefined,
+      }),
+      providesTags: ["Products"],
+    }),
+    getNotAvailableProducts: builder.query<
+      GetAllProductsResponse,
+      GetAllProductsParams | void
+    >({
+      query: (params) => ({
+        url: "/NoAvailable",
+        params: params
+          ? {
+              ...(params.page && { page: params.page }),
+              ...(params.size && { size: params.size }),
+            }
+          : undefined,
       }),
       providesTags: ["Products"],
     }),
 
-       
-    getProductsByClassification: builder.query<GetAllProductsResponse, GetProductsByClassificationArgs>({
+    getProductsByClassification: builder.query<
+      GetAllProductsResponse,
+      GetProductsByClassificationArgs
+    >({
       query: ({ classificationID, page, size }) => ({
         url: `/ByClassification/${classificationID}`,
         params: {
@@ -63,19 +83,17 @@ export const productsApi = createApi({
       providesTags: ["Products"],
     }),
 
-
-    getElectronicsProducts: builder.query<{ content: Product[] }, void>({
-      query: () => "/electronics",
-      providesTags: ["Products"],
-    }),
-
-    getClothingProducts: builder.query<{ content: Product[] }, void>({
-      query: () => "/clothing",
-      providesTags: ["Products"],
-    }),
-
-    getShoesesProducts: builder.query<{ content: Product[] }, void>({
-      query: () => "/shoes",
+    getSponsoredProducts: builder.query<
+      GetAllProductsResponse,
+      GetAllProductsParams
+    >({
+      query: (params) => ({
+        url: `/sponsoreds`,
+        params: {
+          ...(params?.page && { page: params.page }),
+          ...(params?.size && { size: params.size }),
+        },
+      }),
       providesTags: ["Products"],
     }),
 
@@ -94,9 +112,17 @@ export const productsApi = createApi({
       providesTags: ["Products"],
     }),
 
-
     searchProducts: builder.query({
-      query: ({ query, name, smallDesc, prod_class, minPrice, maxPrice, page, limit }) => ({
+      query: ({
+        query,
+        name,
+        smallDesc,
+        prod_class,
+        minPrice,
+        maxPrice,
+        page,
+        limit,
+      }) => ({
         url: "/search",
         params: {
           query: query,
@@ -111,7 +137,6 @@ export const productsApi = createApi({
       }),
       providesTags: ["Products"],
     }),
-
 
     createProduct: builder.mutation({
       query: (formData) => ({
@@ -146,7 +171,7 @@ export const productsApi = createApi({
       query: ({ id, available }) => ({
         url: `/status/${id}`,
         method: "PUT",
-        body: { status : available },
+        body: { status: available },
       }),
       invalidatesTags: ["Products"],
     }),
@@ -155,12 +180,14 @@ export const productsApi = createApi({
 
 export const {
   useGetAllProductsQuery,
+  useGetNotAvailableProductsQuery,
   useGetBestSellingQuery,
   useGetProductByIdQuery,
   useGetSellerProductsQuery,
   useSearchProductsQuery,
   useLazySearchProductsQuery,
   useGetProductsByClassificationQuery,
+  useGetSponsoredProductsQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,

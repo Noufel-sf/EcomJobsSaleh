@@ -25,17 +25,21 @@ const superAdminSidebarCopy: Record<Language, Record<string, string>> = {
     productsCategories: "Products Categories",
     jobsCategories: "Job Categories",
     sellers: "Sellers",
+    notActiveproducts: "Not Active Products",
+    notactivejobs: "Not Active Jobs",
     employers: "Employers",
     sponsors: "Sponsors",
   },
   fr: {
     title: "Tableau super admin",
+    notActiveproducts: "Produits non actifs",
     overview: "Vue d'ensemble",
     jobs: "Emplois",
     products: "Produits",
     productsCategories: "Categories produits",
     jobsCategories: "Categories emplois",
     employers :"Employers" ,
+    notactivejobs: "Emplois non actifs",
     sellers :"Sellers" , 
     users: "Utilisateurs",
     sponsors: "Sponsors",
@@ -43,6 +47,8 @@ const superAdminSidebarCopy: Record<Language, Record<string, string>> = {
   ar: {
     title: "لوحة السوبر ادمن",
     overview: "نظرة عامة",
+    notActiveproducts: "المنتجات غير النشطة",
+    notactivejobs: "الوظائف غير النشطة",
     jobs: "الوظائف",
     products: "المنتجات",
     productsCategories: "فئات المنتجات",
@@ -74,8 +80,16 @@ export function SuperAdminAppSidebar({ ...props }) {
             url: "/admin-super/jobs",
           },
           {
+            title: copy.notactivejobs,
+            url: "/admin-super/notactivejobs",
+          },
+          {
             title: copy.products,
             url: "/admin-super/products",
+          },
+          {
+            title: copy.notActiveproducts,
+            url: "/admin-super/notactiveproducts",
           },
           {
             title: copy.productsCategories,

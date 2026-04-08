@@ -208,7 +208,7 @@ export default function SuperAdminSellers() {
     try {
       await updateSellerStatus({
         id: user.id,
-        status: nextStatus as "active" | "suspended",
+        isActive: user.status === "active" ? false : true,
       }).unwrap();
 
       setTableData((prev) =>

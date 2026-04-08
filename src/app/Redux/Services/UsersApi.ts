@@ -34,7 +34,7 @@ export interface GetAdminUsersParams {
 
 interface UpdateAdminUserStatusPayload {
   id: string;
-  status: "active" | "suspended";
+  isActive: boolean;
 }
 
 interface DeleteAdminUserResponse {
@@ -81,10 +81,10 @@ export const usersApi = createApi({
         AdminUser,
         UpdateAdminUserStatusPayload
       >({
-        query: ({ id, status }) => ({
+        query: ({ id, isActive }) => ({
           url: `/users/compnay`,
           method: "PATCH",
-          body: { status , id },
+          body: { isActive , id },
         }),
         invalidatesTags: (_result, _error, { id }) => [
           { type: "Employers", id: id },
@@ -95,10 +95,10 @@ export const usersApi = createApi({
         AdminUser,
         UpdateAdminUserStatusPayload
       >({
-        query: ({ id, status }) => ({
+        query: ({ id, isActive }) => ({
           url: `/users/seller`,
           method: "PATCH",
-          body: { status , id },
+          body: { isActive , id },
         }),
         invalidatesTags: (_result, _error, { id }) => [
           { type: "Sellers", id: id },

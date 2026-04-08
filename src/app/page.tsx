@@ -3,13 +3,23 @@ import dynamic from "next/dynamic";
 
 // Dynamically import components with built-in loading UI
 const Hero = dynamic(() => import("@/components/Hero"), {
-  loading: () => (
-    <div className="h-125 animate-pulse bg-muted rounded-lg" />
-  ),
+  loading: () => <div className="h-125 animate-pulse bg-muted rounded-lg" />,
 });
 
 const BestSellingSection = dynamic(
   () => import("@/components/BestSellingSection"),
+  {
+    loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
+  },
+);
+const SponsoredProductsSection = dynamic(
+  () => import("@/components/sponsoredProducts"),
+  {
+    loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
+  },
+);
+const SponsoredJobsSection = dynamic(
+  () => import("@/components/SponsoredJobs"),
   {
     loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
   },
@@ -56,6 +66,8 @@ const HomePage = () => {
     <div>
       <Hero />
       <BestSellingSection />
+      <SponsoredProductsSection />
+      <SponsoredJobsSection />
       <JobsSection />
     </div>
   );

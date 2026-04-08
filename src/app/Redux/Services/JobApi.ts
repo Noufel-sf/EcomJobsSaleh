@@ -107,6 +107,38 @@ export const jobApi = createApi({
       providesTags: ["Jobs"],
     }),
 
+    getSponsoredJobs: builder.query<
+      GetAllJobsResponse,
+      GetAllJobsParams | void
+    >({
+      query: (params) => ({
+        url: "/jobs/sponsored",
+        params: params
+          ? {
+              ...(params.page && { page: params.page }),
+              ...(params.size && { size: params.size }),
+            }
+          : undefined,
+      }),
+      providesTags: ["Jobs"],
+    }),
+
+    getNotAvailableJobs: builder.query<
+      GetAllJobsResponse,
+      GetAllJobsParams | void
+    >({
+      query: (params) => ({
+        url: "/jobs/NoAvailable",
+        params: params
+          ? {
+              ...(params.page && { page: params.page }),
+              ...(params.size && { size: params.size }),
+            }
+          : undefined,
+      }),
+      providesTags: ["Jobs"],
+    }),
+
     getJobsByCategory: builder.query<GetAllJobsResponse, GetAllJobsParams>({
       query: ({ categoryid, page, size }) => ({
         url: `/jobs/ByCategory/${categoryid}`,
@@ -230,6 +262,18 @@ export const jobApi = createApi({
       ],
     }),
 
+    updateJobStatus: builder.mutation({
+      query: ({ jobID, status }) => ({
+        url: `/available/${jobID}`,
+        method: "PATCH",
+        body: { status },
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        "Jobs",
+        { type: "Job", id },
+      ],
+    }),
+
     deleteApplication: builder.mutation({
       query: (id) => ({
         url: `/jobapplications/${id}`,
@@ -271,6 +315,9 @@ export const {
   useCreateJobMutation,
   useUpdateJobMutation,
   useGetAllCategoriesQuery,
+  useGetSponsoredJobsQuery,
+  useGetNotAvailableJobsQuery,
+  useUpdateJobStatusMutation,
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
   useAddCategoryMutation,
