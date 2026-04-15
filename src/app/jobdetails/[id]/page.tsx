@@ -1,4 +1,5 @@
 import JobDetailsClient from "./JobDetailsClient";
+import { type Job } from "@/lib/DatabaseTypes";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
@@ -16,6 +17,22 @@ type IdRecord = {
 type JobsListResponse = {
   content?: IdRecord[];
 };
+
+async function fetchJobById(id: string): Promise<Job | null> {
+  try {
+    const response = await fetch(`${API_URL}/jobs/${id}`, {
+      next: { revalidate },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as Job;
+  } catch {
+    return null;
+  }
+}
 
 export async function generateStaticParams(): Promise<Array<{ id: string }>> {
   try {
@@ -47,5 +64,6 @@ type JobDetailsPageProps = {
 
 export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
   const { id } = await params;
-  return <JobDetailsClient id={id} />;
+  const initialJob = await fetchJobById(id);
+  return <JobDetailsClient initialJob={initialJob} />;
 }

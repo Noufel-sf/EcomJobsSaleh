@@ -95,7 +95,7 @@ function CartPage() {
           className="text-sm text-muted-foreground mb-6 flex items-center gap-2"
           aria-label="Breadcrumb"
         >
-          <Link href="/allproducts" className="hover:underline">
+          <Link href="/products" className="hover:underline">
           <Button
             variant="ghost"
             size="sm"

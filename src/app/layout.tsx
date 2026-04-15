@@ -78,6 +78,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://wadkniss-r6ar.onrender.com" crossOrigin="anonymous" />
+      </head>
       <body className={`antialiased ${outfit.variable}`}>
         <ClientProviders>
           {children}

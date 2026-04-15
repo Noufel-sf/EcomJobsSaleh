@@ -3,6 +3,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { Moon, Sun, Search, ShoppingCart, User, Menu } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTheme } from "@/context/ThemeContext";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ function ListItem({ id, name, children }: ListItemProps) {
 const Navbar = memo(function Navbar() {
 
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
   const { setTheme } = useTheme();
   const { messages, t } = useI18n();
 
@@ -118,6 +120,22 @@ const Navbar = memo(function Navbar() {
       window.clearTimeout(timeoutId);
     };
   }, [searchTerm, triggerSearch]);
+
+  useEffect(() => {
+    const sharedRoutes = ["/jobs", "/products", "/cart", "/about", "/help"];
+
+    sharedRoutes.forEach((route) => {
+      router.prefetch(route);
+    });
+
+    if (user) {
+      router.prefetch("/my-account");
+      return;
+    }
+
+    router.prefetch("/login");
+    router.prefetch("/register");
+  }, [router, user]);
 
   return (
     <nav className="sticky top-0 z-50 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md shadow-sm border-b border-border" role="navigation" aria-label="Main navigation">

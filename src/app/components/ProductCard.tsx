@@ -38,7 +38,8 @@ export const ProductCard = memo(function ProductCard({
               className="w-full h-full object-contain"
               fill
               loading="lazy"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+              sizes="(max-width: 640px) 42vw, (max-width: 1024px) 28vw, 18vw"
+              quality={70}
             />
           </div>
         </CardHeader>

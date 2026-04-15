@@ -2,29 +2,27 @@
 
 import { memo, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, CheckCircle2, Building2 } from "lucide-react";
 import Image from "next/image";
-import { JobApplicationModal } from "@/components/JobApplicationModal";
-import { useGetJobByIdQuery } from "@/Redux/Services/JobApi";
+import { type Job } from "@/lib/DatabaseTypes";
+
+const JobApplicationModal = dynamic(
+  () => import("@/components/JobApplicationModal").then((mod) => mod.JobApplicationModal),
+  { ssr: false },
+);
 
 type JobDetailsClientProps = {
-  id: string;
+  initialJob: Job | null;
 };
 
-const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
+const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
-
-  const {
-    data: job,
-    isLoading,
-    isError,
-  } = useGetJobByIdQuery(id, {
-    skip: !id,
-  });
+  const job = initialJob;
 
   const handleApply = () => {
     setIsApplicationModalOpen(true);
@@ -34,7 +32,7 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
     setIsApplicationModalOpen(false);
   };
 
-  if (isError) {
+  if (!job) {
     return (
       <main
         className="container mx-auto text-center py-16"
@@ -56,23 +54,6 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
         >
           <Link href="/jobs">Back to Jobs</Link>
         </Button>
-      </main>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <main className="container mx-auto px-4 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="h-32 bg-muted animate-pulse rounded-lg" />
-            <div className="h-96 bg-muted animate-pulse rounded-lg" />
-          </div>
-          <div className="space-y-4">
-            <div className="h-64 bg-muted animate-pulse rounded-lg" />
-            <div className="h-48 bg-muted animate-pulse rounded-lg" />
-          </div>
-        </div>
       </main>
     );
   }
@@ -101,7 +82,7 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
             /
           </li>
           <li aria-current="page">
-            <span className="text-foreground font-medium">{job?.title}</span>
+            <span className="text-foreground font-medium">{job.title}</span>
           </li>
         </ol>
       </nav>
@@ -111,7 +92,7 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
           <Card className="">
             <CardContent className="p-6 lg:p-8">
               <div className="flex flex-col sm:flex-row items-start gap-6">
-                {job?.companyLogo && (
+                {job.companyLogo && (
                   <div className="shrink-0">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-muted flex items-center justify-center overflow-hidden border">
                       <Image
@@ -127,20 +108,20 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
 
                 <div className="flex-1 min-w-0">
                   <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3">
-                    {job?.title}
+                    {job.title}
                   </h1>
                   <div className="flex flex-wrap items-center gap-3 text-muted-foreground mb-4">
                     <div className="flex items-center gap-1.5">
                       <Building2 className="w-4 h-4" />
-                      <span className="font-medium">{job?.company}</span>
+                      <span className="font-medium">{job.company}</span>
                     </div>
                     <span>•</span>
                     <div className="flex items-center gap-1.5">
                       <MapPin className="w-4 h-4" />
-                      <span>{job?.location}</span>
+                      <span>{job.location}</span>
                     </div>
                     <span>•</span>
-                    <span className="font-medium text-primary">{job?.type}</span>
+                    <span className="font-medium text-primary">{job.type}</span>
                   </div>
                 </div>
 
@@ -162,12 +143,12 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
             <CardContent className="p-6 lg:p-8">
               <h2 className="text-2xl font-bold mb-4">Description</h2>
               <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                {job?.description}
+                {job.description}
               </p>
             </CardContent>
           </Card>
 
-          {job?.responsibilities && job.responsibilities.length > 0 && (
+          {job.responsibilities && job.responsibilities.length > 0 && (
             <Card className="">
               <CardContent className="p-6 lg:p-8">
                 <h2 className="text-2xl font-bold mb-4">Responsibilities</h2>
@@ -183,7 +164,7 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
             </Card>
           )}
 
-          {job?.whoYouAre && job.whoYouAre.length > 0 && (
+          {job.whoYouAre && job.whoYouAre.length > 0 && (
             <Card className="">
               <CardContent className="p-6 lg:p-8">
                 <h2 className="text-2xl font-bold mb-4">Who You Are</h2>
@@ -199,7 +180,7 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
             </Card>
           )}
 
-          {job?.niceToHaves && job.niceToHaves.length > 0 && (
+          {job.niceToHaves && job.niceToHaves.length > 0 && (
             <Card className="">
               <CardContent className="p-6 lg:p-8">
                 <h2 className="text-2xl font-bold mb-4">Nice-to-Haves</h2>
@@ -227,8 +208,8 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
                     Applied
                   </span>
                   <span className="text-sm font-semibold">
-                    <span className="text-primary">{job?.appliedCount}</span> of {" "}
-                    {job?.totalCapacity} capacity
+                    <span className="text-primary">{job.appliedCount}</span> of {" "}
+                    {job.totalCapacity} capacity
                   </span>
                 </div>
 
@@ -238,7 +219,7 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
                   <span className="text-sm font-medium text-muted-foreground">
                     Apply Before
                   </span>
-                  <span className="text-sm font-semibold">{job?.applyBefore}</span>
+                  <span className="text-sm font-semibold">{job.applyBefore}</span>
                 </div>
 
                 <Separator className="" />
@@ -247,7 +228,7 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
                   <span className="text-sm font-medium text-muted-foreground">
                     Job Posted On
                   </span>
-                  <span className="text-sm font-semibold">{job?.jobPostedOn}</span>
+                  <span className="text-sm font-semibold">{job.jobPostedOn}</span>
                 </div>
 
                 <Separator className="" />
@@ -256,7 +237,7 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
                   <span className="text-sm font-medium text-muted-foreground">
                     Job Type
                   </span>
-                  <span className="text-sm font-semibold">{job?.type}</span>
+                  <span className="text-sm font-semibold">{job.type}</span>
                 </div>
 
                 <Separator className="" />
@@ -266,14 +247,14 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
                     Salary
                   </span>
                   <span className="text-sm font-semibold text-primary">
-                    {job?.salary}
+                    {job.salary}
                   </span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {job?.categories && job.categories.length > 0 && (
+          {job.categories && job.categories.length > 0 && (
             <Card className="">
               <CardContent className="p-6">
                 <h3 className="text-xl font-bold mb-4">Categories</h3>
@@ -292,7 +273,7 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
             </Card>
           )}
 
-          {job?.requiredSkills && job.requiredSkills.length > 0 && (
+          {job.requiredSkills && job.requiredSkills.length > 0 && (
             <Card className="">
               <CardContent className="p-6">
                 <h3 className="text-xl font-bold mb-4">Required Skills</h3>
@@ -324,7 +305,7 @@ const JobDetailsClient = ({ id }: JobDetailsClientProps) => {
         </div>
       </div>
 
-      {job && (
+      {job && isApplicationModalOpen && (
         <JobApplicationModal
           isOpen={isApplicationModalOpen}
           onClose={handleCloseModal}

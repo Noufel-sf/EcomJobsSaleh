@@ -1,33 +1,37 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
+import { Suspense } from "react";
+import Hero from "@/components/Hero";
+import BestSellingSection from "@/components/BestSellingSection";
+import SponsoredProductsSection from "@/components/sponsoredProducts";
+import SponsoredJobsSection from "@/components/SponsoredJobs";
+import JobsSection from "@/components/JobsSection";
+import { SkeletonCard } from "@/components/SkeletonCard";
 
-// Dynamically import components with built-in loading UI
-const Hero = dynamic(() => import("@/components/Hero"), {
-  loading: () => <div className="h-125 animate-pulse bg-muted rounded-lg" />,
-});
-
-const BestSellingSection = dynamic(
-  () => import("@/components/BestSellingSection"),
-  {
-    loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
-  },
-);
-const SponsoredProductsSection = dynamic(
-  () => import("@/components/sponsoredProducts"),
-  {
-    loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
-  },
-);
-const SponsoredJobsSection = dynamic(
-  () => import("@/components/SponsoredJobs"),
-  {
-    loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
-  },
+const SectionFallback = ({
+  sectionClassName,
+}: {
+  sectionClassName: string;
+}) => (
+  <section className={sectionClassName} aria-hidden="true">
+    <div className="mx-auto container px-6 py-12">
+      <div className="mb-6 flex items-center justify-between">
+        <div className="h-8 w-56 animate-pulse rounded bg-muted" />
+      </div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <SkeletonCard key={`fallback-${index}`} />
+        ))}
+      </div>
+    </div>
+  </section>
 );
 
-const JobsSection = dynamic(() => import("@/components/JobsSection"), {
-  loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
-});
+const HeroFallback = () => (
+  <section className="px-6 py-12 mx-auto container flex items-stretch gap-5 min-h-125" aria-hidden="true">
+    <div className="h-125 animate-pulse bg-muted rounded-lg flex-1" />
+    <div className="hidden lg:block w-[20%] h-125 animate-pulse bg-muted rounded-lg" />
+  </section>
+);
 
 export const metadata: Metadata = {
   title: "Saleh Store - Your Trusted Online Marketplace",
@@ -61,14 +65,28 @@ export const metadata: Metadata = {
   },
 };
 
-const HomePage = () => {
+const HomePage = async () => {
   return (
     <div>
-      <Hero />
-      <BestSellingSection />
-      <SponsoredProductsSection />
-      <SponsoredJobsSection />
-      <JobsSection />
+      <Suspense fallback={<HeroFallback />}>
+        <Hero />
+      </Suspense>
+      <Suspense fallback={<SectionFallback sectionClassName="" />}>
+        <BestSellingSection />
+      </Suspense>
+      <Suspense fallback={<SectionFallback sectionClassName="" />}>
+        <SponsoredProductsSection />
+      </Suspense>
+      <Suspense fallback={<SectionFallback sectionClassName="" />}>
+        <SponsoredJobsSection />
+      </Suspense>
+      <Suspense
+        fallback={
+          <SectionFallback sectionClassName="py-20 bg-linear-to-b from-background to-muted/20" />
+        }
+      >
+        <JobsSection />
+      </Suspense>
     </div>
   );
 };

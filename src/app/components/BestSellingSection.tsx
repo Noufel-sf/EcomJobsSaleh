@@ -1,36 +1,32 @@
-"use client";
-
-import { useRef, memo, useCallback } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import type { Swiper as SwiperType } from "swiper";
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
-import { Pagination, Autoplay, Navigation } from "swiper/modules";
-import { Button } from "./ui/button";
-import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 import Link from "next/link";
-import { SkeletonCard } from "./SkeletonCard";
-import { useGetAllProductsQuery } from "@/Redux/Services/ProductsApi";
-import ProductCard from "./ProductCard";
-import { Product } from "@/lib/DatabaseTypes";
+import { ShoppingCart } from "lucide-react";
+import { Button } from "./ui/button";
+import BestSellingCarousel from "./BestSellingCarousel";
+import type { Product } from "@/lib/DatabaseTypes";
 
-const BestSellingSection = memo(function BestSellingSection() {
-  const swiperRef = useRef<SwiperType | null>(null);
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://wadkniss-r6ar.onrender.com/api/v1";
 
-  const {
-    data: productsData,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetAllProductsQuery(undefined);
+async function getBestSellingProducts(): Promise<Product[]> {
+  try {
+    const response = await fetch(`${API_URL}/products/bestSelling`, {
+      next: { revalidate: 60 },
+    });
 
-  const products = productsData?.content || [];
+    if (!response.ok) {
+      return [];
+    }
 
-  // Memoize refetch handler to prevent recreation on every render
-  const handleRetry = useCallback(() => {
-    refetch();
-  }, [refetch]);
+    const data = (await response.json()) as { content?: Product[] };
+    return data.content ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function BestSellingSection() {
+  const products = await getBestSellingProducts();
 
   return (
     <section
@@ -41,96 +37,30 @@ const BestSellingSection = memo(function BestSellingSection() {
         <h2 id="best-selling-heading" className="capitalize text-2xl font-bold">
           Best Selling Products
         </h2>
-
-        <div className="flex items-center gap-3">
-          <button
-            className="best-selling-prev w-8 h-8 px-2 rounded-lg flex cursor-pointer items-center justify-center bg-orange-500 hover:bg-orange-600 transition-all duration-200"
-            aria-label="Previous products"
-          >
-            <ChevronLeft className="text-white" />
-          </button>
-
-          <button
-            className="best-selling-next w-8 h-8 px-2 rounded-lg flex cursor-pointer items-center justify-center bg-orange-500 hover:bg-orange-600 transition-all duration-200"
-            aria-label="Next products"
-          >
-            <ChevronRight className="text-white" />
-          </button>
-        </div>
       </div>
 
-      {isError ? (
-        <div className="text-center py-8 text-red-500">
-          <p>Failed to load best selling products.</p>
-          <Button
-            onClick={handleRetry}
-            className="mt-4"
-            variant="default"
-            size="default"
-          >
-            Try Again
-          </Button>
-        </div>
-      ) : (
+      {products.length > 0 ? (
         <>
-          <Swiper
-            onSwiper={(swiper) => (swiperRef.current = swiper)}
-            spaceBetween={30}
-            modules={[Pagination, Navigation, Autoplay]}
-            autoplay={{
-              delay: 3500,
-              disableOnInteraction: true,
-              pauseOnMouseEnter: true,
-            }}
-            navigation={{
-              nextEl: ".best-selling-next",
-              prevEl: ".best-selling-prev",
-            }}
-            breakpoints={{
-              0: { slidesPerView: 2 },
-              768: { slidesPerView: 2 },
-              1024: { slidesPerView: 4 },
-              1280: { slidesPerView: 5 },
-            }}
-            className="testimonial-swiper grid grid-cols-2"
-          >
-            {isLoading
-              ? [...Array(5)].map((_, i) => (
-                  <SwiperSlide key={`skeleton-${i}`}>
-                    <SkeletonCard />
-                  </SwiperSlide>
-                ))
-              : products.map((product: Product) => (
-                  <SwiperSlide key={product.id}>
-                    <ProductCard product={product} />
-                  </SwiperSlide>
-                ))}
-          </Swiper>
+          <BestSellingCarousel products={products} />
 
-          {!isLoading && products.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>No products available at the moment.</p>
-            </div>
-          )}
-
-          {!isLoading && products.length > 0 && (
-            <div className="text-center">
-              <Link href="/products">
-                <Button
-                  size="lg"
-                  variant="default"
-                  className="mt-8 mx-auto bg-primary hover:bg-primary/90 flex items-center gap-2"
-                >
-                  View All Best Selling Products
-                  <ShoppingCart className="h-5 w-5" />
-                </Button>
-              </Link>
-            </div>
-          )}
+          <div className="text-center">
+            <Link href="/products" prefetch>
+              <Button
+                size="lg"
+                variant="default"
+                className="mt-8 mx-auto bg-primary hover:bg-primary/90 flex items-center gap-2"
+              >
+                View All Best Selling Products
+                <ShoppingCart className="h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
         </>
+      ) : (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>No products available at the moment.</p>
+        </div>
       )}
     </section>
   );
-});
-
-export default BestSellingSection;
+}

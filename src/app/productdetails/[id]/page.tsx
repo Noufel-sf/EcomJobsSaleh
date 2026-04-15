@@ -1,4 +1,5 @@
 import ProductDetailsClient from "./ProductDetailsClient";
+import { type Product } from "@/lib/DatabaseTypes";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
@@ -16,6 +17,22 @@ type IdRecord = {
 type ProductsListResponse = {
   content?: IdRecord[];
 };
+
+async function fetchProductById(id: string): Promise<Product | null> {
+  try {
+    const response = await fetch(`${API_URL}/products/${id}`, {
+      next: { revalidate },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as Product;
+  } catch {
+    return null;
+  }
+}
 
 export async function generateStaticParams(): Promise<Array<{ id: string }>> {
   try {
@@ -47,5 +64,6 @@ type ProductDetailsPageProps = {
 
 export default async function ProductDetailsPage({ params }: ProductDetailsPageProps) {
   const { id } = await params;
-  return <ProductDetailsClient id={id} />;
+  const initialProduct = await fetchProductById(id);
+  return <ProductDetailsClient initialProduct={initialProduct} />;
 }

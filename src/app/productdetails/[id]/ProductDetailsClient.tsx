@@ -2,40 +2,25 @@
 
 import { useState, memo, useCallback } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import {
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  Mail,
-  Phone,
-  Store,
-  ShoppingCart,
-} from "lucide-react";
-import SingleProductSkeleton from "@/components/SingleProductSkeleton";
+import { MapPin, Mail, Phone, Store, ShoppingCart } from "lucide-react";
 import { useAddToCartMutation } from "@/Redux/Services/CartApi";
 import { shopOwnerInfo } from "@/lib/data";
-import { useGetProductByIdQuery } from "@/Redux/Services/ProductsApi";
-import { Swiper, SwiperSlide } from "swiper/react";
-import Image from "next/image";
-import { Autoplay, Navigation, Thumbs } from "swiper/modules";
-import type { Swiper as SwiperType } from "swiper";
-import "swiper/css";
-import toast from "react-hot-toast";
-
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import "swiper/css/thumbs";
-import "swiper/css/zoom";
+import { type Product } from "@/lib/DatabaseTypes";
 import { type Language, useI18n } from "@/context/I18nContext";
 
-type ProductDetailsClientProps = {
-  id: string;
-};
+const ProductImageGallery = dynamic(() => import("./ProductImageGallery"), {
+  loading: () => (
+    <div className="w-full aspect-square rounded-lg border border-border bg-muted animate-pulse" />
+  ),
+});
 
-type SwiperInstance = SwiperType | null;
+type ProductDetailsClientProps = {
+  initialProduct: Product | null;
+};
 
 const productMessages: Record<
   Language,
@@ -71,7 +56,8 @@ const productMessages: Record<
 > = {
   en: {
     notFoundTitle: "404 - Product Not Found",
-    notFoundDescription: "Sorry, the product you are looking for does not exist.",
+    notFoundDescription:
+      "Sorry, the product you are looking for does not exist.",
     backToHome: "Back to Home",
     home: "Home",
     categories: "Categories",
@@ -158,49 +144,50 @@ const productMessages: Record<
   },
 };
 
-const ProductDetailsClient = ({ id }: ProductDetailsClientProps) => {
+const ProductDetailsClient = ({ initialProduct }: ProductDetailsClientProps) => {
   const { language, t } = useI18n();
   const copy = productMessages[language];
 
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
-  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperInstance>(null);
   const [addToCart] = useAddToCartMutation();
+  const singleProduct = initialProduct ?? undefined;
 
-  const {
-    data: singleProduct,
-    isLoading,
-    isError,
-  } = useGetProductByIdQuery(id, {
-    skip: !id,
-  });
-
-  const handleAddToCart = useCallback(() => {
+  const handleAddToCart = useCallback(async () => {
     if (!singleProduct) return;
 
-    addToCart({
-      productId: singleProduct.id,
-      color: selectedColor,
-      name: singleProduct.name,
-      price: singleProduct.price,
-      size: selectedSize,
-      image: singleProduct.mainImage,
-      quantity: 1,
-    })
-      .unwrap()
-      .then(() => {
-        toast.success(copy.addedToCart);
-      })
-      .catch((error: { data?: { message?: string } }) => {
-        toast.error(error?.data?.message || copy.failedToAddToCart);
-      });
-  }, [singleProduct, addToCart, selectedSize, selectedColor, copy.addedToCart, copy.failedToAddToCart]);
+    const { default: toast } = await import("react-hot-toast");
+
+    try {
+      await addToCart({
+        productId: singleProduct.id,
+        color: selectedColor,
+        name: singleProduct.name,
+        price: singleProduct.price,
+        size: selectedSize,
+        image: singleProduct.mainImage,
+        quantity: 1,
+      }).unwrap();
+
+      toast.success(copy.addedToCart);
+    } catch (error) {
+      const typedError = error as { data?: { message?: string } };
+      toast.error(typedError?.data?.message || copy.failedToAddToCart);
+    }
+  }, [
+    singleProduct,
+    addToCart,
+    selectedSize,
+    selectedColor,
+    copy.addedToCart,
+    copy.failedToAddToCart,
+  ]);
 
   const productImages = singleProduct
-    ? [singleProduct.mainImage, ...(singleProduct.extraImages ?? [])]
+    ? [singleProduct.mainImage, ...(singleProduct.extraImages ?? [])].filter(Boolean)
     : [];
 
-  if (isError) {
+  if (!singleProduct) {
     return (
       <main
         className="container mx-auto text-center py-16"
@@ -210,9 +197,7 @@ const ProductDetailsClient = ({ id }: ProductDetailsClientProps) => {
         <h1 className="text-4xl font-bold text-red-500 mb-4">
           {copy.notFoundTitle}
         </h1>
-        <p className="text-muted-foreground mb-6">
-          {copy.notFoundDescription}
-        </p>
+        <p className="text-muted-foreground mb-6">{copy.notFoundDescription}</p>
         <Button
           asChild
           variant="default"
@@ -224,10 +209,6 @@ const ProductDetailsClient = ({ id }: ProductDetailsClientProps) => {
         </Button>
       </main>
     );
-  }
-
-  if (isLoading) {
-    return <SingleProductSkeleton />;
   }
 
   return (
@@ -265,90 +246,11 @@ const ProductDetailsClient = ({ id }: ProductDetailsClientProps) => {
       </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-        <section className="space-y-4" aria-label={copy.productImages}>
-          <div className="relative group">
-            <Swiper
-              spaceBetween={10}
-              navigation={{
-                nextEl: ".swiper-button-next-custom",
-                prevEl: ".swiper-button-prev-custom",
-              }}
-              thumbs={{
-                swiper:
-                  thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null,
-              }}
-              autoplay={{
-                delay: 3000,
-                disableOnInteraction: false,
-                pauseOnMouseEnter: true,
-              }}
-              modules={[Navigation, Autoplay, Thumbs]}
-              className="w-full aspect-square rounded-lg border border-border bg-background"
-              a11y={{
-                enabled: true,
-                prevSlideMessage: copy.previousSlideMessage,
-                nextSlideMessage: copy.nextSlideMessage,
-              }}
-            >
-              {productImages.map((img, idx) => (
-                <SwiperSlide key={`main-image-${idx}`}>
-                  <Card className="flex items-center justify-center h-full p-8">
-                    <Image
-                      src={img}
-                      className="w-full lg:w-2/3 object-contain"
-                      alt={`${singleProduct?.name} - Image ${idx + 1}`}
-                      loading={idx === 0 ? "eager" : "lazy"}
-                      fetchPriority={idx === 0 ? "high" : "auto"}
-                      width={600}
-                      height={600}
-                    />
-                  </Card>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-
-            <button
-              className="swiper-button-prev-custom cursor-pointer absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center group-hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              aria-label={copy.previousImage}
-              type="button"
-            >
-              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
-            </button>
-            <button
-              className="swiper-button-next-custom absolute cursor-pointer right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center group-hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              aria-label={copy.nextImage}
-              type="button"
-            >
-              <ChevronRight className="w-5 h-5" aria-hidden="true" />
-            </button>
-          </div>
-
-          <Swiper
-            onSwiper={setThumbsSwiper}
-            spaceBetween={10}
-            slidesPerView={5}
-            watchSlidesProgress={true}
-            modules={[Thumbs]}
-            className="w-full"
-            role="group"
-            aria-label={copy.thumbnails}
-          >
-            {productImages.map((img: string, idx: number) => (
-              <SwiperSlide key={`thumbnail-${idx}`}>
-                <Card className="cursor-pointer h-24 flex items-center justify-center p-2 hover:border-purple-500 transition focus-within:ring-2 focus-within:ring-purple-500">
-                  <Image
-                    src={img}
-                    alt={`${singleProduct?.name} thumbnail ${idx + 1}`}
-                    className="w-full h-full object-contain"
-                    loading="lazy"
-                    width={120}
-                    height={120}
-                  />
-                </Card>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </section>
+        <ProductImageGallery
+          productImages={productImages}
+          productName={singleProduct?.name}
+          copy={copy}
+        />
 
         <section className="space-y-6" aria-label="Product information">
           <div className="space-y-2">
@@ -424,7 +326,9 @@ const ProductDetailsClient = ({ id }: ProductDetailsClientProps) => {
           <div className="flex items-baseline gap-3">
             <span
               className="text-4xl font-bold text-orange-600"
-              aria-label={t(copy.priceLabel, { price: singleProduct?.price ?? 0 })}
+              aria-label={t(copy.priceLabel, {
+                price: singleProduct?.price ?? 0,
+              })}
             >
               ${singleProduct?.price}
             </span>
@@ -463,7 +367,9 @@ const ProductDetailsClient = ({ id }: ProductDetailsClientProps) => {
                   <a
                     href={`mailto:${shopOwnerInfo.email}`}
                     className="text-muted-foreground hover:text-purple-600 transition"
-                    aria-label={t(copy.emailLabel, { name: shopOwnerInfo.name })}
+                    aria-label={t(copy.emailLabel, {
+                      name: shopOwnerInfo.name,
+                    })}
                   >
                     {shopOwnerInfo.email}
                   </a>

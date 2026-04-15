@@ -3,9 +3,14 @@
 import { Button } from "@/components/ui/button";
 import type { CartItem as CartItemType } from "@/lib/DatabaseTypes";
 import Image from "next/image";
-import { Minus, Plus ,Trash } from "lucide-react";
+import { lazy, Suspense } from "react";
 import { memo } from "react";
 import { useI18n } from "@/context/I18nContext";
+
+// Lazy-load icons to reduce initial JS
+const MinusIcon = lazy(() => import("lucide-react").then(m => ({ default: m.Minus })));
+const PlusIcon = lazy(() => import("lucide-react").then(m => ({ default: m.Plus })));
+const TrashIcon = lazy(() => import("lucide-react").then(m => ({ default: m.Trash })));
 
 interface CartItemProps {
   item: CartItemType;
@@ -47,7 +52,9 @@ const CartItem = memo(function CartItem({ item, handleQuantityUpdate, handleDele
             className="flex items-center gap-1 cursor-pointer text-red-500 text-xs hover:text-red-600 transition"
             aria-label={messages.cart.removeItem}
           >
-            <Trash className="w-3 h-3" />
+            <Suspense fallback={<div className="w-3 h-3" />}>
+              <TrashIcon className="w-3 h-3" />
+            </Suspense>
             <span>{messages.cart.remove}</span>
           </button>
         </div>
@@ -71,7 +78,9 @@ const CartItem = memo(function CartItem({ item, handleQuantityUpdate, handleDele
             type="button"
             aria-label={messages.cart.decreaseQuantity}
           >
-            <Minus className="w-3 h-3" />
+            <Suspense fallback={<div className="w-3 h-3" />}>
+              <MinusIcon className="w-3 h-3" />
+            </Suspense>
           </Button>
           <span className="w-8 sm:w-6 text-center text-sm font-medium">
             {item?.quantity}
@@ -84,7 +93,9 @@ const CartItem = memo(function CartItem({ item, handleQuantityUpdate, handleDele
             type="button"
             aria-label={messages.cart.increaseQuantity}
           >
-            <Plus className="w-3 h-3" />
+            <Suspense fallback={<div className="w-3 h-3" />}>
+              <PlusIcon className="w-3 h-3" />
+            </Suspense>
           </Button>
         </div>
 
