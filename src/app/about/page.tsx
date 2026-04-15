@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   },
 };
 
+export const dynamic = "force-static";
+export const revalidate = false;
+
 const About = () => {
   return <AboutClient />;
 };
