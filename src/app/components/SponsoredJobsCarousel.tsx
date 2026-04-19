@@ -56,10 +56,10 @@ const SponsoredJobsCarousel = memo(function SponsoredJobsCarousel({
         breakpoints={{
           0: { slidesPerView: 1 },
           768: { slidesPerView: 2 },
-          1024: { slidesPerView: 4 },
-          1280: { slidesPerView: 5 },
+          1024: { slidesPerView: 3 },
+          1280: { slidesPerView: 4 },
         }}
-        className="testimonial-swiper grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+        className="mb-12"
       >
         {sponsoredJobs.map((job) => (
           <SwiperSlide key={job.id}>

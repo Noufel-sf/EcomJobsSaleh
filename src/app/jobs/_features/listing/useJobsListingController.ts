@@ -1,11 +1,5 @@
 import { useEffect, useMemo, useReducer } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { skipToken } from "@reduxjs/toolkit/query";
-import {
-  useGetAllCategoriesQuery,
-  useGetAllJobsQuery,
-  useGetJobsByCategoryQuery,
-} from "@/Redux/Services/JobApi";
 import type { Job } from "@/lib/DatabaseTypes";
 
 const ITEMS_PER_PAGE = 9;
@@ -118,8 +112,27 @@ function sortJobs(items: Job[], sortBy: SortBy): Job[] {
   return sorted;
 }
 
-export function useJobsListingController() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+function normalizeText(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+export function useJobsListingController({
+  initialJobs,
+  initialCategories,
+  initialSelectedCategories,
+}: {
+  initialJobs: Job[];
+  initialCategories: Array<{ id: string; label: string }>;
+  initialSelectedCategories: string[];
+}) {
+  const [state, dispatch] = useReducer(
+    reducer,
+    initialSelectedCategories,
+    (selectedCategories): State => ({
+      ...initialState,
+      selectedCategories,
+    }),
+  );
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -138,40 +151,44 @@ export function useJobsListingController() {
     return Array.from(new Set(flat)).slice(0, 1);
   }, [categoryParam]);
 
-  const activeCategory = state.selectedCategories[0] ?? categoryIdsFromUrl[0];
-
-  const allJobsQuery = useGetAllJobsQuery(activeCategory ? skipToken : undefined);
-  const categoryJobsQuery = useGetJobsByCategoryQuery(
-    activeCategory ? { categoryid: activeCategory } : skipToken,
-  );
-
-  const jobsResponse = activeCategory
-    ? categoryJobsQuery.data
-    : allJobsQuery.data;
-
-  const isLoading = activeCategory
-    ? categoryJobsQuery.isLoading || categoryJobsQuery.isFetching
-    : allJobsQuery.isLoading || allJobsQuery.isFetching;
-
-  const { data: categoriesData } = useGetAllCategoriesQuery();
-
   useEffect(() => {
     dispatch({ type: "SET_CATEGORIES", payload: categoryIdsFromUrl });
   }, [categoryIdsFromUrl]);
 
-  const jobs = useMemo(() => jobsResponse?.content ?? [], [jobsResponse?.content]);
+  const jobs = useMemo(() => initialJobs, [initialJobs]);
+  const categories = useMemo(() => initialCategories, [initialCategories]);
 
-  const categories = useMemo(
-    () =>
-      (categoriesData?.content ?? []).map((category) => ({
-        id: category.id,
-        label: category.content || category.categories,
-      })),
-    [categoriesData?.content],
-  );
+  const selectedCategoryTerms = useMemo(() => {
+    if (state.selectedCategories.length === 0) {
+      return [] as string[];
+    }
+
+    const categoriesById = new Map(categories.map((category) => [category.id, category.label]));
+
+    return state.selectedCategories
+      .flatMap((selectedId) => {
+        const label = categoriesById.get(selectedId);
+        const terms = [selectedId];
+        if (label) terms.push(label);
+        return terms;
+      })
+      .map(normalizeText);
+  }, [categories, state.selectedCategories]);
 
   const filteredJobs = useMemo(() => {
     let result = jobs;
+
+    if (selectedCategoryTerms.length > 0) {
+      result = result.filter((job) => {
+        if (!Array.isArray(job.categories) || job.categories.length === 0) {
+          return false;
+        }
+
+        return job.categories.some((category) =>
+          selectedCategoryTerms.includes(normalizeText(category)),
+        );
+      });
+    }
 
     if (state.selectedTypes.length > 0) {
       result = result.filter((job) => state.selectedTypes.includes(job.type));
@@ -187,7 +204,7 @@ export function useJobsListingController() {
     }
 
     return sortJobs(result, state.sortBy);
-  }, [jobs, state.searchQuery, state.selectedTypes, state.sortBy]);
+  }, [jobs, selectedCategoryTerms, state.searchQuery, state.selectedTypes, state.sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredJobs.length / ITEMS_PER_PAGE));
   const safeCurrentPage = Math.min(state.currentPage, totalPages);
@@ -213,7 +230,7 @@ export function useJobsListingController() {
   };
 
   return {
-    isLoading,
+    isLoading: false,
     categories,
     filteredJobs,
     paginatedJobs,

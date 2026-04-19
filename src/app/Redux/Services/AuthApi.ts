@@ -35,6 +35,7 @@ interface EmployerRegisterRequest {
   name: string;
   email: string;
   password: string;
+  phone: string;
   description: string;
   location: string;
   specialization: string;
@@ -83,10 +84,10 @@ export const authApi = createApi({
     }),
 
     // Get current user profile
-    getProfile: builder.query<AuthResponse, void>({
-      query: () => "/user/showMe",
-      providesTags: ["Auth"],
-    }),
+    // getProfile: builder.query<AuthResponse, void>({
+    //   query: () => "/user/showMe",
+    //   providesTags: ["Auth"],
+    // }),
 
     // Logout mutation
     logout: builder.mutation<{ msg: string }, void>({

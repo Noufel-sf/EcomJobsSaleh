@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
-import SponsoredProductsCarousel from "@/components/SponsoredProductsCarousel";
+import DeferredSponsoredProductsCarousel from "@/components/DeferredSponsoredProductsCarousel";
 import type { Product } from "@/lib/DatabaseTypes";
 
 const API_URL =
@@ -44,7 +44,9 @@ export default async function SponsoredProducts() {
 
       {sponsoredProducts.length > 0 ? (
         <>
-          <SponsoredProductsCarousel sponsoredProducts={sponsoredProducts} />
+          <DeferredSponsoredProductsCarousel
+            sponsoredProducts={sponsoredProducts}
+          />
 
           <div className="text-center">
             <Link href="/products" prefetch>

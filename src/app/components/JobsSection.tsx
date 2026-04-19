@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import JobsCarousel from "./JobsCarousel";
+import DeferredJobsCarousel from "./DeferredJobsCarousel";
 import type { Job } from "@/lib/DatabaseTypes";
 
 const API_URL =
@@ -52,7 +52,7 @@ export default async function JobsSection() {
         </div>
 
         {jobs.length > 0 ? (
-          <JobsCarousel jobs={jobs} />
+          <DeferredJobsCarousel jobs={jobs} />
         ) : (
           <div className="mb-12 text-center py-8 text-muted-foreground">
             <p>No jobs available at the moment.</p>

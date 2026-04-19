@@ -23,6 +23,7 @@ import { useRegisterEmployerCompanyMutation } from "@/Redux/Services/AuthApi";
 import {
   Lock,
   Mail,
+  Phone,
   Eye,
   EyeOff,
   Building2,
@@ -64,6 +65,9 @@ const employerSignupCopy: Record<Language, Record<string, string>> = {
     email: "Email Address",
     emailPlaceholder: "employer@company.com",
     emailAria: "Email address",
+    phone: "Phone Number",
+    phonePlaceholder: "+213 555 123 456",
+    phoneAria: "Company phone number",
     password: "Password",
     confirmPassword: "Confirm Password",
     passwordAria: "Password",
@@ -119,6 +123,9 @@ const employerSignupCopy: Record<Language, Record<string, string>> = {
     email: "Adresse e-mail",
     emailPlaceholder: "employeur@entreprise.com",
     emailAria: "Adresse e-mail",
+    phone: "Numero de telephone",
+    phonePlaceholder: "+33 6 00 00 00 00",
+    phoneAria: "Numero de telephone de l'entreprise",
     password: "Mot de passe",
     confirmPassword: "Confirmer le mot de passe",
     passwordAria: "Mot de passe",
@@ -174,6 +181,9 @@ const employerSignupCopy: Record<Language, Record<string, string>> = {
     email: "البريد الالكتروني",
     emailPlaceholder: "employer@company.com",
     emailAria: "البريد الالكتروني",
+    phone: "رقم الهاتف",
+    phonePlaceholder: "+213 555 123 456",
+    phoneAria: "رقم هاتف الشركة",
     password: "كلمة المرور",
     confirmPassword: "تاكيد كلمة المرور",
     passwordAria: "كلمة المرور",
@@ -386,6 +396,29 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                           autoComplete="email"
                           aria-required="true"
                           aria-label={copy.emailAria}
+                          disabled={isPending}
+                        />
+                      </div>
+
+                      {/* Phone */}
+                      <div className="grid gap-3">
+                        <Label htmlFor="phone" className="text-sm font-medium">
+                          <Phone
+                            className="w-4 h-4 inline mr-2"
+                            aria-hidden="true"
+                          />
+                          {copy.phone} <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          className="h-11"
+                          placeholder={copy.phonePlaceholder}
+                          required
+                          autoComplete="tel"
+                          aria-required="true"
+                          aria-label={copy.phoneAria}
                           disabled={isPending}
                         />
                       </div>

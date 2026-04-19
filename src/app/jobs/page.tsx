@@ -1,102 +1,85 @@
-"use client";
+import type { Job, JobCategory } from "@/lib/DatabaseTypes";
+import JobsPageClient from "./JobsPageClient";
 
-import { memo, useState } from "react";
-import { Filter } from "lucide-react";
-import { Pagination } from "@/components/Pagination";
-import { JobsHero } from "./_features/listing/components/JobsHero";
-import { JobsFiltersPanel } from "./_features/listing/components/JobsFiltersPanel";
-import { JobsToolbar } from "./_features/listing/components/JobsToolbar";
-import { JobsGrid } from "./_features/listing/components/JobsGrid";
-import { useJobsListingController } from "./_features/listing/useJobsListingController";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://wadkniss-r6ar.onrender.com/api/v1";
 
-const ITEMS_PER_PAGE = 9;
+type JobsResponse = {
+  content?: Job[];
+};
 
-function AllJobsPage() {
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+type CategoriesResponse = {
+  content?: JobCategory[];
+};
 
-  const {
-    isLoading,
-    categories,
-    filteredJobs,
-    paginatedJobs,
-    totalPages,
-    currentPage,
-    selectedCategories,
-    selectedTypes,
-    searchQuery,
-    sortBy,
-    setPage,
-    toggleCategory,
-    toggleType,
-    setSearchQuery,
-    setSortBy,
-    clearFilters,
-  } = useJobsListingController();
+async function fetchJobs(): Promise<Job[]> {
+  try {
+    const response = await fetch(`${API_URL}/jobs`, {
+      next: { revalidate: 120 },
+    });
 
-  return (
-    <main>
-      <JobsHero />
+    if (!response.ok) {
+      return [];
+    }
 
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="flex flex-col lg:flex-row gap-6">
-          <aside className="hidden lg:block w-72 shrink-0" aria-label="Job filters">
-            <div className="sticky top-4 bg-card border rounded-lg p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-6">
-                <Filter className="w-5 h-5" aria-hidden="true" />
-                <h2 className="text-lg font-bold">Filters</h2>
-              </div>
-              <JobsFiltersPanel
-                searchQuery={searchQuery}
-                selectedCategories={selectedCategories}
-                selectedTypes={selectedTypes}
-                categories={categories}
-                onSearchChange={setSearchQuery}
-                onToggleCategory={toggleCategory}
-                onToggleType={toggleType}
-                onClearFilters={clearFilters}
-              />
-            </div>
-          </aside>
-
-          <section className="flex-1 min-w-0" aria-label="Jobs listing">
-            <JobsToolbar
-              totalFiltered={filteredJobs.length}
-              totalShown={paginatedJobs.length}
-              categories={categories}
-              selectedCategories={selectedCategories}
-              selectedTypes={selectedTypes}
-              searchQuery={searchQuery}
-              sortBy={sortBy}
-              mobileFiltersOpen={mobileFiltersOpen}
-              onMobileFiltersChange={setMobileFiltersOpen}
-              onSearchChange={setSearchQuery}
-              onToggleCategory={toggleCategory}
-              onToggleType={toggleType}
-              onClearFilters={clearFilters}
-              onSortChange={setSortBy}
-            />
-
-            <JobsGrid
-              isLoading={isLoading}
-              jobs={paginatedJobs}
-              onClearFilters={clearFilters}
-              skeletonCount={ITEMS_PER_PAGE}
-            />
-
-            {paginatedJobs.length > 0 && (
-              <nav aria-label="Jobs pagination">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setPage}
-                />
-              </nav>
-            )}
-          </section>
-        </div>
-      </div>
-    </main>
-  );
+    const data = (await response.json()) as JobsResponse;
+    return Array.isArray(data.content) ? data.content : [];
+  } catch {
+    return [];
+  }
 }
 
-export default memo(AllJobsPage);
+async function fetchCategories(): Promise<Array<{ id: string; label: string }>> {
+  try {
+    const response = await fetch(`${API_URL}/categoriess`, {
+      next: { revalidate: 300 },
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const data = (await response.json()) as CategoriesResponse;
+    const content = Array.isArray(data.content) ? data.content : [];
+
+    return content.map((category) => ({
+      id: category.id,
+      label: category.content || category.categories,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export default async function AllJobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string | string[] }>;
+}) {
+  const [jobs, categories, params] = await Promise.all([
+    fetchJobs(),
+    fetchCategories(),
+    searchParams,
+  ]);
+
+  const rawCategory = Array.isArray(params.category)
+    ? params.category[0]
+    : params.category;
+
+  const initialSelectedCategories = rawCategory
+    ? rawCategory
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .slice(0, 1)
+    : [];
+
+  return (
+    <JobsPageClient
+      initialJobs={jobs}
+      initialCategories={categories}
+      initialSelectedCategories={initialSelectedCategories}
+    />
+  );
+}

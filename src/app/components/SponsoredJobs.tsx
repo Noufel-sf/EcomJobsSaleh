@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
-import SponsoredJobsCarousel from "./SponsoredJobsCarousel";
+import DeferredSponsoredJobsCarousel from "./DeferredSponsoredJobsCarousel";
 import type { Job } from "@/lib/DatabaseTypes";
 
 const API_URL =
@@ -44,7 +44,7 @@ export default async function SponsoredJobs() {
 
       {sponsoredJobs.length > 0 ? (
         <>
-          <SponsoredJobsCarousel sponsoredJobs={sponsoredJobs} />
+          <DeferredSponsoredJobsCarousel sponsoredJobs={sponsoredJobs} />
 
           <div className="text-center">
             <Link href="/jobs" prefetch>

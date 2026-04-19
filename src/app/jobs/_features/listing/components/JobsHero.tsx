@@ -15,7 +15,7 @@ export function JobsHero() {
 
   return (
     <section
-      className="px-4 sm:px-6 py-6 sm:py-12 mx-auto container flex items-stretch gap-5 min-h-75 sm:min-h-125"
+      className="px-4 sm:px-6 py-6 sm:py-12 mx-auto container flex items-stretch gap-5"
       aria-label="Promotional banners"
     >
       <Swiper
@@ -28,16 +28,18 @@ export function JobsHero() {
           disableOnInteraction: false,
         }}
         modules={[Navigation, Autoplay]}
-        className="mySwiper rounded-sm shadow-lg flex-1"
+        className="mySwiper rounded-sm shadow-lg flex-1 h-55 sm:h-80 lg:h-125"
       >
         {heroImages.map((image, index) => (
-          <SwiperSlide key={index}>
+          <SwiperSlide key={index} className="h-full">
             <Image
               src={image}
               alt={`Job promotional banner ${index + 1}`}
               className="w-full h-full cursor-pointer object-cover"
               width={1200}
               height={500}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 80vw"
+              priority={index === 0}
               loading={index === 0 ? "eager" : "lazy"}
             />
           </SwiperSlide>
@@ -57,7 +59,7 @@ export function JobsHero() {
           <ChevronRight />
         </button>
       </Swiper>
-      <div className="hidden lg:flex max-w-[20%] items-center cursor-pointer">
+      <div className="hidden lg:flex basis-1/5 shrink-0 h-125 items-center cursor-pointer">
         <Image
           src="/sp2.png"
           alt="Sponsored advertisement"

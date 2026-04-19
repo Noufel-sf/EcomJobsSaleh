@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
-import BestSellingCarousel from "./BestSellingCarousel";
+import DeferredBestSellingCarousel from "./DeferredBestSellingCarousel";
 import type { Product } from "@/lib/DatabaseTypes";
 
 const API_URL =
@@ -41,7 +41,7 @@ export default async function BestSellingSection() {
 
       {products.length > 0 ? (
         <>
-          <BestSellingCarousel products={products} />
+          <DeferredBestSellingCarousel products={products} />
 
           <div className="text-center">
             <Link href="/products" prefetch>
