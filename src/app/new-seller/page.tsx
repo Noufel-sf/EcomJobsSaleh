@@ -345,11 +345,7 @@ export default function CreateStorePage() {
   const handleBack = () => setStep((s) => s - 1);
 
   const handleSubmit = async () => {
-    if (!user?.userId) {
-      toast.error(copy.loginRequired);
-      return;
-    }
-
+  
     try {
       const payload = new FormData();
       payload.append("firstName", form.firstName);
@@ -359,10 +355,8 @@ export default function CreateStorePage() {
       payload.append("description", form.description);
       if (imageFile) payload.append("image", imageFile);
 
-      //   await createStore({ userId: user.userId, formData: payload }).unwrap();
-
       toast.success(copy.storeLive);
-      router.push("/seller/dashboard");
+      router.push("/admin-seller");
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
       toast.error(err?.data?.message || copy.genericError);

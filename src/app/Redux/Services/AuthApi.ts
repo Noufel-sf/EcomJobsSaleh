@@ -15,22 +15,6 @@ interface LoginRequest {
   password: string;
 }
 
-interface RegisterRequest {
-  name: string;
-  email: string;
-  password: string;
-}
-
-interface SellerRegisterRequest {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  phone: string;
-  description?: string;
-  storeName?: string;
-}
-
 interface EmployerRegisterRequest {
   name: string;
   email: string;
@@ -50,7 +34,7 @@ export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_URL}`,
-    // credentials: "include",
+    credentials: "include",
   }),
   tagTypes: ["Auth", "Company"],
   endpoints: (builder) => ({
@@ -83,11 +67,11 @@ export const authApi = createApi({
       invalidatesTags: ["Company"],
     }),
 
-    // Get current user profile
-    // getProfile: builder.query<AuthResponse, void>({
-    //   query: () => "/user/showMe",
-    //   providesTags: ["Auth"],
-    // }),
+    // Get current user profile from HttpOnly cookie session
+    getProfile: builder.query<AuthResponse, void>({
+      query: () => "/user/showMe",
+      providesTags: ["Auth"],
+    }),
 
     // Logout mutation
     logout: builder.mutation<{ msg: string }, void>({

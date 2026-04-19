@@ -17,9 +17,9 @@ import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-// import { useAppDispatch } from "@/Redux/hooks";
+import { useAppDispatch } from "@/Redux/hooks";
 import { useRegisterEmployerCompanyMutation } from "@/Redux/Services/AuthApi";
-// import { setCredentials } from "@/Redux/Slices/AuthSlice";
+import { setCredentials } from "@/Redux/slices/AuthSlice";
 import {
   Lock,
   Mail,
@@ -228,7 +228,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   searchParams: _searchParams,
 }) => {
-  // const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const { language } = useI18n();
   const copy = employerSignupCopy[language];
@@ -260,10 +260,12 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
       toast.error(copy.passwordMin);
       return;
     }
+    formData.delete("confirmPassword");
 
     try {
       // @ts-expect-error RTK Query handles FormData at runtime
-      await registerEmployerCompany(formData).unwrap();
+      const result = await registerEmployerCompany(formData).unwrap();
+      dispatch(setCredentials({ user: result.user }));
       toast.success(copy.success);
       router.push("/employer");
     } catch (error: unknown) {
@@ -291,7 +293,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
   };
 
   return (
-    <main className="min-h-screen flex flex-col lg:py-12 items-center justify-center px-4 bg-linear-to-br from-background via-background to-muted/30">
+    <main className="min-h-screen p-12 flex flex-col items-center justify-center px-4 bg-linear-to-br from-background via-background to-muted/30">
       <h1 className="sr-only">
         {copy.pageTitle}
       </h1>

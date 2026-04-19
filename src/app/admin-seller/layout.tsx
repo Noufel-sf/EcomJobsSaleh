@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import AdminSellerGuard from './AdminSellerGuard';
 
 export const metadata: Metadata = {
   title: 'Admin Dashboard - Saleh Store',
@@ -14,5 +15,5 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <AdminSellerGuard>{children}</AdminSellerGuard>;
 }
