@@ -1,12 +1,18 @@
 import type { Metadata } from 'next';
-import AdminSellerGuard from './AdminSellerGuard';
+import SellerAdminGuard from './SellerAdminGuard';
 
 export const metadata: Metadata = {
-  title: 'Admin Dashboard - Saleh Store',
+  title: 'Seller Admin Dashboard - Saleh Store',
   description: 'Admin dashboard for managing products, orders, and store operations.',
   robots: {
     index: false, // Admin pages should never be indexed
     follow: false,
+    nocache: true,
+  },
+  headers: {
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    'Pragma': 'no-cache',
+    'Expires': '0',
   },
 };
 
@@ -15,5 +21,5 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <AdminSellerGuard>{children}</AdminSellerGuard>;
+  return <SellerAdminGuard>{children}</SellerAdminGuard>;
 }
