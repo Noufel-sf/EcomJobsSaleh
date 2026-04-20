@@ -126,7 +126,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
     const password = formData.get('password') as string;
 
     try {
-      const result = await login({ email, password }).unwrap();
+      const result = await login({ username : email, password }).unwrap();
       dispatch(setCredentials({ user: result.user }));
       toast.success(`${copy.loginSuccess} 🎉`);
       router.push('/');

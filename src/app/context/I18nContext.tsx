@@ -159,7 +159,7 @@ const STORAGE_KEY = 'saleh-language';
 const translations: Record<Language, TranslationMessages> = {
   en: {
     topBar: {
-      shipping: 'Free Shipping on Orders $50+',
+      shipping: 'Chelghoom laid (mila)',
       about: 'About Us',
       contact: 'Contact',
       helpCenter: 'Help Center',
@@ -320,7 +320,7 @@ const translations: Record<Language, TranslationMessages> = {
   },
   fr: {
     topBar: {
-      shipping: 'Livraison gratuite a partir de 50$',
+      shipping: 'chelghoom laid (mila)',
       about: 'A propos',
       contact: 'Contact',
       helpCenter: "Centre d'aide",
@@ -481,7 +481,7 @@ const translations: Record<Language, TranslationMessages> = {
   },
   ar: {
     topBar: {
-      shipping: 'شحن مجاني للطلبات التي تزيد عن 50 دولار',
+      shipping: 'شلغوم لعيد (ميلا)',
       about: 'من نحن',
       contact: 'اتصل بنا',
       helpCenter: 'مركز المساعدة',

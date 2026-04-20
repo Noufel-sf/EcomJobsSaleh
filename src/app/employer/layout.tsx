@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import EmployerGuard from './EmployerGuard';
 
 export const metadata: Metadata = {
   title: 'Employer Dashboard',
@@ -14,5 +15,5 @@ export default function EmployerLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <EmployerGuard>{children}</EmployerGuard>;
 }

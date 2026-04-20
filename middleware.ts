@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
   // Admin route paths that require protection
-  const adminPaths = ['/admin-seller', '/admin-super', '/adminusers'];
+  const adminPaths = ['/admin-seller', '/admin-super', '/employer'];
   const isAdminPath = adminPaths.some(path => pathname.startsWith(path));
 
   if (!isAdminPath) {
@@ -42,11 +42,11 @@ export function middleware(request: NextRequest) {
     // Role-based route protection
     const superAdminPaths = ['/admin-super'];
     const sellerAdminPaths = ['/admin-seller'];
-    const generalAdminPaths = ['/adminusers'];
+    const employerPaths = ['/employer'];
 
     const isSuperAdminRoute = superAdminPaths.some(path => pathname.startsWith(path));
     const isSellerAdminRoute = sellerAdminPaths.some(path => pathname.startsWith(path));
-    const isGeneralAdminRoute = generalAdminPaths.some(path => pathname.startsWith(path));
+    const isEmployerRoute = employerPaths.some(path => pathname.startsWith(path));
 
     const userRole = decoded.role?.toUpperCase();
 
@@ -58,10 +58,9 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
 
-    if (isGeneralAdminRoute && !['ADMIN', 'SUPER_ADMIN'].includes(userRole || '')) {
+    if (isEmployerRoute && userRole !== 'EMPLOYER') {
       return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
-
     // Add user info to response headers for logging/monitoring
     const response = NextResponse.next();
     response.headers.set('x-user-id', decoded.userId || '');
@@ -79,5 +78,5 @@ export function middleware(request: NextRequest) {
 
 // Apply middleware to admin routes only
 export const config = {
-  matcher: ['/admin-seller/:path*', '/admin-super/:path*', '/adminusers/:path*'],
+  matcher: ['/admin-seller/:path*', '/admin-super/:path*', '/employer/:path*'],
 };

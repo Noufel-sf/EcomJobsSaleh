@@ -21,9 +21,7 @@
   
 - [x] **SellerAdminGuard** (`src/app/admin-seller/SellerAdminGuard.tsx`)
   - Requires SELLER or SELLER_ADMIN role
-  
-- [x] **AdminUsersGuard** (`src/app/adminusers/AdminUsersGuard.tsx`)
-  - Requires ADMIN or SUPER_ADMIN role
+
 
 ### Layout Security
 - [x] **Admin-Seller Layout** (`src/app/admin-seller/layout.tsx`)
@@ -36,10 +34,6 @@
   - Cache control headers
   - Guard integration
 
-- [x] **Admin Users Layout** (`src/app/adminusers/layout.tsx`)
-  - Security metadata
-  - Cache control headers
-  - Guard integration
 
 ### API Protection
 - [x] **Axios Interceptor** (`src/app/lib/Api.ts`)

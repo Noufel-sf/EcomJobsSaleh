@@ -11,13 +11,14 @@ export interface User {
 }
 
 interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
 }
 
 interface EmployerRegisterRequest {
   name: string;
   email: string;
+  username: string;
   password: string;
   phone: string;
   description: string;
@@ -69,7 +70,7 @@ export const authApi = createApi({
 
     // Get current user profile from HttpOnly cookie session
     getProfile: builder.query<AuthResponse, void>({
-      query: () => "/user/showMe",
+      query: () => "/user",
       providesTags: ["Auth"],
     }),
 
