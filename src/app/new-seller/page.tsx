@@ -12,6 +12,7 @@ import {
   User,
   Phone,
   Lock,
+  Mail,
   FileText,
   Upload,
   ArrowRight,
@@ -22,6 +23,7 @@ import {
 import toast from "react-hot-toast";
 import { useAppSelector } from "@/Redux/hooks";
 import { type Language, useI18n } from "@/context/I18nContext";
+import { email } from "zod";
 // import { useCreateStoreMutation } from "@/Redux/Services/SellerApi";
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
@@ -33,6 +35,7 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
     step3: "Store Details",
     step4: "Finishing Up",
     imageTypeError: "Please select a valid image file",
+    email: "Email Address",
     imageSizeError: "Image must be under 5MB",
     requiredFields: "Please fill in all required fields",
     passwordRequired: "Please create and confirm your password",
@@ -66,6 +69,7 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
     emptyValue: "-",
     back: "Back",
     continue: "Continue",
+    emailPlaceholder: "enteryouremail@example.com",
     creatingStore: "Creating store...",
     launchStore: "Launch my store",
     alreadyStore: "Already have a store?",
@@ -86,6 +90,7 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
     step4: "Finalisation",
     imageTypeError: "Veuillez selectionner une image valide",
     imageSizeError: "L'image doit faire moins de 5 Mo",
+    email: "Adresse email",
     requiredFields: "Veuillez remplir tous les champs obligatoires",
     passwordRequired: "Veuillez creer et confirmer votre mot de passe",
     passwordMin: "Le mot de passe doit contenir au moins 8 caracteres",
@@ -114,6 +119,7 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
     phoneSummary: "Telephone",
     passwordSummary: "Mot de passe",
     storeSummary: "Boutique",
+    emailPlaceholder: "enteryouremail@example.com",
     descriptionSummary: "Description",
     emptyValue: "-",
     back: "Retour",
@@ -137,6 +143,8 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
     step2: "الامان",
     step3: "تفاصيل المتجر",
     step4: "الخطوة الاخيرة",
+    email: "البريد الالكتروني",
+    emailHint: "سيتم استخدام هذا البريد الالكتروني لتسجيل الدخول",
     imageTypeError: "يرجى اختيار ملف صورة صالح",
     imageSizeError: "يجب ان يكون حجم الصورة اقل من 5 ميجابايت",
     requiredFields: "يرجى ملء جميع الحقول المطلوبة",
@@ -147,6 +155,7 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
     loginRequired: "يجب تسجيل الدخول",
     storeLive: "متجرك اصبح جاهزا!",
     genericError: "حدث خطا ما",
+    emailPlaceholder: "ادخل بريدك الالكتروني@example.com",
     title: "افتح متجرك",
     subtitle: "جهز متجرك بخطوات بسيطة.",
     firstName: "الاسم الاول",
@@ -278,6 +287,7 @@ export default function CreateStorePage() {
     confirmPassword: "",
     storeName: "",
     description: "",
+    email: "",
   });
 
   // ── Handlers ────────────────────────────────────────────────────────────────
@@ -313,6 +323,7 @@ export default function CreateStorePage() {
       if (
         !form.firstName.trim() ||
         !form.lastName.trim() ||
+        !form.email.trim() ||
         !form.phone.trim()
       ) {
         toast.error(copy.requiredFields);
@@ -353,6 +364,7 @@ export default function CreateStorePage() {
       payload.append("phone", form.phone);
       payload.append("storeName", form.storeName);
       payload.append("description", form.description);
+      payload.append("email", form.email);
       if (imageFile) payload.append("image", imageFile);
 
       toast.success(copy.storeLive);
@@ -411,6 +423,17 @@ export default function CreateStorePage() {
                 </Field>
               </div>
 
+              <Field label={copy.email} icon={Mail} hint={copy.emailHint}>
+                <Input
+                  name="email"
+                  type="email"
+                  placeholder={copy.emailPlaceholder}
+                  value={form.email}
+                  onChange={handleChange}
+                  className="h-11"
+                  required
+                />
+              </Field>
               <Field label={copy.phone} icon={Phone} hint={copy.phoneHint}>
                 <Input
                   name="phone"

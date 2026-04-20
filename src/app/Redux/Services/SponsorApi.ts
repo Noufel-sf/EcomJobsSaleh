@@ -27,6 +27,7 @@ export const sponsorApi = createApi({
   reducerPath: "sponsorApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
+    credentials: "include",
   }),
   tagTypes: ["Sponsor"],
   endpoints: (builder) => ({

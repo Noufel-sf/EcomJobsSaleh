@@ -24,6 +24,7 @@ const BestSellingCarousel = memo(function BestSellingCarousel({
 
         <div className="flex items-center gap-3">
           <button
+          
             className="best-selling-prev w-8 h-8 px-2 rounded-lg flex cursor-pointer items-center justify-center bg-orange-500 hover:bg-orange-600 transition-all duration-200"
             aria-label="Previous products"
             type="button"

@@ -13,7 +13,7 @@ interface ProtectedAdminRouteProps {
 
 const ProtectedAdminRoute = ({
   children,
-  requiredRoles = ['ADMIN', 'SUPER_ADMIN', 'SELLER_ADMIN' , 'EMPLOYER'],
+  requiredRoles = ['ADMIN', 'ADMIN-SUPER', 'ADMIN-SELLER' , 'EMPLOYER'],
 }: ProtectedAdminRouteProps) => {
   const router = useRouter();
   const user = useAppSelector((state) => state.auth.user);

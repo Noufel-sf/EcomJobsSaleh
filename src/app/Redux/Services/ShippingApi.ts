@@ -26,9 +26,8 @@ export interface UpdateShippingStatusRequest {
 export const shippingApi = createApi({
   reducerPath: "shippingApi",
   baseQuery: fetchBaseQuery({
-   
-     baseUrl: `${API_URL}/deliverycosts`,
-   
+    baseUrl: `${API_URL}/deliverycosts`,
+    credentials: "include",
     // prepareHeaders: (headers) => {
     //   const token = localStorage.getItem("token");
     //   if (token) {

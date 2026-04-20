@@ -14,7 +14,7 @@ interface SellerAdminGuardProps {
  */
 export default function SellerAdminGuard({ children }: SellerAdminGuardProps) {
   return (
-    <ProtectedAdminRoute requiredRoles={['SELLER', 'SELLER_ADMIN']}>
+    <ProtectedAdminRoute requiredRoles={['ADMIN-SELLER']}>
       {children}
     </ProtectedAdminRoute>
   );

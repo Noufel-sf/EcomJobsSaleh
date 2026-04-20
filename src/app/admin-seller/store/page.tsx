@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Store,
   User,
+  Mail,
   Phone,
   FileText,
   Upload,
@@ -57,6 +58,7 @@ const storeCopy: Record<Language, Record<string, string>> = {
     infoTitle: "Store Information",
     infoDesc: "Update your store and personal details",
     storeName: "Store Name",
+    email: "Email",
     firstName: "First Name",
     lastName: "Last Name",
     phone: "Phone Number",
@@ -87,6 +89,7 @@ const storeCopy: Record<Language, Record<string, string>> = {
     infoTitle: "Informations boutique",
     infoDesc: "Mettez a jour les details de votre boutique",
     storeName: "Nom de la boutique",
+    email: "Email",
     firstName: "Prenom",
     lastName: "Nom",
     phone: "Telephone",
@@ -117,6 +120,7 @@ const storeCopy: Record<Language, Record<string, string>> = {
     infoTitle: "معلومات المتجر",
     infoDesc: "تحديث معلومات المتجر والبيانات الشخصية",
     storeName: "اسم المتجر",
+    email: "البريد الالكتروني",
     firstName: "الاسم",
     lastName: "اللقب",
     phone: "رقم الهاتف",
@@ -150,6 +154,7 @@ export default function StorePage() {
 
   // Form state
   const [formData, setFormData] = useState({
+    email: "",
     firstName: "",
     lastName: "",
     phone: "",
@@ -164,7 +169,9 @@ export default function StorePage() {
   // Initialize form data when seller info is loaded
   useEffect(() => {
     if (sellerInfo && !isInitialized) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
+        email: sellerInfo.email || "",
         firstName: sellerInfo.firstName || "",
         lastName: sellerInfo.lastName || "",
         phone: sellerInfo.phone?.toString() || "",
@@ -231,6 +238,7 @@ export default function StorePage() {
       const result = await updateSellerInfo({
         sellerId,
         data: {
+          email: formData.email,
           firstName: formData.firstName,
           lastName: formData.lastName,
           phone: formData.phone,
@@ -413,6 +421,25 @@ export default function StorePage() {
                   </p>
                 </div>
 
+                {/* Email */}
+                <div className="grid gap-3">
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    <Mail className="w-4 h-4 inline mr-2" />
+                    {copy.email}
+                  </Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="john@example.com"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    disabled={isUpdating}
+                    required
+                    className="h-11"
+                  />
+                </div>
+
                 {/* Name Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* First Name */}
@@ -538,6 +565,7 @@ export default function StorePage() {
                   onClick={() => {
                     if (sellerInfo) {
                       setFormData({
+                        email: sellerInfo.email || "",
                         firstName: sellerInfo.firstName || "",
                         lastName: sellerInfo.lastName || "",
                         phone: sellerInfo.phone?.toString() || "",

@@ -78,6 +78,7 @@ export const jobApi = createApi({
   reducerPath: "jobApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_URL}`,
+    credentials: "include",
   }),
 
   tagTypes: [

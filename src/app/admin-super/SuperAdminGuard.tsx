@@ -14,7 +14,7 @@ interface SuperAdminGuardProps {
  */
 export default function SuperAdminGuard({ children }: SuperAdminGuardProps) {
   return (
-    <ProtectedAdminRoute requiredRoles={['SUPER_ADMIN']}>
+    <ProtectedAdminRoute requiredRoles={['ADMIN-SUPER']}>
       {children}
     </ProtectedAdminRoute>
   );

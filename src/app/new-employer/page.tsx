@@ -274,6 +274,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
       toast.error(message);
     }
   };
+  
   const handleLogoChange = (file: File | undefined) => {
     setLogoUrl(file || null);
     if (file) {

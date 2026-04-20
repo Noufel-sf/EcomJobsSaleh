@@ -39,7 +39,7 @@ export const orderApi = createApi({
   reducerPath: "orderApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_URL}/orders`,
-    // credentials: "include",
+    credentials: "include",
   }),
   tagTypes: ["Orders"],
   endpoints: (builder) => ({

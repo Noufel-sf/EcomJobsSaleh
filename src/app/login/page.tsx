@@ -129,7 +129,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
       const result = await login({ username : email, password }).unwrap();
       dispatch(setCredentials({ user: result.user }));
       toast.success(`${copy.loginSuccess} 🎉`);
-      router.push('/');
+      router.push('/admin-seller');
       return { error: null, success: true };
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };

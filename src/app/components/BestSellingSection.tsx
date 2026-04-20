@@ -50,7 +50,7 @@ export default async function BestSellingSection() {
                 variant="default"
                 className="mt-8 mx-auto bg-primary hover:bg-primary/90 flex items-center gap-2"
               >
-                View All Best Selling Products
+                View All Products
                 <ShoppingCart className="h-5 w-5" />
               </Button>
             </Link>

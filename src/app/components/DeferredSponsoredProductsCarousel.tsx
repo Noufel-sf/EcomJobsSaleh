@@ -16,13 +16,19 @@ const skeletonCount = 5;
 
 function CarouselFallback() {
   return (
-    <div
-      className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5"
-      aria-hidden="true"
-    >
-      {Array.from({ length: skeletonCount }).map((_, index) => (
-        <ProductCardSkeleton key={`sponsored-products-skeleton-${index}`} />
-      ))}
+    <div className="min-h-90" aria-hidden="true">
+      <div className="heading mb-6 flex items-center justify-between">
+        <div />
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 px-2 rounded-lg bg-orange-500" />
+          <div className="w-8 h-8 px-2 rounded-lg bg-orange-500" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-[30px] md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+        {Array.from({ length: skeletonCount }).map((_, index) => (
+          <ProductCardSkeleton key={`sponsored-products-skeleton-${index}`} />
+        ))}
+      </div>
     </div>
   );
 }

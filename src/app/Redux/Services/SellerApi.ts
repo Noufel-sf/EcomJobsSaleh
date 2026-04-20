@@ -1,5 +1,4 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { create } from "domain";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
@@ -24,6 +23,7 @@ export interface SellerInfo {
 }
 
 export interface UpdateSellerRequest {
+  email?: string;
   firstName?: string;
   lastName?: string;
   phone?: string;
@@ -41,7 +41,7 @@ export const sellerApi = createApi({
   reducerPath: "sellerApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_URL}`,
-    // credentials: "include",
+    credentials: "include",
   }),
   tagTypes: ["Store", "Seller"],
   endpoints: (builder) => ({
@@ -55,7 +55,7 @@ export const sellerApi = createApi({
         method: "POST",
         body: sellerdata,
       }),
-      providesTags: (result, error, id) => [{ type: "Store", id }],
+      providesTags: ["Store"],
     }),
 
     getSellerInfo: builder.query<SellerInfo, string>({

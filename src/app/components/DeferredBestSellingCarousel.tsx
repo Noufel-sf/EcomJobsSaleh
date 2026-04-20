@@ -9,11 +9,11 @@ const BestSellingCarousel = dynamic(() => import("./BestSellingCarousel"), {
   ssr: false,
 });
 
-const skeletonCount = 5;
+const skeletonCount = 4;
 
 function CarouselFallback() {
   return (
-    <>
+    <div className="min-h-90">
       {/* Navigation buttons placeholder for consistent layout */}
       <div className="heading mb-6 flex items-center justify-between">
         <div />
@@ -32,7 +32,7 @@ function CarouselFallback() {
           <ProductCardSkeleton key={`best-selling-skeleton-${index}`} />
         ))}
       </div>
-    </>
+    </div>
   );
 }
 

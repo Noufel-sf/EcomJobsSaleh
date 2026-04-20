@@ -26,8 +26,8 @@ interface UpdateClassificationData {
 export const classificationApi = createApi({
   reducerPath: "classificationApi",
   baseQuery: fetchBaseQuery({
-
     baseUrl: `${API_URL}/classifications`,
+    credentials: "include",
   }),
   tagTypes: ["Classifications"],
   endpoints: (builder) => ({

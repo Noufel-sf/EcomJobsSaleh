@@ -41,7 +41,7 @@ export const authApi = createApi({
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
-        url: "/auth/login",
+        url: "login",
         method: "POST",
         body: credentials,
       }),
@@ -77,8 +77,8 @@ export const authApi = createApi({
     // Logout mutation
     logout: builder.mutation<{ msg: string }, void>({
       query: () => ({
-        url: "/auth/logout",
-        method: "GET",
+        url: "/logout",
+        method: "POST",
       }),
       invalidatesTags: ["Auth"],
     }),
