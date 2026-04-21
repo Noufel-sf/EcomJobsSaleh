@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { useGetCartQuery } from "@/Redux/Services/CartApi";
 import {  useLazySearchProductsQuery } from "@/Redux/Services/ProductsApi";
-import { useLogoutMutation } from "@/Redux/Services/AuthApi";
+import { authApi, useLogoutMutation } from "@/Redux/Services/AuthApi";
 import { useGetAllClassificationsQuery } from "@/Redux/Services/ClassificationApi";
 import { useAppSelector, useAppDispatch } from "@/Redux/hooks";
 import { logout as logoutAction } from "@/Redux/slices/AuthSlice";
@@ -57,6 +57,28 @@ function ListItem({ id, name, children }: ListItemProps) {
   );
 }
 
+function getAccountRouteByRole(role?: string) {
+  const normalizedRole = (role || '').trim().toUpperCase().replace(/^ROLE_/, '');
+
+  if (normalizedRole === 'EMPLOYER') {
+    return '/employer';
+  }
+
+  if (normalizedRole === 'SUPER_ADMIN' || normalizedRole === 'ADMIN-SUPER') {
+    return '/admin-super';
+  }
+
+  if (
+    normalizedRole === 'SELLER' ||
+    normalizedRole === 'SELLER_ADMIN' ||
+    normalizedRole === 'ADMIN-SELLER'
+  ) {
+    return '/admin-seller';
+  }
+
+  return '/login';
+}
+
 const Navbar = memo(function Navbar() {
 
   const [isOpen, setIsOpen] = useState(false);
@@ -69,6 +91,7 @@ const Navbar = memo(function Navbar() {
 
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
+  const accountRoute = getAccountRouteByRole(user?.role);
   const [logoutMutation] = useLogoutMutation();
   const { data: cartData } = useGetCartQuery();
   const [triggerSearch] = useLazySearchProductsQuery();
@@ -82,10 +105,14 @@ const Navbar = memo(function Navbar() {
   const handleLogout = async () => {
     try {
       await logoutMutation().unwrap();
-      dispatch(logoutAction());
       toast.success("Logged out successfully");
     } catch {
       toast.error("Logout failed");
+    } finally {
+      dispatch(logoutAction());
+      dispatch(authApi.util.resetApiState());
+      router.replace('/login');
+      router.refresh();
     }
   };
 
@@ -129,13 +156,13 @@ const Navbar = memo(function Navbar() {
     });
 
     if (user) {
-      router.prefetch("/my-account");
+      router.prefetch(accountRoute);
       return;
     }
 
     router.prefetch("/login");
     router.prefetch("/register");
-  }, [router, user]);
+  }, [router, user, accountRoute]);
 
   return (
     <nav className="sticky top-0 z-50 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md shadow-sm border-b border-border" role="navigation" aria-label="Main navigation">
@@ -261,7 +288,7 @@ const Navbar = memo(function Navbar() {
                     align="end"
                     className="bg-white dark:bg-zinc-900 shadow-lg border border-border rounded-md"
                   >
-                    <Link href="/my-account">
+                    <Link href={accountRoute}>
                       <DropdownMenuItem className="cursor-pointer" inset={false}>
                         {messages.navbar.myAccount}
                       </DropdownMenuItem>
@@ -410,7 +437,7 @@ const Navbar = memo(function Navbar() {
                   className="justify-start px-3 w-full text-left"
                   onClick={() => setIsOpen(false)}
                 >
-                  <Link href="/my-account" className="flex flex-col w-full">
+                  <Link href={accountRoute} className="flex flex-col w-full">
                     <span className="text-base font-medium text-zinc-900 dark:text-white">
                       {messages.navbar.myAccount}
                     </span>

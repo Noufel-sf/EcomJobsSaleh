@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { EmployerAppSidebar } from '@/employer/EmployerAppSidebar';
+import { EmployerAppSidebar } from "@/employer/EmployerAppSidebar";
 import {
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
-} from '@/components/ui/sidebar';
-import { Separator } from '@/components/ui/separator';
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,50 +14,58 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { useTheme } from '@/context/ThemeContext';
+} from "@/components/ui/breadcrumb";
+import { useTheme } from "@/context/ThemeContext";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
-import { Button } from './ui/button';
-import { Sun, Moon } from 'lucide-react';
-import Link from 'next/link';
-import { type Language, useI18n } from '@/context/I18nContext';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
+} from "@/components/ui/dropdown-menu";
+import { Button } from "./ui/button";
+import { Sun, Moon } from "lucide-react";
+import Link from "next/link";
+import { type Language, useI18n } from "@/context/I18nContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { authApi, useLogoutMutation } from "@/Redux/Services/AuthApi";
+import { useAppDispatch } from "@/Redux/hooks";
+import { logout as logoutAction } from "@/Redux/slices/AuthSlice";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 const employerLayoutCopy: Record<Language, Record<string, string>> = {
   en: {
-    dashboard: 'Employer Dashboard',
-    home: 'Home',
-    toggleTheme: 'Toggle theme',
-    light: 'Light',
-    dark: 'Dark',
-    system: 'System',
+    dashboard: "Employer Dashboard",
+    home: "Home",
+    logout: "Logout",
+    toggleTheme: "Toggle theme",
+    light: "Light",
+    dark: "Dark",
+    system: "System",
   },
   fr: {
-    dashboard: 'Tableau employeur',
-    home: 'Accueil',
-    toggleTheme: 'Changer le theme',
-    light: 'Clair',
-    dark: 'Sombre',
-    system: 'Systeme',
+    dashboard: "Tableau employeur",
+    home: "Accueil",
+    logout: "Se deconnecter",
+    toggleTheme: "Changer le theme",
+    light: "Clair",
+    dark: "Sombre",
+    system: "Systeme",
   },
   ar: {
-    dashboard: 'لوحة صاحب العمل',
-    home: 'الرئيسية',
-    toggleTheme: 'تبديل المظهر',
-    light: 'فاتح',
-    dark: 'داكن',
-    system: 'النظام',
+    dashboard: "لوحة صاحب العمل",
+    home: "الرئيسية",
+    logout: "تسجيل الخروج",
+    toggleTheme: "تبديل المظهر",
+    light: "فاتح",
+    dark: "داكن",
+    system: "النظام",
   },
 };
 
 export default function EmployerSidebarLayout({
   children,
-  breadcrumbTitle = 'Dashboard',
+  breadcrumbTitle = "Dashboard",
 }: {
   children: React.ReactNode;
   breadcrumbTitle?: string;
@@ -65,6 +73,23 @@ export default function EmployerSidebarLayout({
   const { setTheme } = useTheme();
   const { language } = useI18n();
   const copy = employerLayoutCopy[language];
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const [logoutMutation] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation().unwrap();
+      toast.success(copy.logout);
+    } catch {
+      toast.error("Logout failed");
+    } finally {
+      dispatch(logoutAction());
+      dispatch(authApi.util.resetApiState());
+      router.replace("/login");
+      router.refresh();
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -79,7 +104,9 @@ export default function EmployerSidebarLayout({
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/employer">{copy.dashboard}</BreadcrumbLink>
+                <BreadcrumbLink href="/employer">
+                  {copy.dashboard}
+                </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
@@ -93,6 +120,9 @@ export default function EmployerSidebarLayout({
             <Button variant="ghost">
               <Link href="/">{copy.home}</Link>
             </Button>
+            <Button variant="primary" onClick={handleLogout}>
+              {copy.logout}
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
@@ -105,13 +135,13 @@ export default function EmployerSidebarLayout({
                 align="end"
                 className="bg-white dark:bg-zinc-900 shadow-lg border border-border rounded-md"
               >
-                <DropdownMenuItem onClick={() => setTheme('light')}>
+                <DropdownMenuItem onClick={() => setTheme("light")}>
                   {copy.light}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme('dark')}>
+                <DropdownMenuItem onClick={() => setTheme("dark")}>
                   {copy.dark}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme('system')}>
+                <DropdownMenuItem onClick={() => setTheme("system")}>
                   {copy.system}
                 </DropdownMenuItem>
               </DropdownMenuContent>

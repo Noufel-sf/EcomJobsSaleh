@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { useLoginMutation } from '@/Redux/Services/AuthApi';
+import { useLazyGetProfileQuery, useLoginMutation } from '@/Redux/Services/AuthApi';
 import { useAppDispatch } from '@/Redux/hooks';
 import { setCredentials } from '@/Redux/slices/AuthSlice';
 import { Lock, Mail, Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react';
@@ -34,6 +34,28 @@ const initialState: LoginState = {
   error: null,
   success: false,
 };
+
+function getPostLoginRoute(role?: string) {
+  const normalizedRole = role?.toUpperCase() || '';
+
+  if (normalizedRole === 'EMPLOYER') {
+    return '/employer';
+  }
+
+  if (normalizedRole === 'ADMIN-SUPER' || normalizedRole === 'SUPER_ADMIN') {
+    return '/admin-super';
+  }
+
+  if (
+    normalizedRole === 'ADMIN-SELLER' ||
+    normalizedRole === 'SELLER_ADMIN' ||
+    normalizedRole === 'SELLER'
+  ) {
+    return '/admin-seller';
+  }
+
+  return '/unauthorized';
+}
 
 const loginCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -117,6 +139,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
   const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [login] = useLoginMutation();
+  const [fetchProfile] = useLazyGetProfileQuery();
 
   const loginAction = async (
     _prevState: LoginState,
@@ -126,10 +149,19 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
     const password = formData.get('password') as string;
 
     try {
-      const result = await login({ username : email, password }).unwrap();
-      dispatch(setCredentials({ user: result.user }));
+      await login({ username : email, password }).unwrap();
+
+      const profileResult = await fetchProfile(undefined, true).unwrap();
+
+      if (!profileResult?.user) {
+        toast.error(copy.loginFail);
+        return { error: copy.loginFail, success: false };
+      }
+
+      dispatch(setCredentials({ user: profileResult.user }));
+      console.log('Login successful:', profileResult.user);
       toast.success(`${copy.loginSuccess} 🎉`);
-      router.push('/admin-seller');
+      router.replace(getPostLoginRoute(profileResult.user.role));
       return { error: null, success: true };
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };

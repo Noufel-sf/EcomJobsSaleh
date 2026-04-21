@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 import { useEffect } from "react";
 import { useGetProfileQuery } from "./Services/AuthApi";
-import { setCredentials, setLoading } from "./slices/AuthSlice";
+import { logout as logoutAction, setCredentials, setLoading } from "./slices/AuthSlice";
 import { useAppDispatch } from "./hooks";
 
 function AuthInitializer({ children }: { children: React.ReactNode }) {
@@ -17,14 +17,17 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (data?.user) {
+    if (isError || !data?.user) {
+      dispatch(logoutAction());
+      return;
+    }
+
+    if (data.user) {
       dispatch(setCredentials({ user: data.user }));
       return;
     }
 
-    if (isError) {
-      dispatch(setLoading(false));
-    }
+    dispatch(setLoading(false));
   }, [data, isLoading, isError, dispatch]);
 
   return <>{children}</>;

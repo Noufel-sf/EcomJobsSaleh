@@ -265,7 +265,9 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
     try {
       // @ts-expect-error RTK Query handles FormData at runtime
       const result = await registerEmployerCompany(formData).unwrap();
-      dispatch(setCredentials({ user: result.user }));
+      if (result.user) {
+        dispatch(setCredentials({ user: result.user }));
+      }
       toast.success(copy.success);
       router.push("/employer");
     } catch (error: unknown) {

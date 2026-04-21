@@ -4,7 +4,7 @@ import { useAppSelector } from '@/Redux/hooks';
 import { useRouter } from 'next/navigation';
 import { Spinner } from './ui/Spinner';
 import NotAuthorizedPage from '@/pages/NotAuthorizedPage';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 interface ProtectedAdminRouteProps {
   children: React.ReactNode;
@@ -18,39 +18,28 @@ const ProtectedAdminRoute = ({
   const router = useRouter();
   const user = useAppSelector((state) => state.auth.user);
   const loading = useAppSelector((state) => state.auth.loading);
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const normalizeRole = (value?: string) =>
+    (value || '').trim().toUpperCase().replace(/^ROLE_/, '');
+
+  const userRole = normalizeRole(user?.role);
+  
+  const hasRequiredRole = requiredRoles.some(
+    (role) => normalizeRole(role) === userRole
+  );
 
   useEffect(() => {
-    // Skip redirect logic if still loading
-    if (loading) return;
-
-    // Redirect to login if no user
     if (!user) {
-      router.push('/login');
+      router.replace('/login');
       return;
     }
+  }, [user, router]);
 
-    // Check if user role is in required roles (case-insensitive comparison)
-    const userRole = user?.role?.toUpperCase() || '';
-    const hasRequiredRole = requiredRoles.some(
-      (role) => role.toUpperCase() === userRole
-    );
-
-    if (!hasRequiredRole) {
-      // Unauthorized - will show NotAuthorizedPage
-      setIsAuthorized(false);
-      return;
-    }
-
-    // User is authorized
-    setIsAuthorized(true);
-  }, [user, loading, router, requiredRoles]);
-
-  // Loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Spinner show={true} size="lg" />
+        <Spinner show={true} size="large" className="">
+          Loading...
+        </Spinner>
       </div>
     );
   }
@@ -61,7 +50,7 @@ const ProtectedAdminRoute = ({
   }
 
   // Not authorized
-  if (!isAuthorized) {
+  if (!hasRequiredRole) {
     return <NotAuthorizedPage />;
   }
 

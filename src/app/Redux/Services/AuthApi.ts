@@ -8,7 +8,27 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  [key: string]: unknown;
 }
+
+type RawAttachment = {
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+};
+
+type RawAuthPayload = {
+  user?: Partial<User>;
+  id?: string;
+  userId?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  companyAtt?: RawAttachment | null;
+  sellerAtt?: RawAttachment | null;
+  superAdminAtt?: RawAttachment | null;
+};
 
 interface LoginRequest {
   username: string;
@@ -28,7 +48,48 @@ interface EmployerRegisterRequest {
 }
 
 interface AuthResponse {
-  user: User;
+  user: User | null;
+}
+
+function normalizeRole(role?: string): string {
+  const value = (role || "").trim().toUpperCase().replace(/^ROLE_/, "");
+
+  if (value === "SUPER_ADMIN" || value === "ADMIN-SUPER") {
+    return "ADMIN-SUPER";
+  }
+
+  if (value === "SELLER_ADMIN" || value === "ADMIN-SELLER") {
+    return "ADMIN-SELLER";
+  }
+
+  return value;
+}
+
+function normalizeUser(raw: RawAuthPayload | null | undefined): User | null {
+  if (!raw) return null;
+
+  const attachment = raw.companyAtt || raw.sellerAtt || raw.superAdminAtt || null;
+  const role = normalizeRole(raw.role || attachment?.role);
+
+  if (!role) return null;
+
+  return {
+    ...raw,
+    userId: raw.userId || raw.id || attachment?.id || "",
+    name: raw.name || attachment?.name || "",
+    email: raw.email || attachment?.email || "",
+    role,
+  } as User;
+}
+
+function normalizeAuthResponse(response: unknown): AuthResponse {
+  const payload = (response || {}) as RawAuthPayload;
+  const source = payload.user ? ({ ...payload.user, ...payload } as RawAuthPayload) : payload;
+  const user = normalizeUser(source);
+
+  return {
+    user,
+  };
 }
 
 export const authApi = createApi({
@@ -45,6 +106,7 @@ export const authApi = createApi({
         method: "POST",
         body: credentials,
       }),
+      transformResponse: (response: unknown) => normalizeAuthResponse(response),
       invalidatesTags: ["Auth"],
     }),
 
@@ -55,6 +117,7 @@ export const authApi = createApi({
         method: "POST",
         body: sellerData,
       }),
+      transformResponse: (response: unknown) => normalizeAuthResponse(response),
       invalidatesTags: ["Auth"],
     }),
 
@@ -65,12 +128,14 @@ export const authApi = createApi({
         method: "POST",
         body: employerData,
       }),
+      transformResponse: (response: unknown) => normalizeAuthResponse(response),
       invalidatesTags: ["Company"],
     }),
 
     // Get current user profile from HttpOnly cookie session
     getProfile: builder.query<AuthResponse, void>({
       query: () => "/user",
+      transformResponse: (response: unknown) => normalizeAuthResponse(response),
       providesTags: ["Auth"],
     }),
 
@@ -90,5 +155,6 @@ export const {
   useRegisterSellerMutation,
   useRegisterEmployerCompanyMutation,
   useGetProfileQuery,
+  useLazyGetProfileQuery,
   useLogoutMutation,
 } = authApi;

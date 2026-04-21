@@ -27,11 +27,17 @@ import { Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import { type Language, useI18n } from '@/context/I18nContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { authApi, useLogoutMutation } from '@/Redux/Services/AuthApi';
+import { useAppDispatch } from '@/Redux/hooks';
+import { logout as logoutAction } from '@/Redux/slices/AuthSlice';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 const adminLayoutCopy: Record<Language, Record<string, string>> = {
   en: {
     dashboard: 'Admin Dashboard',
     home: 'Home',
+    logout: 'Logout',
     toggleTheme: 'Toggle theme',
     light: 'Light',
     dark: 'Dark',
@@ -40,6 +46,7 @@ const adminLayoutCopy: Record<Language, Record<string, string>> = {
   fr: {
     dashboard: 'Tableau admin',
     home: 'Accueil',
+    logout: 'Se deconnecter',
     toggleTheme: 'Changer le theme',
     light: 'Clair',
     dark: 'Sombre',
@@ -48,6 +55,7 @@ const adminLayoutCopy: Record<Language, Record<string, string>> = {
   ar: {
     dashboard: 'لوحة تحكم الادمن',
     home: 'الرئيسية',
+    logout: 'تسجيل الخروج',
     toggleTheme: 'تبديل المظهر',
     light: 'فاتح',
     dark: 'داكن',
@@ -65,6 +73,23 @@ export default function AdminSidebarLayout({
   const { setTheme } = useTheme();
   const { language } = useI18n();
   const copy = adminLayoutCopy[language];
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const [logoutMutation] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation().unwrap();
+      toast.success(copy.logout);
+    } catch {
+      toast.error('Logout failed');
+    } finally {
+      dispatch(logoutAction());
+      dispatch(authApi.util.resetApiState());
+      router.replace('/login');
+      router.refresh();
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -92,6 +117,9 @@ export default function AdminSidebarLayout({
             <LanguageSwitcher compact />
             <Button variant="ghost">
               <Link href="/">{copy.home}</Link>
+            </Button>
+            <Button variant="primary" onClick={handleLogout}>
+              {copy.logout}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -31,12 +31,18 @@ import { type Language, useI18n } from '@/context/I18nContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import EmployerDashboardStats from './components/EmployerDashboardStats';
 import QuickLinks from './components/QuickLinks';
+import { authApi, useLogoutMutation } from '@/Redux/Services/AuthApi';
+import { useAppDispatch } from '@/Redux/hooks';
+import { logout as logoutAction } from '@/Redux/slices/AuthSlice';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 const employerOverviewCopy: Record<Language, Record<string, string>> = {
   en: {
     dashboard: 'Employer Dashboard',
     overview: 'Overview',
     home: 'Home',
+    logout: 'Logout',
     toggleTheme: 'Toggle theme',
     light: 'Light',
     dark: 'Dark',
@@ -60,6 +66,7 @@ const employerOverviewCopy: Record<Language, Record<string, string>> = {
     dashboard: 'Tableau employeur',
     overview: "Vue d'ensemble",
     home: 'Accueil',
+    logout: 'Se deconnecter',
     toggleTheme: 'Changer le theme',
     light: 'Clair',
     dark: 'Sombre',
@@ -83,6 +90,7 @@ const employerOverviewCopy: Record<Language, Record<string, string>> = {
     dashboard: 'لوحة صاحب العمل',
     overview: 'نظرة عامة',
     home: 'الرئيسية',
+    logout: 'تسجيل الخروج',
     toggleTheme: 'تبديل المظهر',
     light: 'فاتح',
     dark: 'داكن',
@@ -109,6 +117,23 @@ export default function EmployerOverview() {
   const user = useAppSelector((state) => state.auth.user);
   const { language } = useI18n();
   const copy = employerOverviewCopy[language];
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const [logoutMutation] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation().unwrap();
+      toast.success(copy.logout);
+    } catch {
+      toast.error('Logout failed');
+    } finally {
+      dispatch(logoutAction());
+      dispatch(authApi.util.resetApiState());
+      router.replace('/login');
+      router.refresh();
+    }
+  };
 
   // Memoize stats data to prevent unnecessary re-renders
   const stats = useMemo(() => [
@@ -174,6 +199,9 @@ export default function EmployerOverview() {
             <LanguageSwitcher compact />
             <Button variant="ghost" className="cursor-pointer">
               <Link href="/">{copy.home}</Link>
+            </Button>
+            <Button variant="primary" className="cursor-pointer" onClick={handleLogout}>
+              {copy.logout}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
