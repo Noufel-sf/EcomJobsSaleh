@@ -28,11 +28,11 @@ const ProtectedAdminRoute = ({
   );
 
   useEffect(() => {
-    if (!user) {
+    if (!loading && !user) {
       router.replace('/login');
       return;
     }
-  }, [user, router]);
+  }, [loading, user, router]);
 
   if (loading) {
     return (

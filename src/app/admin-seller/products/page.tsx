@@ -42,7 +42,7 @@ import UpdateProductUi from "@/components/UpdateProductUi";
 import CreateProductUi from "@/components/CreateProductUi";
 
 import {
-  useGetAllProductsQuery,
+  useGetSellerProductsQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
@@ -112,7 +112,7 @@ export default function AdminProducts() {
   const { language, t } = useI18n();
   const copy = productsCopy[language];
   const user = useAppSelector((state) => state.auth.user);
-  const ownerId = user?.userId ?? "c0a83801-9d64-19f8-819d-64cb20910000";
+  const ownerId = user?.userId ?? "";
   const { data: categoriesData } = useGetAllClassificationsQuery(undefined);
   const categories = useMemo<Categorie[]>(
     () =>
@@ -128,8 +128,13 @@ export default function AdminProducts() {
   const [deleteProduct] = useDeleteProductMutation();
   const [updateProductStatus] = useUpdateProductStatusMutation();
 
-  const { data: productsData, isLoading } = useGetAllProductsQuery(undefined);
-  const products = useMemo(() => productsData?.content ?? [], [productsData]);
+  const { data: productsData, isLoading } = useGetSellerProductsQuery(ownerId, {
+    skip: !ownerId,
+  });
+  const products = useMemo(
+    () => (Array.isArray(productsData) ? productsData : productsData?.content ?? []),
+    [productsData],
+  );
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);

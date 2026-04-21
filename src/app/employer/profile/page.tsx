@@ -66,11 +66,13 @@ const profileCopy: Record<Language, Record<string, string>> = {
   },
   fr: {
     pageTitle: "Profil employeur",
-    subtitle: "Gerez votre compte, les details de l'entreprise et le mot de passe.",
+    subtitle:
+      "Gerez votre compte, les details de l'entreprise et le mot de passe.",
     profileTab: "Profil",
     passwordTab: "Mot de passe",
     editProfile: "Modifier le profil",
-    editProfileDesc: "Mettez a jour vos informations personnelles et entreprise.",
+    editProfileDesc:
+      "Mettez a jour vos informations personnelles et entreprise.",
     companyName: "Nom de l'entreprise",
     email: "Email",
     specialization: "Specialisation",
@@ -81,7 +83,8 @@ const profileCopy: Record<Language, Record<string, string>> = {
     description: "Description de l'entreprise",
     saveChanges: "Enregistrer",
     changePassword: "Changer le mot de passe",
-    changePasswordDesc: "Gardez votre compte securise avec un mot de passe fort.",
+    changePasswordDesc:
+      "Gardez votre compte securise avec un mot de passe fort.",
     currentPassword: "Mot de passe actuel",
     newPassword: "Nouveau mot de passe",
     confirmPassword: "Confirmer le nouveau mot de passe",
@@ -124,13 +127,19 @@ const profileCopy: Record<Language, Record<string, string>> = {
   },
 };
 
-type EmployerProfileFields = {
+type EmployerAttachmentFields = {
   id?: string;
   name?: string;
   logo?: string;
   description?: string;
   location?: string;
   specialization?: string;
+};
+
+type EmployerProfileFields = EmployerAttachmentFields & {
+  companyAtt?: EmployerAttachmentFields | null;
+  sellerAtt?: EmployerAttachmentFields | null;
+  superAdminAtt?: EmployerAttachmentFields | null;
   jobs?: Array<{ id?: string }>;
 };
 
@@ -139,7 +148,11 @@ export default function EmployerProfilePage() {
   const copy = profileCopy[language];
   const user = useAppSelector((state) => state.auth.user);
   const employerData = (user ?? {}) as EmployerProfileFields;
-  const companyData = employerData;
+  const companyData =
+    employerData.companyAtt ||
+    employerData.sellerAtt ||
+    employerData.superAdminAtt ||
+    employerData;
 
   const [updateEmployerProfile, { isLoading: isSavingProfile }] =
     useUpdateEmployerProfileMutation();
@@ -178,7 +191,7 @@ export default function EmployerProfilePage() {
     if (!user) return;
 
     profileForm.reset({
-      name: user.name ?? "",
+      name: companyData.name ?? user.name ?? "",
       email: user.email ?? "",
       logo: companyData.logo ?? "",
       description: companyData.description ?? "",
@@ -187,7 +200,6 @@ export default function EmployerProfilePage() {
     });
   }, [
     user,
-    companyData.id,
     companyData.name,
     companyData.logo,
     companyData.description,
@@ -226,11 +238,12 @@ export default function EmployerProfilePage() {
   const onProfileSubmit = async (values: EmployerProfileFormValues) => {
     try {
       const formData = new FormData();
+      const resolvedCompanyId = values.companyId || companyData.id || user?.userId;
 
       formData.append("name", values.name);
       formData.append("email", values.email);
 
-      if (values.companyId) formData.append("id", values.companyId);
+      if (resolvedCompanyId) formData.append("id", resolvedCompanyId);
       if (values.companyName)
         formData.append("companyName", values.companyName);
       if (logoFile) {
@@ -240,7 +253,6 @@ export default function EmployerProfilePage() {
       }
       if (values.description)
         formData.append("description", values.description);
-      if (values.website) formData.append("website", values.website);
       if (values.location) formData.append("location", values.location);
       if (values.specialization) {
         formData.append("specialization", values.specialization);
@@ -275,9 +287,7 @@ export default function EmployerProfilePage() {
   return (
     <EmployerSidebarLayout breadcrumbTitle="Profile">
       <h1 className="text-2xl font-bold">{copy.pageTitle}</h1>
-      <p className="text-gray-700 dark:text-gray-400 mb-4">
-        {copy.subtitle}
-      </p>
+      <p className="text-gray-700 dark:text-gray-400 mb-4">{copy.subtitle}</p>
 
       <section className="w-full max-w-4xl">
         <Tabs defaultValue="profile" className="w-full">
@@ -316,20 +326,7 @@ export default function EmployerProfilePage() {
                     )}
                   </div>
 
-                <div className="grid gap-2">
-                    <Label htmlFor="company-name">{copy.companyName}</Label>
-                    <Input
-                      id="company-name"
-                      {...profileForm.register("companyName")}
-                      placeholder="Your company name"
-                    />
-                    {profileForm.formState.errors.companyName && (
-                      <p className="text-sm text-red-500">
-                        {profileForm.formState.errors.companyName.message}
-                      </p>
-                    )}
-                  </div>
-
+              
                   <div className="grid gap-2">
                     <Label htmlFor="employer-email">{copy.email}</Label>
                     <Input
@@ -347,7 +344,9 @@ export default function EmployerProfilePage() {
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="company-specialization">{copy.specialization}</Label>
+                    <Label htmlFor="company-specialization">
+                      {copy.specialization}
+                    </Label>
                     <Input
                       id="company-specialization"
                       {...profileForm.register("specialization")}
@@ -359,8 +358,6 @@ export default function EmployerProfilePage() {
                       </p>
                     )}
                   </div>
-
-                
 
                   <div className="grid gap-2 md:col-span-2">
                     <Label>{copy.logoLabel}</Label>
@@ -381,7 +378,9 @@ export default function EmployerProfilePage() {
                         ) : (
                           <div className="flex h-full w-full flex-col items-center justify-center text-muted-foreground">
                             <ImageIcon className="h-6 w-6" />
-                            <span className="mt-1 text-[10px]">{copy.noLogo}</span>
+                            <span className="mt-1 text-[10px]">
+                              {copy.noLogo}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -427,7 +426,9 @@ export default function EmployerProfilePage() {
                   </div>
 
                   <div className="grid gap-2 md:col-span-2">
-                    <Label htmlFor="company-description">{copy.description}</Label>
+                    <Label htmlFor="company-description">
+                      {copy.description}
+                    </Label>
                     <Textarea
                       id="company-description"
                       {...profileForm.register("description")}
@@ -467,7 +468,9 @@ export default function EmployerProfilePage() {
 
                 <CardContent className="grid gap-4 max-w-xl">
                   <div className="grid gap-2">
-                    <Label htmlFor="current-password">{copy.currentPassword}</Label>
+                    <Label htmlFor="current-password">
+                      {copy.currentPassword}
+                    </Label>
                     <Input
                       id="current-password"
                       type="password"
@@ -497,7 +500,9 @@ export default function EmployerProfilePage() {
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="confirm-password">{copy.confirmPassword}</Label>
+                    <Label htmlFor="confirm-password">
+                      {copy.confirmPassword}
+                    </Label>
                     <Input
                       id="confirm-password"
                       type="password"

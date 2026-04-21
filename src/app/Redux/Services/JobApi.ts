@@ -26,6 +26,7 @@ export interface GetAllCategoriesResponse {
 
 export interface GetAllJobsResponse {
   content: Job[];
+  id?: string;
   totalJobs: number;
   page: number;
   size: number;
@@ -94,6 +95,23 @@ export const jobApi = createApi({
     getAllJobs: builder.query<GetAllJobsResponse, GetAllJobsParams | void>({
       query: (params) => ({
         url: "/jobs",
+        params: params
+          ? {
+              ...(params.page && { page: params.page }),
+              ...(params.size && { size: params.size }),
+              ...(params.type && { type: params.type }),
+              ...(params.location && { location: params.location }),
+              ...(params.minSalary && { minSalary: params.minSalary }),
+              ...(params.maxSalary && { maxSalary: params.maxSalary }),
+            }
+          : undefined,
+      }),
+      providesTags: ["Jobs"],
+    }),
+
+    getJobsbyEmployerId: builder.query<GetAllJobsResponse, GetAllJobsParams | void>({
+      query: (params) => ({
+        url: `/jobs/${params?.id}`,
         params: params
           ? {
               ...(params.page && { page: params.page }),
@@ -322,6 +340,7 @@ export const {
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
   useAddCategoryMutation,
+  useGetJobsbyEmployerIdQuery,
   useDeleteJobMutation,
   useGetAllApplicationsQuery,
   useGetApplicationsByJobIdQuery,

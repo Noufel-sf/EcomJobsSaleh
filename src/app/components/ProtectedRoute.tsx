@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user) { // redirect only if not loading (complete) and no user
       router.push('/login');
     }
   }, [user, loading, router]);

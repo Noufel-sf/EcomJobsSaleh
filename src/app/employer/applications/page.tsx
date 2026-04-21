@@ -167,7 +167,7 @@ export default function EmployerApplications() {
   const copy = applicationsCopy[language];
   const user = useAppSelector((state) => state.auth.user);
   const searchParams = useSearchParams();
-  const preFilterJobId = searchParams.get("jobId") || "all";
+  const preFilterJobId = searchParams?.get("jobId") || "all";
   const companyId = user?.userId ?? "";
 
   const { data: applicationsData, isLoading: isLoadingApplications } =
@@ -177,7 +177,12 @@ export default function EmployerApplications() {
   const [updateApplicationStatus] = useUpdateApplicationStatusMutation();
   const [deleteApplication] = useDeleteApplicationMutation();
 
-  const jobs = useMemo(() => jobsData?.content ?? [], [jobsData]);
+  const jobs = useMemo(() => {
+    const allJobs = jobsData?.content ?? [];
+    if (!companyId) return [];
+
+    return allJobs.filter((job) => String(job.company) === String(companyId));
+  }, [jobsData, companyId]);
 
   const applications = useMemo<ApplicationRow[]>(() => {
     const rawApplications = applicationsData?.content ?? [];

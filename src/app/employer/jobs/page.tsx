@@ -44,7 +44,7 @@ import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
 import Link from "next/link";
 import { useAppSelector } from "@/Redux/hooks";
 import {
-  useGetAllJobsQuery,
+  useGetJobsbyEmployerIdQuery,
   useDeleteJobMutation,
 } from "@/Redux/Services/JobApi";
 import { Job } from "@/lib/DatabaseTypes";
@@ -140,11 +140,18 @@ export default function EmployerJobs() {
   const copy = jobsCopy[language];
   const user = useAppSelector((state) => state.auth.user);
   const companyId = user?.userId ?? "";
+  console.log("the user id " ,user?.userId);
+  
 
-  const { data: jobsData, isLoading } = useGetAllJobsQuery();
+  const { data: jobsData, isLoading } = useGetJobsbyEmployerIdQuery({ id: companyId });
   const [deleteJob] = useDeleteJobMutation();
+  
+  const jobs = useMemo(() => {
+    const allJobs = jobsData?.content ?? [];
+    if (!companyId) return [];
 
-  const jobs = useMemo(() => jobsData?.content ?? [], [jobsData]);
+    return allJobs.filter((job) => String(job.company) === String(companyId));
+  }, [jobsData, companyId]);
 
   const [open, setOpen] = useState(false);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
