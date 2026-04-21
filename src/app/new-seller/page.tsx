@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,10 +22,10 @@ import {
   Sparkles,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { useAppSelector } from "@/Redux/hooks";
+import {
+  useRegisterSellerMutation,
+} from "@/Redux/Services/AuthApi";
 import { type Language, useI18n } from "@/context/I18nContext";
-import { email } from "zod";
-// import { useCreateStoreMutation } from "@/Redux/Services/SellerApi";
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
 
@@ -267,13 +268,10 @@ function Field({
 
 export default function CreateStorePage() {
   const router = useRouter();
-  const user = useAppSelector((state) => state.auth.user);
   const { language } = useI18n();
   const copy = createStoreCopy[language] as Record<string, string>;
   const steps = [copy.step1, copy.step2, copy.step3, copy.step4];
-  const isLoading = false;
-
-  //   const [createStore, { isLoading }] = useCreateStoreMutation();
+  const [registerSeller, { isLoading }] = useRegisterSellerMutation();
 
   const [step, setStep] = useState(0);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -282,7 +280,7 @@ export default function CreateStorePage() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    phone: "",
+    phoneNumber: "",
     password: "",
     confirmPassword: "",
     storeName: "",
@@ -324,7 +322,7 @@ export default function CreateStorePage() {
         !form.firstName.trim() ||
         !form.lastName.trim() ||
         !form.email.trim() ||
-        !form.phone.trim()
+        !form.phoneNumber.trim()
       ) {
         toast.error(copy.requiredFields);
         return;
@@ -356,19 +354,23 @@ export default function CreateStorePage() {
   const handleBack = () => setStep((s) => s - 1);
 
   const handleSubmit = async () => {
-  
     try {
       const payload = new FormData();
       payload.append("firstName", form.firstName);
       payload.append("lastName", form.lastName);
-      payload.append("phone", form.phone);
+      payload.append("phoneNumber", form.phoneNumber);
+      payload.append("email", form.email);
+      payload.append("password", form.password);
       payload.append("storeName", form.storeName);
       payload.append("description", form.description);
-      payload.append("email", form.email);
-      if (imageFile) payload.append("image", imageFile);
+      if (imageFile) {
+        payload.append("logo", imageFile);
+      }
+
+      await registerSeller(payload).unwrap();
 
       toast.success(copy.storeLive);
-      router.push("/admin-seller");
+      router.push("/login");
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
       toast.error(err?.data?.message || copy.genericError);
@@ -436,10 +438,10 @@ export default function CreateStorePage() {
               </Field>
               <Field label={copy.phone} icon={Phone} hint={copy.phoneHint}>
                 <Input
-                  name="phone"
+                  name="phoneNumber"
                   type="tel"
                   placeholder={copy.phonePlaceholder}
-                  value={form.phone}
+                  value={form.phoneNumber}
                   onChange={handleChange}
                   className="h-11"
                   required
@@ -571,7 +573,7 @@ export default function CreateStorePage() {
                     label: copy.nameSummary,
                     value: `${form.firstName} ${form.lastName}`,
                   },
-                  { label: copy.phoneSummary, value: form.phone },
+                  { label: copy.phoneSummary, value: form.phoneNumber },
                   {
                     label: copy.passwordSummary,
                     value: form.password ? "********" : copy.emptyValue,
@@ -649,12 +651,12 @@ export default function CreateStorePage() {
         {/* Footer note */}
         <p className="text-center text-xs text-zinc-400 mt-6">
           {copy.alreadyStore}{" "}
-          <a
-            href="/seller/dashboard"
+          <Link
+            href="/admin-seller"
             className="text-zinc-700 dark:text-zinc-300 font-medium hover:underline"
           >
             {copy.goDashboard}
-          </a>
+          </Link>
         </p>
       </div>
     </div>

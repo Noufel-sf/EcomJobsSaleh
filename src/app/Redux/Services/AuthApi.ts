@@ -113,7 +113,7 @@ export const authApi = createApi({
     // Seller Register mutation
     registerSeller: builder.mutation<AuthResponse, FormData>({
       query: (sellerData :FormData) => ({
-        url: "/seller",
+        url: "/sellers",
         method: "POST",
         body: sellerData,
       }),

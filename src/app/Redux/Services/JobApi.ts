@@ -10,6 +10,7 @@ export interface GetAllJobsParams {
   page?: number;
   size?: number;
   type?: string;
+  id?: string;
   categoryid?: string;
   location?: string;
   minSalary?: number;
@@ -109,7 +110,10 @@ export const jobApi = createApi({
       providesTags: ["Jobs"],
     }),
 
-    getJobsbyEmployerId: builder.query<GetAllJobsResponse, GetAllJobsParams | void>({
+    getJobsbyEmployerId: builder.query<
+      GetAllJobsResponse,
+      GetAllJobsParams | void
+    >({
       query: (params) => ({
         url: `/jobs/${params?.id}`,
         params: params
@@ -282,15 +286,12 @@ export const jobApi = createApi({
     }),
 
     updateJobStatus: builder.mutation({
-      query: ({ jobID, status  }) => ({
+      query: ({ jobID, status }) => ({
         url: `jobs/available/${jobID}`,
         method: "PATCH",
         body: { status },
       }),
-      invalidatesTags: (result, error, { id }) => [
-        "Jobs",
-        { type: "Job", id },
-      ],
+      invalidatesTags: (result, error, { id }) => ["Jobs", { type: "Job", id }],
     }),
 
     deleteApplication: builder.mutation({
