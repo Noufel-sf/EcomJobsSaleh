@@ -1,4 +1,4 @@
-import HeroCarousel from "./HeroCarousel";
+import DeferredHeroCarousel from "./DeferredHeroCarousel";
 import Image from "next/image";
 
 type HeroSponsor = {
@@ -41,7 +41,7 @@ const Hero = async () => {
   return (
     <>
       <section className="px-6 py-12 mx-auto container flex items-stretch gap-5 min-h-125">
-        <HeroCarousel sponsors={sponsors} />
+        <DeferredHeroCarousel sponsors={sponsors} />
         <div className="hidden lg:flex max-w-[20%]  items-center cursor-pointer relative">
           <Image
             src="/sp2.png"
