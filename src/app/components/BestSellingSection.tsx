@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import DeferredBestSellingCarousel from "./DeferredBestSellingCarousel";
+import LocalizedSectionTitle from "./LocalizedSectionTitle";
 import type { Product } from "@/lib/DatabaseTypes";
 
 const API_URL =
@@ -34,9 +35,14 @@ export default async function BestSellingSection() {
       aria-labelledby="best-selling-heading"
     >
       <div className="heading mb-6 flex items-center justify-between">
-        <h2 id="best-selling-heading" className="capitalize text-2xl font-bold">
-          Best Selling Products
-        </h2>
+        <LocalizedSectionTitle
+          id="best-selling-heading"
+          labels={{
+            en: "Best Selling Products",
+            fr: "Produits les plus vendus",
+            ar: "المنتجات الاكثر مبيعا",
+          }}
+        />
       </div>
 
       {products.length > 0 ? (

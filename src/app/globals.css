@@ -19,6 +19,7 @@ html {
 
 html[lang="ar"] * {
   font-family: var(--font-alexandria), "Alexandria", sans-serif;
+  font-weight: 800; 
 }
 
 .swiper-slide-next,

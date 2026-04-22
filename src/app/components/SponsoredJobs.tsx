@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import DeferredSponsoredJobsCarousel from "./DeferredSponsoredJobsCarousel";
+import LocalizedSectionTitle from "./LocalizedSectionTitle";
 import type { Job } from "@/lib/DatabaseTypes";
 
 const API_URL =
@@ -34,12 +35,14 @@ export default async function SponsoredJobs() {
       aria-labelledby="sponsored-jobs-heading"
     >
       <div className="heading mb-6 flex items-center justify-between">
-        <h2
+        <LocalizedSectionTitle
           id="sponsored-jobs-heading"
-          className="capitalize text-2xl font-bold"
-        >
-          Sponsored Jobs
-        </h2>
+          labels={{
+            en: "Sponsored Jobs",
+            fr: "Emplois sponsorises",
+            ar: "وظائف ممولة",
+          }}
+        />
       </div>
 
       {sponsoredJobs.length > 0 ? (

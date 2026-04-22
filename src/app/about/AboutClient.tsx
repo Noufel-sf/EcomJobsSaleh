@@ -23,7 +23,7 @@ const AboutClient = () => {
             <Badge className="mb-4" variant="secondary">
               {aboutMessages.badge}
             </Badge>
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
+            <h1 className="text-4xl  lg:text-6xl  mb-6 leading-tight">
               {aboutMessages.heroTitlePrefix}{" "}
               <span className="text-primary">
                 {aboutMessages.heroTitleAccent}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import DeferredSponsoredProductsCarousel from "@/components/DeferredSponsoredProductsCarousel";
+import LocalizedSectionTitle from "./LocalizedSectionTitle";
 import type { Product } from "@/lib/DatabaseTypes";
 
 const API_URL =
@@ -34,12 +35,14 @@ export default async function SponsoredProducts() {
       aria-labelledby="sponsored-products-heading"
     >
       <div className="mb-6 flex items-center justify-between">
-        <h2
+        <LocalizedSectionTitle
           id="sponsored-products-heading"
-          className="capitalize text-2xl font-bold"
-        >
-          Sponsored Products
-        </h2>
+          labels={{
+            en: "Sponsored Products",
+            fr: "Produits sponsorises",
+            ar: "منتجات ممولة",
+          }}
+        />
       </div>
 
       {sponsoredProducts.length > 0 ? (

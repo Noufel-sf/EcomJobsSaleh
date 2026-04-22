@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DeferredJobsCarousel from "./DeferredJobsCarousel";
+import LocalizedSectionTitle from "./LocalizedSectionTitle";
 import type { Job } from "@/lib/DatabaseTypes";
 
 const API_URL =
@@ -37,13 +38,15 @@ export default async function JobsSection() {
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div className="max-w-4xl">
-            <h2
+            <LocalizedSectionTitle
               id="jobs-heading"
-              className="text-
-              2xl lg:text-3xl font-bold bg-linear-to-r from-foreground via-primary to-secondary bg-clip-text text-transparent mb-6"
-            >
-              Featured Opportunities
-            </h2>
+              className="mb-6"
+              labels={{
+                en: "Featured Opportunities",
+                fr: "Opportunites en vedette",
+                ar: "فرص مميزة",
+              }}
+            />
             <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
               Discover top tech jobs in Algeria. Apply now and take your career to
               the next level.

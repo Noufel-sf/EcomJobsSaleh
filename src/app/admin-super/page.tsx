@@ -242,7 +242,7 @@ export default function SuperAdminOverview() {
 
           <div className="ml-auto flex items-center gap-2">
             <LanguageSwitcher compact />
-            <Button variant="ghost" className="cursor-pointer">
+            <Button variant="primary" className="cursor-pointer">
               <Link href="/">{copy.home}</Link>
             </Button>
             <DropdownMenu>

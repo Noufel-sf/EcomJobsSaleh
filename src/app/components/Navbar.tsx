@@ -280,8 +280,8 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
-                      className="text-base border-none cursor-pointer"
-                      variant="outline"
+                      className="text-base rounded-full border-none cursor-pointer"
+                      variant="primary"
                       size="default"
                       aria-label={messages.navbar.userMenu}
                     >
@@ -311,7 +311,7 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
                   <DropdownMenuTrigger asChild>
                     <Button
                       className="text-base border-none cursor-pointer"
-                      variant="outline"
+                      variant="primary"
                       size="default"
                       aria-label={messages.navbar.accountOptions}
                     >
@@ -339,7 +339,7 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
           </div>
           {/* Icons */}
           <Link href="/cart" className="relative" aria-label={t(messages.navbar.cartLabel, { count: totalItems })}>
-            <Button variant="ghost" size="icon" className="">
+            <Button variant="ghost" size="icon" className="cursor-pointer">
               <ShoppingCart className="text-xl" aria-hidden="true" />
               {totalItems > 0 && (
                 <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center" aria-label={t(messages.navbar.cartItemsLabel, { count: totalItems })}>
@@ -353,7 +353,7 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
           <div className="hidden md:block">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
+                <Button variant="ghost" size="icon" className="cursor-pointer relative" aria-label={messages.navbar.toggleTheme}>
                   <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" aria-hidden="true" />
                   <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" aria-hidden="true" />
                   <span className="sr-only">{messages.navbar.toggleTheme}</span>
