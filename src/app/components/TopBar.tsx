@@ -28,7 +28,7 @@ const TopBar = () => {
   const currentLanguage = languages.find((lang) => lang.value === language);
 
   return (
-    <div className="bg-orange-400 py-2  text-sm">
+    <div className="bg-primary py-2  text-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-10">
           {/* Left side - Contact info */}

@@ -1,7 +1,4 @@
-import { headers } from 'next/headers';
-import Navbarr from '../components/Navbar';
-import FooterUi from '../components/Footer';
-import TopBar from '@/components/TopBar';
+import LayoutVisibility from "./LayoutVisibility";
 
 type Classification = {
   id: string;
@@ -15,7 +12,7 @@ type ClassificationsResponse = {
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
-  'https://wadkniss-r6ar.onrender.com/api/v1';
+  "https://wadkniss-r6ar.onrender.com/api/v1";
 
 async function getClassifications(): Promise<Classification[]> {
   try {
@@ -39,22 +36,11 @@ export default async function LayoutWrapper({
 }: {
   children: React.ReactNode;
 }) {
-  const requestHeaders = await headers();
-  const pathname = requestHeaders.get('x-pathname') ?? '/';
   const classifications = await getClassifications();
 
-  const isAdmin = pathname.startsWith('/admin');
-  const isMyAccount = pathname.startsWith('/my-account');
-  const employer = pathname.startsWith('/employer');
-
   return (
-    <>
-      {!isAdmin && !isMyAccount && !employer && <TopBar />}
-      {!isAdmin && !isMyAccount && !employer && (
-        <Navbarr initialCategories={classifications} />
-      )}
+    <LayoutVisibility classifications={classifications}>
       {children}
-      {!isAdmin && !isMyAccount && !employer && <FooterUi />}
-    </>
+    </LayoutVisibility>
   );
 }

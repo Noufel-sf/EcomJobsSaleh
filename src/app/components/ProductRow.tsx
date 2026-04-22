@@ -65,55 +65,55 @@ export const createProductColumns = ({
     ),
   },
 
-  {
-    accessorKey: "available",
-    header: "Status",
-    cell: ({ row }) => {
-      const product = row.original;
-      const isActive = product.available !== false;
-      const status = isActive ? "active" : "pending";
+  // {
+  //   accessorKey: "available",
+  //   header: "Status",
+  //   cell: ({ row }) => {
+  //     const product = row.original;
+  //     const isActive = product.available !== false;
+  //     const status = isActive ? "active" : "pending";
 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="lg" variant="ghost" className="h-8 px-2 cursor-pointer">
-              <Badge
-                className={`cursor-pointer ${
-                  status === "active"
-                    ? "bg-green-500/10 text-green-600 hover:bg-green-500/20 dark:bg-green-500/20 dark:text-green-400"
-                    : "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 dark:bg-yellow-500/20 dark:text-yellow-400"
-                }`}
-              >
-                {status === "active" ? "Active" : "Pending"}
-              </Badge>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className={""} align="end">
-            <DropdownMenuLabel className={""}>Change Status</DropdownMenuLabel>
-            <DropdownMenuSeparator className={""} />
-            <DropdownMenuItem 
-              inset
-              className="cursor-pointer"
-              onClick={() => handleStatusChange(product.id, "active")}
-            >
-              <Badge className="bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400">
-                Active
-              </Badge>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className={"cursor-pointer"}
-              inset
-              onClick={() => handleStatusChange(product.id, "pending")}
-            >
-              <Badge variant={""} className="bg-yellow-500/10 cursor-pointer text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400">
-                Pending
-              </Badge>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
+  //     return (
+  //       <DropdownMenu>
+  //         <DropdownMenuTrigger asChild>
+  //           <Button size="lg" variant="ghost" className="h-8 px-2 cursor-pointer">
+  //             <Badge
+  //               className={`cursor-pointer ${
+  //                 status === "active"
+  //                   ? "bg-green-500/10 text-green-600 hover:bg-green-500/20 dark:bg-green-500/20 dark:text-green-400"
+  //                   : "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 dark:bg-yellow-500/20 dark:text-yellow-400"
+  //               }`}
+  //             >
+  //               {status === "active" ? "Active" : "Pending"}
+  //             </Badge>
+  //           </Button>
+  //         </DropdownMenuTrigger>
+  //         <DropdownMenuContent className={""} align="end">
+  //           <DropdownMenuLabel className={""}>Change Status</DropdownMenuLabel>
+  //           <DropdownMenuSeparator className={""} />
+  //           <DropdownMenuItem 
+  //             inset
+  //             className="cursor-pointer"
+  //             onClick={() => handleStatusChange(product.id, "active")}
+  //           >
+  //             <Badge className="bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400">
+  //               Active
+  //             </Badge>
+  //           </DropdownMenuItem>
+  //           <DropdownMenuItem
+  //             className={"cursor-pointer"}
+  //             inset
+  //             onClick={() => handleStatusChange(product.id, "pending")}
+  //           >
+  //             <Badge variant={""} className="bg-yellow-500/10 cursor-pointer text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400">
+  //               Pending
+  //             </Badge>
+  //           </DropdownMenuItem>
+  //         </DropdownMenuContent>
+  //       </DropdownMenu>
+  //     );
+  //   },
+  // },
  
 
   {

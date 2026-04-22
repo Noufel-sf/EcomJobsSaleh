@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAppSelector } from '@/Redux/hooks';
 import { Lock, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/context/I18nContext';
 
 export default function NotAuthorizedPage() {
   const router = useRouter();
-  const user = useAppSelector((state) => state.auth.user);
+  const { messages } = useI18n();
 
   return (
     <div className="min-h-screen  flex items-center justify-center px-4">
@@ -23,13 +23,13 @@ export default function NotAuthorizedPage() {
         {/* Content */}
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
-            Access Denied
+            {messages.unauthorized.title}
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mb-2">
-            You don't have permission to access this page.
+            {messages.unauthorized.description}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-              Please log in with an authorized account
+              {messages.unauthorized.loginHint}
           </p>
 
         
@@ -41,11 +41,11 @@ export default function NotAuthorizedPage() {
               variant="outline"
               className="w-full"
             >
-              Go Back
+              {messages.unauthorized.goBack}
             </Button>
             <Link href="/" className="w-full">
               <Button variant="primary" className="w-full primary hover:from-primary/20">
-                Go Home
+                {messages.unauthorized.goHome}
                 <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
@@ -54,7 +54,7 @@ export default function NotAuthorizedPage() {
 
         {/* Support Message */}
         <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-8">
-          If you believe this is an error, please contact support.
+          {messages.unauthorized.supportHint}
         </p>
       </div>
     </div>

@@ -139,6 +139,15 @@ type CheckoutMessages = {
   orderFailed: string;
 };
 
+type UnauthorizedMessages = {
+  title: string;
+  description: string;
+  loginHint: string;
+  goBack: string;
+  goHome: string;
+  supportHint: string;
+};
+
 type TranslationMessages = {
   topBar: TopBarMessages;
   navbar: NavbarMessages;
@@ -146,6 +155,7 @@ type TranslationMessages = {
   about: AboutMessages;
   cart: CartMessages;
   checkout: CheckoutMessages;
+  unauthorized: UnauthorizedMessages;
 };
 
 type I18nContextValue = {
@@ -317,6 +327,14 @@ const translations: Record<Language, TranslationMessages> = {
       orderPlacedSuccess: 'Order placed successfully!',
       orderFailed: 'Order failed',
     },
+    unauthorized: {
+      title: 'Access Denied',
+      description: "You don't have permission to access this page.",
+      loginHint: 'Please log in with an authorized account',
+      goBack: 'Go Back',
+      goHome: 'Go Home',
+      supportHint: 'If you believe this is an error, please contact support.',
+    },
   },
   fr: {
     topBar: {
@@ -478,6 +496,14 @@ const translations: Record<Language, TranslationMessages> = {
       orderPlacedSuccess: 'Commande validee avec succes !',
       orderFailed: 'Echec de la commande',
     },
+    unauthorized: {
+      title: 'Acces refuse',
+      description: "Vous n'avez pas l'autorisation d'acceder a cette page.",
+      loginHint: 'Veuillez vous connecter avec un compte autorise',
+      goBack: 'Retour',
+      goHome: 'Accueil',
+      supportHint: "Si vous pensez qu'il s'agit d'une erreur, contactez le support.",
+    },
   },
   ar: {
     topBar: {
@@ -632,6 +658,14 @@ const translations: Record<Language, TranslationMessages> = {
       secureCheckout: 'دفع آمن مضمون',
       orderPlacedSuccess: 'تم تأكيد الطلب بنجاح!',
       orderFailed: 'فشل تنفيذ الطلب',
+    },
+    unauthorized: {
+      title: 'تم رفض الوصول',
+      description: 'ليس لديك صلاحية الوصول إلى هذه الصفحة.',
+      loginHint: 'يرجى تسجيل الدخول بحساب مصرح له',
+      goBack: 'الرجوع',
+      goHome: 'الصفحة الرئيسية',
+      supportHint: 'إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع الدعم.',
     },
   },
 };

@@ -13,7 +13,7 @@ export default function ClientProviders({
     <I18nProvider>
       <ThemeProvider>
         <ReduxProvider>
-          {children}
+            {children}
         </ReduxProvider>
       </ThemeProvider>
     </I18nProvider>
