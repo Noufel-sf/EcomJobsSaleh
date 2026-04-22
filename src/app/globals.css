@@ -11,10 +11,14 @@ html {
 }
 
 * {
-  font-family: "Outfit", sans-serif;
+  font-family: var(--font-outfit), "Outfit", sans-serif;
   font-optical-sizing: auto;
   font-weight: 500;
   font-style: normal;
+}
+
+html[lang="ar"] * {
+  font-family: var(--font-alexandria), "Alexandria", sans-serif;
 }
 
 .swiper-slide-next,
@@ -128,7 +132,7 @@ html {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(70.461% 0.19558 42.618);
+  --primary: #10B981;
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);

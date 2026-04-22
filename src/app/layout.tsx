@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Alexandria, Outfit } from "next/font/google";
 import dynamic from "next/dynamic";
 import "./globals.css";
 import ClientProviders from "@/lib/ClientProviders";
@@ -15,6 +15,14 @@ const DeferredToaster = dynamic(
 const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-outfit",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+  preload: true,
+});
+
+const alexandria = Alexandria({
+  subsets: ["arabic", "latin"],
+  variable: "--font-alexandria",
   display: "swap",
   weight: ["400", "500", "600", "700"],
   preload: true,
@@ -84,7 +92,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://wadkniss-r6ar.onrender.com" crossOrigin="anonymous" />
       </head>
-      <body className={`antialiased ${outfit.variable}`}>
+      <body className={`antialiased ${outfit.variable} ${alexandria.variable}`}>
         <ClientProviders>
           <LayoutWrapper>
             {children}
