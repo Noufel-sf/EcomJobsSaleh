@@ -24,7 +24,6 @@ import {
 import { useGetCartQuery } from "@/Redux/Services/CartApi";
 import {  useLazySearchProductsQuery } from "@/Redux/Services/ProductsApi";
 import { authApi, useLogoutMutation } from "@/Redux/Services/AuthApi";
-import { useGetAllClassificationsQuery } from "@/Redux/Services/ClassificationApi";
 import { useAppSelector, useAppDispatch } from "@/Redux/hooks";
 import { logout as logoutAction } from "@/Redux/slices/AuthSlice";
 import toast from "react-hot-toast";
@@ -35,6 +34,16 @@ interface ListItemProps {
   id: string;
   name: string;
   children: React.ReactNode;
+}
+
+type Classification = {
+  id: string;
+  name: string;
+  desc?: string;
+};
+
+interface NavbarProps {
+  initialCategories: Classification[];
 }
 
 function ListItem({ id, name, children }: ListItemProps) {
@@ -79,15 +88,14 @@ function getAccountRouteByRole(role?: string) {
   return '/login';
 }
 
-const Navbar = memo(function Navbar() {
+const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
 
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const { setTheme } = useTheme();
   const { messages, t } = useI18n();
 
-  const { data: categoriesData } = useGetAllClassificationsQuery();
-   const categories = categoriesData?.content || [];
+  const categories = initialCategories;
 
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
@@ -149,12 +157,6 @@ const Navbar = memo(function Navbar() {
   }, [searchTerm, triggerSearch]);
 
   useEffect(() => {
-    const sharedRoutes = ["/jobs", "/products", "/cart", "/about", "/help"];
-
-    sharedRoutes.forEach((route) => {
-      router.prefetch(route);
-    });
-
     if (user) {
       router.prefetch(accountRoute);
       return;
@@ -170,12 +172,12 @@ const Navbar = memo(function Navbar() {
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/" aria-label="Go to homepage">
-            <h2 className="text-xl font-bold">Ch <span className="text-primary">Jobs</span></h2>
+            <h2 className="text-xl font-bold">Ch <span className="text-primary">aid</span></h2>
           </Link>
         </div>
 
         {/* Search Bar */}
-        <div className="hidden lg:block w-full max-w-md relative">
+        <div className=" lg:block w-full max-w-md relative">
           <label htmlFor="product-search" className="sr-only">{messages.navbar.searchLabel}</label>
           <input
             id="product-search"
@@ -252,7 +254,9 @@ const Navbar = memo(function Navbar() {
                     </span>
                   </Link>
                   <NavigationMenuItem className="">
-                    <NavigationMenuTrigger className=" text-sm px-3 mx-2 cursor-pointer bg-transparent hover:text-purple-700 dark:hover:text-purple-300">
+                    <NavigationMenuTrigger
+                      className=" text-sm px-3 mx-2 cursor-pointer bg-transparent hover:text-purple-700 dark:hover:text-purple-300"
+                    >
                       {messages.navbar.categories}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent className="">
@@ -345,49 +349,51 @@ const Navbar = memo(function Navbar() {
             </Button>
           </Link>
 
-          {/* Theme Switcher */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" aria-hidden="true" />
-                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" aria-hidden="true" />
-                <span className="sr-only">{messages.navbar.toggleTheme}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="bg-white dark:bg-zinc-900 shadow-lg border border-border rounded-md"
-            >
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => setTheme("light")}
-                inset={false}
+          {/* Theme Switcher (Desktop only) */}
+          <div className="hidden md:block">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" aria-hidden="true" />
+                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" aria-hidden="true" />
+                  <span className="sr-only">{messages.navbar.toggleTheme}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="bg-white dark:bg-zinc-900 shadow-lg border border-border rounded-md"
               >
-                {messages.navbar.light}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => setTheme("dark")}
-                inset={false}
-              >
-                {messages.navbar.dark}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => setTheme("system")}
-                inset={false}
-              >
-                {messages.navbar.system}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => setTheme("light")}
+                  inset={false}
+                >
+                  {messages.navbar.light}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => setTheme("dark")}
+                  inset={false}
+                >
+                  {messages.navbar.dark}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => setTheme("system")}
+                  inset={false}
+                >
+                  {messages.navbar.system}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
           {/* Menu For Mobile */}
           <Button
             variant="ghost"
             size="default"
             className="block md:hidden"
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={() => setIsOpen((prev) => !prev)}
             aria-label={messages.navbar.mobileMenuLabel}
             aria-expanded={isOpen}
           >

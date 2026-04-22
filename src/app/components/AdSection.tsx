@@ -3,9 +3,9 @@
 import { memo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
-import "swiper/css/navigation";
 import { Autoplay, Navigation } from "swiper/modules";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 
 const heroImages = ["/hero1.png", "/hero2.png", "/hero3.png", "/hero4.png"];
 
@@ -37,13 +37,16 @@ const AdSection = () => {
         >
           {heroImages.map((image, index) => (
             <SwiperSlide key={`hero-${index}`}>
-              <img
+              <Image
                 src={image}
                 alt={`Promotional banner ${index + 1}`}
                 className="w-full h-full cursor-pointer object-cover"
                 loading={index === 0 ? "eager" : "lazy"}
-                width="1200"
-                height="500"
+                priority={index === 0}
+                fetchPriority={index === 0 ? "high" : "auto"}
+                width={1200}
+                height={500}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 70vw"
               />
             </SwiperSlide>
           ))}
@@ -70,13 +73,14 @@ const AdSection = () => {
         className="hidden lg:flex max-w-[20%] items-center"
         aria-label="Sponsored advertisement"
       >
-        <img
+        <Image
           src="/sp2.png"
           alt="Sponsored advertisement banner"
           className="w-full h-full object-cover rounded-sm shadow-lg cursor-pointer hover:opacity-90 transition-opacity duration-200"
           loading="lazy"
-          width="300"
-          height="500"
+          width={300}
+          height={500}
+          sizes="20vw"
         />
       </aside>
     </section>

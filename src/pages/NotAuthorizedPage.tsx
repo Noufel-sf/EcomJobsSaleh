@@ -11,7 +11,7 @@ export default function NotAuthorizedPage() {
   const user = useAppSelector((state) => state.auth.user);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 dark:from-slate-950 dark:to-slate-900 flex items-center justify-center px-4">
+    <div className="min-h-screen  flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         {/* Icon */}
         <div className="flex justify-center mb-6">
@@ -29,31 +29,13 @@ export default function NotAuthorizedPage() {
             You don't have permission to access this page.
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-            {user
-              ? `Your current role (${user.role}) does not have the required permissions.`
-              : 'Please log in with an authorized account.'}
+              Please log in with an authorized account
           </p>
 
-          {/* Details Box */}
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-4 mb-8 border border-gray-200 dark:border-slate-700">
-            <dl className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-gray-600 dark:text-gray-400">Your Role:</dt>
-                <dd className="font-mono font-medium text-gray-900 dark:text-white">
-                  {user?.role || 'No role assigned'}
-                </dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-gray-600 dark:text-gray-400">Requested:</dt>
-                <dd className="font-mono font-medium text-gray-900 dark:text-white">
-                  Admin Access
-                </dd>
-              </div>
-            </dl>
-          </div>
+        
 
           {/* Action Buttons */}
-          <div className="flex gap-3 flex-col sm:flex-row">
+          <div className="flex gap-3 flex-col">
             <Button
               onClick={() => router.back()}
               variant="outline"

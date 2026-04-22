@@ -1,7 +1,7 @@
 "use client";
 "use no memo";
 
-import { useState, useMemo, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   type ColumnFiltersState,
   getCoreRowModel,
@@ -44,10 +44,12 @@ import Link from "next/link";
 import {
   useGetAllJobsQuery,
   useDeleteJobMutation,
+  useUpdateJobStatusMutation,
 } from "@/Redux/Services/JobApi";
 import { Job } from "@/lib/DatabaseTypes";
 import SuperAdminSidebarLayout from "@/components/SuperAdminSidebarLayout";
 import { type Language, useI18n } from "@/context/I18nContext";
+import { Badge } from "@/components/ui/badge";
 
 const superAdminJobsCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -57,6 +59,9 @@ const superAdminJobsCopy: Record<Language, Record<string, string>> = {
     deleteFailed: "Failed to delete job",
     toggled: "Job status toggled successfully",
     toggleFailed: "Failed to toggle job status",
+    status: "Status",
+    active: "Active",
+    inactive: "Inactive",
     selectAll: "Select all",
     selectRow: "Select row",
     jobTitle: "Job Title",
@@ -82,6 +87,9 @@ const superAdminJobsCopy: Record<Language, Record<string, string>> = {
     deleteFailed: "Echec de suppression de l'emploi",
     toggled: "Statut de l'emploi mis a jour",
     toggleFailed: "Echec de mise a jour du statut",
+    status: "Statut",
+    active: "Actif",
+    inactive: "Inactif",
     selectAll: "Tout selectionner",
     selectRow: "Selectionner la ligne",
     jobTitle: "Titre du poste",
@@ -107,6 +115,9 @@ const superAdminJobsCopy: Record<Language, Record<string, string>> = {
     deleteFailed: "فشل حذف الوظيفة",
     toggled: "تم تغيير حالة الوظيفة بنجاح",
     toggleFailed: "فشل تغيير حالة الوظيفة",
+    status: "الحالة",
+    active: "نشط",
+    inactive: "غير نشط",
     selectAll: "تحديد الكل",
     selectRow: "تحديد الصف",
     jobTitle: "عنوان الوظيفة",
@@ -145,6 +156,8 @@ const typeStyles: Record<string, string> = {
     "bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400",
 };
 
+type JobRow = Job & { isActive?: boolean };
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SuperAdminJobs() {
@@ -152,13 +165,18 @@ export default function SuperAdminJobs() {
   const copy = superAdminJobsCopy[language];
   const { data: jobsData, isLoading } = useGetAllJobsQuery();
   const [deleteJob] = useDeleteJobMutation();
+  const [updateJobStatus] = useUpdateJobStatusMutation();
+  const [tableData, setTableData] = useState<JobRow[]>([]);
 
-  const jobs = jobsData?.content ?? [];
-  
+  useEffect(() => {
+    setTableData((jobsData?.content ?? []) as JobRow[]);
+  }, [jobsData]);
+
   const handleDelete = useCallback(
     async (jobId: string) => {
       try {
         await deleteJob(jobId).unwrap();
+        setTableData((prev) => prev.filter((job) => job.id !== jobId));
         toast.success(copy.deleted);
       } catch (error: unknown) {
         const err = error as { data?: { message?: string } };
@@ -167,19 +185,27 @@ export default function SuperAdminJobs() {
     },
     [copy.deleteFailed, copy.deleted, deleteJob],
   );
-  
+
   const toggleActive = useCallback(
-    async (jobId: string) => {
+    async (job: JobRow) => {
+      const nextIsActive = job.isActive === false;
+
       try {
-        await deleteJob(jobId).unwrap();
+        await updateJobStatus({ jobID: job.id, status: nextIsActive }).unwrap();
+        setTableData((prev) =>
+          prev.map((item) =>
+            item.id === job.id ? { ...item, isActive: nextIsActive } : item,
+          ),
+        );
         toast.success(copy.toggled);
       } catch (error: unknown) {
         const err = error as { data?: { message?: string } };
         toast.error(err?.data?.message || copy.toggleFailed);
       }
     },
-    [copy.toggleFailed, copy.toggled, deleteJob],
+    [copy.toggleFailed, copy.toggled, updateJobStatus],
   );
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -189,7 +215,7 @@ export default function SuperAdminJobs() {
     () => [
       {
         id: "select",
-        header: ({ table }: { table: TanstackTable<Job> }) => (
+        header: ({ table }: { table: TanstackTable<JobRow> }) => (
           <Checkbox
             className="cursor-pointer"
             checked={
@@ -202,11 +228,13 @@ export default function SuperAdminJobs() {
             aria-label={copy.selectAll}
           />
         ),
-        cell: ({ row }: { row: Row<Job> }) => (
+        cell: ({ row }: { row: Row<JobRow> }) => (
           <Checkbox
             className="cursor-pointer"
             checked={row.getIsSelected()}
-            onCheckedChange={(value: boolean | "indeterminate") => row.toggleSelected(!!value)}
+            onCheckedChange={(value: boolean | "indeterminate") =>
+              row.toggleSelected(!!value)
+            }
             aria-label={copy.selectRow}
           />
         ),
@@ -216,23 +244,43 @@ export default function SuperAdminJobs() {
       {
         accessorKey: "title",
         header: copy.jobTitle,
-        cell: ({ row }: { row: Row<Job> }) => (
+        cell: ({ row }: { row: Row<JobRow> }) => (
           <div className="font-medium">{row.getValue("title")}</div>
         ),
       },
       {
         accessorKey: "location",
         header: copy.location,
-        cell: ({ row }: { row: Row<Job> }) => (
+        cell: ({ row }: { row: Row<JobRow> }) => (
           <div className="text-sm text-muted-foreground">
             {row.getValue("location")}
           </div>
         ),
       },
       {
+        accessorKey: "isActive",
+        header: copy.status,
+        cell: ({ row }: { row: Row<JobRow> }) => {
+          const isActive = row.original.isActive !== false;
+
+          return (
+            <Badge
+              variant="outline"
+              className={
+                isActive
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                  : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+              }
+            >
+              {isActive ? copy.active : copy.inactive}
+            </Badge>
+          );
+        },
+      },
+      {
         accessorKey: "type",
         header: copy.type,
-        cell: ({ row }: { row: Row<Job> }) => (
+        cell: ({ row }: { row: Row<JobRow> }) => (
           <span
             className={`text-xs px-2 py-1 rounded-full font-medium ${typeStyles[row.getValue("type") as string] || ""}`}
           >
@@ -245,8 +293,8 @@ export default function SuperAdminJobs() {
         id: "actions",
         header: copy.actions,
         enableHiding: false,
-        cell: ({ row }: { row: Row<Job> }) => {
-          const job = row.original as Job;
+        cell: ({ row }: { row: Row<JobRow> }) => {
+          const job = row.original;
           return (
             <div className="flex items-center gap-2">
               <Button
@@ -277,11 +325,10 @@ export default function SuperAdminJobs() {
                   <DropdownMenuItem
                     className="cursor-pointer"
                     onClick={() => {
-                      toggleActive(job.id);
-
+                      toggleActive(job);
                     }}
                   >
-                    {(job as Job & { isActive?: boolean }).isActive
+                    {job.isActive !== false
                       ? copy.deactivate
                       : copy.activate}
                   </DropdownMenuItem>
@@ -302,11 +349,14 @@ export default function SuperAdminJobs() {
     [
       copy.actions,
       copy.activate,
+      copy.active,
       copy.deactivate,
       copy.delete,
       copy.jobTitle,
       copy.location,
+      copy.inactive,
       copy.openMenu,
+      copy.status,
       copy.selectAll,
       copy.selectRow,
       copy.type,
@@ -317,7 +367,7 @@ export default function SuperAdminJobs() {
   );
 
   const table = useReactTable({
-    data: jobs,
+    data: tableData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),

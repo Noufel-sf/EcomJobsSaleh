@@ -1,7 +1,7 @@
 "use client";
 "use no memo";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   type ColumnFiltersState,
   getCoreRowModel,
@@ -200,7 +200,7 @@ export default function SuperAdminEmployers() {
     setTableData(employers as Employer[]);
   }, [employers]);
 
-  const handleSuspend = async (user: Employer) => {
+  const handleSuspend = useCallback(async (user: Employer) => {
     const nextStatus: UserStatus =
       user.status === "active" ? "suspended" : "active";
 
@@ -224,14 +224,14 @@ export default function SuperAdminEmployers() {
     } catch {
       toast.error("Failed to update employer status.");
     }
-  };
+  }, [copy.reactivatedToast, copy.suspendedToast, t, updateEmployerStatus]);
 
-  const openDeleteDialog = (user: Employer) => {
+  const openDeleteDialog = useCallback((user: Employer) => {
     setUserToDelete(user);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!userToDelete) return;
 
     try {
@@ -243,13 +243,14 @@ export default function SuperAdminEmployers() {
     } catch {
       toast.error("Failed to delete employer.");
     }
-  };
+  }, [copy.deletedToast, deleteAdminUser, t, userToDelete]);
 
-  const handleVisitProfile = (user: Employer) => {
+  const handleVisitProfile = useCallback((user: Employer) => {
     toast(t(copy.visitingProfileToast, { name: user.name }));
-  };
+  }, [copy.visitingProfileToast, t]);
 
-  const columns = [
+  const columns = useMemo(
+    () => [
     {
       id: "select",
       header: ({ table }: { table: TanstackTable<Employer> }) => (
@@ -402,7 +403,27 @@ export default function SuperAdminEmployers() {
         );
       },
     },
-  ];
+    ],
+    [
+      copy.actions,
+      copy.delete,
+      copy.joined,
+      copy.name,
+      copy.openMenu,
+      copy.phone,
+      copy.profile,
+      copy.reactivate,
+      copy.selectAll,
+      copy.selectRow,
+      copy.status,
+      copy.suspend,
+      copy.view,
+      copy.visitProfile,
+      handleSuspend,
+      handleVisitProfile,
+      openDeleteDialog,
+    ],
+  );
 
   const table = useReactTable({
     data: tableData,

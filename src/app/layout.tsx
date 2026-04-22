@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import "./globals.css";
 import ClientProviders from "@/lib/ClientProviders";
 import BackToTopButton from "@/components/BackToTopButton";
+import LayoutWrapper from "@/lib/Layout";
 
 const DeferredToaster = dynamic(
   () => import("@/components/Toaster").then((mod) => mod.Toaster),
@@ -85,8 +86,10 @@ export default function RootLayout({
       </head>
       <body className={`antialiased ${outfit.variable}`}>
         <ClientProviders>
-          {children}
-          <BackToTopButton />
+          <LayoutWrapper>
+            {children}
+            <BackToTopButton />
+          </LayoutWrapper>
         </ClientProviders>
         <DeferredToaster />
       </body>

@@ -1,23 +1,48 @@
-'use client';
+import { headers } from 'next/headers';
+import Navbarr from '../components/Navbar';
+import FooterUi from '../components/Footer';
+import TopBar from '@/components/TopBar';
 
-import dynamic from 'next/dynamic';
-import { usePathname } from 'next/navigation';
+type Classification = {
+  id: string;
+  name: string;
+  desc?: string;
+};
 
-const Navbarr = dynamic(() => import('../components/Navbar'), {
-  ssr: false,
-});
+type ClassificationsResponse = {
+  content?: Classification[];
+};
 
-const FooterUi = dynamic(() => import('../components/Footer'), {
-  ssr: false,
-});
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  'https://wadkniss-r6ar.onrender.com/api/v1';
 
-const TopBar = dynamic(() => import('@/components/TopBar'), {
-  ssr: false,
-});
+async function getClassifications(): Promise<Classification[]> {
+  try {
+    const response = await fetch(`${API_URL}/classifications`, {
+      next: { revalidate: 300 },
+    });
 
+    if (!response.ok) {
+      return [];
+    }
 
-export default function LayoutWrapper({ children }: { children: React.ReactNode  }) {
-  const pathname = usePathname();
+    const data = (await response.json()) as ClassificationsResponse;
+    return data.content ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function LayoutWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const requestHeaders = await headers();
+  const pathname = requestHeaders.get('x-pathname') ?? '/';
+  const classifications = await getClassifications();
+
   const isAdmin = pathname.startsWith('/admin');
   const isMyAccount = pathname.startsWith('/my-account');
   const employer = pathname.startsWith('/employer');
@@ -25,7 +50,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   return (
     <>
       {!isAdmin && !isMyAccount && !employer && <TopBar />}
-      {!isAdmin && !isMyAccount && !employer && <Navbarr />}
+      {!isAdmin && !isMyAccount && !employer && (
+        <Navbarr initialCategories={classifications} />
+      )}
       {children}
       {!isAdmin && !isMyAccount && !employer && <FooterUi />}
     </>

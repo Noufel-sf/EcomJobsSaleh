@@ -115,7 +115,7 @@ export const jobApi = createApi({
       GetAllJobsParams | void
     >({
       query: (params) => ({
-        url: `/jobs/${params?.id}`,
+        url: `/jobs/ByCompany/${params?.id}`,
         params: params
           ? {
               ...(params.page && { page: params.page }),

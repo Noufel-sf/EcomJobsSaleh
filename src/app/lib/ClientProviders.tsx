@@ -3,7 +3,6 @@
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ReduxProvider } from '@/Redux/ReduxProvider';
 import { I18nProvider } from '@/context/I18nContext';
-import LayoutWrapper from './Layout';
 
 export default function ClientProviders({
   children,
@@ -14,9 +13,7 @@ export default function ClientProviders({
     <I18nProvider>
       <ThemeProvider>
         <ReduxProvider>
-          <LayoutWrapper>
-            {children}
-          </LayoutWrapper>
+          {children}
         </ReduxProvider>
       </ThemeProvider>
     </I18nProvider>
