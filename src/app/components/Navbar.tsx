@@ -462,16 +462,6 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
                     {messages.navbar.logout}
                   </span>
                 </Button>
-                <Link href="/about" className="px-3 py-2">
-                  <span className="font-semibold cursor-pointer capitalize hover:text-primary transition-colors">
-                    {messages.navbar.aboutUs}
-                  </span>
-                </Link>
-                <Link href="/help" className="px-3 py-2">
-                  <span className="font-semibold cursor-pointer capitalize hover:text-primary transition-colors">
-                    {messages.navbar.helpCenter}
-                  </span>
-                </Link>
               </>
             ) : (
               <>
@@ -508,6 +498,25 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
                 </Button>
               </>
             )}
+
+            <Link
+              href="/about"
+              className="px-3 py-2"
+              onClick={() => setIsOpen(false)}
+            >
+              <span className="font-semibold cursor-pointer capitalize hover:text-primary transition-colors">
+                {messages.navbar.aboutUs}
+              </span>
+            </Link>
+            <Link
+              href="/contact"
+              className="px-3 py-2"
+              onClick={() => setIsOpen(false)}
+            >
+              <span className="font-semibold cursor-pointer capitalize hover:text-primary transition-colors">
+                {messages.topBar.contact}
+              </span>
+            </Link>
           </div>
         </div>
       )}

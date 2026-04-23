@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import ConatactCenter from "@/components/ContactCenter";
 import BecomeSeller from "@/components/BecomeSeller";
+import SponsorWhatyouWant from "@/components/SponsorWhatyouWant";
 import BecomeEmployer from "@/components/BecomeEmployer";
 import { Globe, Mail, CheckCircle2, ArrowRight, Target } from "lucide-react";
 import { aboutValues } from "@/lib/data";
@@ -130,6 +131,8 @@ const AboutClient = () => {
         <BecomeEmployer />
 
         <Separator className="my-16" />
+
+        <SponsorWhatyouWant />
 
         <ConatactCenter />
 
