@@ -20,7 +20,7 @@ const JobsCarousel = memo(function JobsCarousel({ jobs }: JobsCarouselProps) {
 
   return (
     <>
-      <div className="flex items-center gap-3" role="group" aria-label="Job carousel navigation">
+      <div className="flex items-center gap-3 mb-5" role="group" aria-label="Job carousel navigation">
         <button
           className="jobs-prev w-8 h-8 px-2 rounded-lg flex items-center justify-center bg-primary hover:bg-primary/90 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           aria-label="Previous jobs"

@@ -50,7 +50,7 @@ export default function CreateProductUi({
   const [bigDesc, setBigDesc] = useState("");
   const [price, setPrice] = useState("");
   const [prod_class, setProdClass] = useState("");
-  const [available, setAvailable] = useState(true);
+  // const [available, setAvailable] = useState(true);
   const [mainImage, setMainImage] = useState<File | null>(null);
   const [mainImagePreview, setMainImagePreview] = useState<string | null>(null);
   const [extraImages, setExtraImages] = useState<(File | null)[]>([
@@ -71,7 +71,7 @@ export default function CreateProductUi({
     setBigDesc("");
     setPrice("");
     setProdClass("");
-    setAvailable(true);
+    // setAvailable(true);
     setMainImage(null);
     setMainImagePreview(null);
     setExtraImages([null, null, null]);
@@ -271,7 +271,7 @@ export default function CreateProductUi({
                 />
               </div>
 
-              <div className="flex gap-6">
+              {/* <div className="flex gap-6">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     className={""}
@@ -285,7 +285,7 @@ export default function CreateProductUi({
                     Available
                   </Label>
                 </div>
-              </div>
+              </div> */}
 
               {/* Main Image */}
               <div className="grid gap-3">

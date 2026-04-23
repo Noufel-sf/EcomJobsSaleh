@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import ConatactCenter from "@/components/ContactCenter";
+import BecomeSeller from "@/components/BecomeSeller";
+import BecomeEmployer from "@/components/BecomeEmployer";
 import { Globe, Mail, CheckCircle2, ArrowRight, Target } from "lucide-react";
 import { aboutValues } from "@/lib/data";
 import { useI18n } from "@/context/I18nContext";
@@ -120,6 +122,12 @@ const AboutClient = () => {
             ))}
           </div>
         </section>
+
+        <Separator className="my-16" />
+
+        <BecomeSeller />
+
+        <BecomeEmployer />
 
         <Separator className="my-16" />
 
