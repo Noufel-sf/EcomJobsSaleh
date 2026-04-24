@@ -59,10 +59,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  useDeleteAdminUserMutation,
   useGetAllSellersQuery,
+  useDeleteAdminSellerMutation,
   useUpdateAdminSellersStatusMutation,
 } from "@/Redux/Services/UsersApi";
+
 
 const sellersCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -186,7 +187,7 @@ export default function SuperAdminSellers() {
   const { data: SellersData, isLoading } = useGetAllSellersQuery(undefined);
   const sellers = useMemo(() => SellersData?.content ?? [], [SellersData]);
   const [updateSellerStatus] = useUpdateAdminSellersStatusMutation();
-  const [deleteAdminUser] = useDeleteAdminUserMutation();
+  const [deleteAdminSeller] = useDeleteAdminSellerMutation();
   const [tableData, setTableData] = useState<Seller[]>([]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -236,7 +237,7 @@ export default function SuperAdminSellers() {
     if (!userToDelete) return;
 
     try {
-      await deleteAdminUser(userToDelete.id).unwrap();
+      await deleteAdminSeller(userToDelete.id).unwrap();
       setTableData((prev) => prev.filter((item) => item.id !== userToDelete.id));
       toast.success(t(copy.deletedToast, { name: userToDelete.name }));
       setDeleteDialogOpen(false);

@@ -107,9 +107,9 @@ export const usersApi = createApi({
         ],
       }),
 
-    deleteAdminUser: builder.mutation<DeleteAdminUserResponse, string>({
+    deleteAdminSeller: builder.mutation<DeleteAdminUserResponse, string>({
       query: (id) => ({
-        url: `/users/${id}`,
+        url: `/sellers/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: (_result, _error, userId) => [
@@ -119,6 +119,20 @@ export const usersApi = createApi({
         { type: "Sellers", id: "LIST" },
       ],
     }),
+    deleteAdminEmployer: builder.mutation<DeleteAdminUserResponse, string>({
+      query: (id) => ({
+        url: `/companys/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, userId) => [
+        { type: "Employers", id: userId },
+        { type: "Employers", id: "LIST" },
+        { type: "Sellers", id: userId },
+        { type: "Sellers", id: "LIST" },
+      ],
+    }),
+
+
   }),
 });
 
@@ -127,5 +141,6 @@ export const {
   useUpdateAdminSellersStatusMutation,
   useGetAllEmployersQuery,
   useUpdateAdminEmployersStatusMutation,
-  useDeleteAdminUserMutation,
+  useDeleteAdminSellerMutation,
+  useDeleteAdminEmployerMutation,
 } = usersApi;

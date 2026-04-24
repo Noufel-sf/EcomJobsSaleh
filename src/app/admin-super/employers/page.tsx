@@ -59,7 +59,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  useDeleteAdminUserMutation,
+  useDeleteAdminEmployerMutation,
   useGetAllEmployersQuery,
   useUpdateAdminEmployersStatusMutation,
 } from "@/Redux/Services/UsersApi";
@@ -185,7 +185,7 @@ export default function SuperAdminEmployers() {
   const { data: EmployersData, isLoading } = useGetAllEmployersQuery(undefined);
   const employers = useMemo(() => EmployersData?.content ?? [], [EmployersData]);
   const [updateEmployerStatus] = useUpdateAdminEmployersStatusMutation();
-  const [deleteAdminUser] = useDeleteAdminUserMutation();
+  const [deleteAdminEmployer] = useDeleteAdminEmployerMutation();
   const [tableData, setTableData] = useState<Employer[]>([]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -235,7 +235,7 @@ export default function SuperAdminEmployers() {
     if (!userToDelete) return;
 
     try {
-      await deleteAdminUser(userToDelete.id).unwrap();
+      await deleteAdminEmployer(userToDelete.id).unwrap();
       setTableData((prev) => prev.filter((item) => item.id !== userToDelete.id));
       toast.success(t(copy.deletedToast, { name: userToDelete.name }));
       setDeleteDialogOpen(false);
@@ -243,7 +243,7 @@ export default function SuperAdminEmployers() {
     } catch {
       toast.error("Failed to delete employer.");
     }
-  }, [copy.deletedToast, deleteAdminUser, t, userToDelete]);
+  }, [copy.deletedToast, deleteAdminEmployer, t, userToDelete]);
 
   const handleVisitProfile = useCallback((user: Employer) => {
     toast(t(copy.visitingProfileToast, { name: user.name }));
