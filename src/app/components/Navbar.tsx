@@ -509,7 +509,7 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
               </span>
             </Link>
             <Link
-              href="/contact"
+              href="/help"
               className="px-3 py-2"
               onClick={() => setIsOpen(false)}
             >

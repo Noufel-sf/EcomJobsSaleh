@@ -15,18 +15,22 @@ const ITEMS_PER_PAGE = 9;
 function JobsPageClient({
   initialJobs,
   initialCategories,
-  initialSelectedCategories,
+  initialTotalFiltered,
+  initialCurrentPage,
+  initialTotalPages,
 }: {
   initialJobs: Job[];
   initialCategories: Array<{ id: string; label: string }>;
-  initialSelectedCategories: string[];
+  initialTotalFiltered: number;
+  initialCurrentPage: number;
+  initialTotalPages: number;
 }) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const {
     isLoading,
     categories,
-    filteredJobs,
+    totalFiltered,
     paginatedJobs,
     totalPages,
     currentPage,
@@ -41,9 +45,11 @@ function JobsPageClient({
     setSortBy,
     clearFilters,
   } = useJobsListingController({
-    initialJobs,
-    initialCategories,
-    initialSelectedCategories,
+    jobs: initialJobs,
+    categories: initialCategories,
+    totalFiltered: initialTotalFiltered,
+    currentPage: initialCurrentPage,
+    totalPages: initialTotalPages,
   });
 
   return (
@@ -76,7 +82,7 @@ function JobsPageClient({
 
           <section className="flex-1 min-w-0" aria-label="Jobs listing">
             <JobsToolbar
-              totalFiltered={filteredJobs.length}
+              totalFiltered={totalFiltered}
               totalShown={paginatedJobs.length}
               categories={categories}
               selectedCategories={selectedCategories}
