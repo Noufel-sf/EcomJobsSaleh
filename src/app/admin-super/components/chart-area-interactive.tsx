@@ -66,7 +66,6 @@ export const ChartAreaInteractive = memo (function ChartAreaInteractive() {
         </CardDescription>
         <CardAction className="">
           <ToggleGroup
-            size={""}
             type="single"
             value={timeRange}
             onValueChange={setTimeRange}
@@ -130,7 +129,7 @@ export const ChartAreaInteractive = memo (function ChartAreaInteractive() {
               content={
                 <ChartTooltipContent
                   labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
+                    return new Date(String(value)).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                     });

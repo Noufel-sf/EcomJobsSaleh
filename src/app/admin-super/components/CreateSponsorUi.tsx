@@ -14,10 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ButtonLoading } from "@/components/ui/ButtonLoading";
+import type { CheckedState } from "@radix-ui/react-checkbox";
 import { useCreateSponsorMutation } from "@/Redux/Services/SponsorApi";
 import toast from "react-hot-toast";
-import { Sponsor } from "@/lib/DatabaseTypes";
 import Image from "next/image";
 import { type Language, useI18n } from "@/context/I18nContext";
 
@@ -85,7 +84,7 @@ export default function CreateSponsorUi() {
   const [isActive, setIsActive] = useState(true);
   const [ownerId, setOwnerId] = useState("");
 
-  const [createSponsor, { isLoading }] = useCreateSponsorMutation();
+  const [createSponsor] = useCreateSponsorMutation();
 
   const resetForm = () => {
     setImgUrl("");
@@ -104,9 +103,7 @@ export default function CreateSponsorUi() {
       formData.append("description",description);
       formData.append("isActive",isActive.toString());
       formData.append("ownerId",ownerId);
-      await createSponsor({
-        payload: formData,
-      }).unwrap();
+      await createSponsor(formData).unwrap();
 
       toast.success(copy.created);
       setOpen(false);
@@ -150,6 +147,9 @@ export default function CreateSponsorUi() {
                   <Image
                     src={imgUrl}
                     alt={copy.previewAlt}
+                    width={240}
+                    height={80}
+                    unoptimized
                     className="h-full object-contain"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = "none";
@@ -202,7 +202,7 @@ export default function CreateSponsorUi() {
               <Checkbox
                 id="isActive"
                 checked={isActive}
-                onCheckedChange={(val) => setIsActive(!!val)}
+                onCheckedChange={(val: CheckedState) => setIsActive(val === true)}
                 className="cursor-pointer"
               />
               <Label htmlFor="isActive" className="cursor-pointer font-normal">

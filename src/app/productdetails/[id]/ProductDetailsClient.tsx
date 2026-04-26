@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Mail, Phone, Store, ShoppingCart } from "lucide-react";
 import { useAddToCartMutation } from "@/Redux/Services/CartApi";
-import { shopOwnerInfo } from "@/lib/data";
+
 import { type Product } from "@/lib/DatabaseTypes";
 import { type Language, useI18n } from "@/context/I18nContext";
 
@@ -144,7 +144,9 @@ const productMessages: Record<
   },
 };
 
-const ProductDetailsClient = ({ initialProduct }: ProductDetailsClientProps) => {
+const ProductDetailsClient = ({
+  initialProduct,
+}: ProductDetailsClientProps) => {
   const { language, t } = useI18n();
   const copy = productMessages[language];
 
@@ -161,6 +163,7 @@ const ProductDetailsClient = ({ initialProduct }: ProductDetailsClientProps) => 
     try {
       await addToCart({
         productId: singleProduct.id,
+        ownerId: singleProduct.ownerID,
         color: selectedColor,
         name: singleProduct.name,
         price: singleProduct.price,
@@ -182,9 +185,12 @@ const ProductDetailsClient = ({ initialProduct }: ProductDetailsClientProps) => 
     copy.addedToCart,
     copy.failedToAddToCart,
   ]);
+  console.log(singleProduct);
 
   const productImages = singleProduct
-    ? [singleProduct.mainImage, ...(singleProduct.extraImages ?? [])].filter(Boolean)
+    ? [singleProduct.mainImage, ...(singleProduct.extraImages ?? [])].filter(
+        Boolean,
+      )
     : [];
 
   if (!singleProduct) {
@@ -335,7 +341,7 @@ const ProductDetailsClient = ({ initialProduct }: ProductDetailsClientProps) => 
           </div>
 
           <Separator className="" />
-
+          
           <Card className="p-4 bg-muted/50">
             <div className="space-y-3">
               <Link href="/seller" className="no-underline">
@@ -344,20 +350,20 @@ const ProductDetailsClient = ({ initialProduct }: ProductDetailsClientProps) => 
                     className="h-5 w-5 text-purple-600"
                     aria-hidden="true"
                   />
-                  <h3 className="font-bold text-lg">{shopOwnerInfo.name}</h3>
+                  <h3 className="font-bold text-lg">{singleProduct?.sellerInfo.sellerName}</h3>
                 </div>
               </Link>
 
               <address className="space-y-2 text-sm not-italic">
-                <div className="flex items-start gap-2">
-                  <MapPin
-                    className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span className="text-muted-foreground">
-                    {shopOwnerInfo.location}
-                  </span>
-                </div>
+                    {/* <div className="flex items-start gap-2">
+                      <MapPin
+                        className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0"
+                        aria-hidden="true"
+                      />
+                      <span className="text-muted-foreground">
+                        {singleProduct?.sellerInfo.sellerAddress}
+                      </span>
+                    </div> */}
 
                 <div className="flex items-center gap-2">
                   <Mail
@@ -365,13 +371,12 @@ const ProductDetailsClient = ({ initialProduct }: ProductDetailsClientProps) => 
                     aria-hidden="true"
                   />
                   <a
-                    href={`mailto:${shopOwnerInfo.email}`}
                     className="text-muted-foreground hover:text-purple-600 transition"
                     aria-label={t(copy.emailLabel, {
-                      name: shopOwnerInfo.name,
+                      name: singleProduct?.sellerInfo.sellerName,
                     })}
                   >
-                    {shopOwnerInfo.email}
+                    {singleProduct?.sellerInfo.sellerEmail}
                   </a>
                 </div>
 
@@ -381,16 +386,16 @@ const ProductDetailsClient = ({ initialProduct }: ProductDetailsClientProps) => 
                     aria-hidden="true"
                   />
                   <a
-                    href={`tel:${shopOwnerInfo.phone}`}
+                    href={`tel:${singleProduct?.sellerInfo.sellerPhoneNumber}`}
                     className="text-muted-foreground hover:text-purple-600 transition"
-                    aria-label={t(copy.callLabel, { name: shopOwnerInfo.name })}
+                    aria-label={t(copy.callLabel, { name: singleProduct?.sellerInfo.sellerName })}
                   >
-                    {shopOwnerInfo.phone}
+                    {singleProduct?.sellerInfo.sellerPhoneNumber}
                   </a>
                 </div>
               </address>
             </div>
-          </Card>
+          </Card>#
 
           <Separator className="" />
 

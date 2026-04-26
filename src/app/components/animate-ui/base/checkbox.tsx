@@ -4,15 +4,22 @@
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { motion } from 'framer-motion';
 import { useState, useEffect ,useCallback } from 'react';
+import type { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils';
+
+type CheckboxProps = Omit<ComponentProps<typeof CheckboxPrimitive.Root>, 'onCheckedChange'> & {
+  className?: string;
+  motionProps?: ComponentProps<typeof motion.button>;
+  onCheckedChange?: (checked: CheckboxPrimitive.CheckedState, event?: Event) => void;
+};
 
 function Checkbox({
   className,
   onCheckedChange,
   motionProps,
   ...props
-}) {
+}: CheckboxProps) {
   const [isChecked, setIsChecked] = useState(props?.checked ?? props?.defaultChecked ?? false);
   
   
@@ -20,60 +27,59 @@ function Checkbox({
     if (props?.checked !== undefined) setIsChecked(props.checked);
   }, [props?.checked]);
 
-  const handleCheckedChange = useCallback((checked, event) => {
+  const handleCheckedChange = useCallback((checked: CheckboxPrimitive.CheckedState) => {
     setIsChecked(checked);
-    onCheckedChange?.(checked, event);
+    onCheckedChange?.(checked);
   }, [onCheckedChange]);
 
   return (
     <CheckboxPrimitive.Root
       data-slot="checkbox"
+      asChild
       className={cn(
         'peer shrink-0 flex items-center justify-center outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-500',
         'size-5 rounded-sm bg-input focus-visible:ring-offset-2 data-[checked]:bg-primary data-[checked]:text-primary-foreground',
         className
       )}
       {...props}
-      onCheckedChange={handleCheckedChange}
-      render={
-        <motion.button whileTap={{ scale: 0.95 }} whileHover={{ scale: 1.05 }} {...motionProps} />
-      }>
-      <CheckboxPrimitive.Indicator
-        keepMounted
-        data-slot="checkbox-indicator"
-        className="flex items-center justify-center text-current transition-none">
-        <motion.svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth="3.5"
-          stroke="currentColor"
-          className="size-3.5"
-          initial="unchecked"
-          animate={isChecked ? 'checked' : 'unchecked'}>
-          <motion.path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4.5 12.75l6 6 9-13.5"
-            variants={{
-              checked: {
-                pathLength: 1,
-                opacity: 1,
-                transition: {
-                  duration: 0.2,
-                  delay: 0.2,
+      onCheckedChange={handleCheckedChange}>
+      <motion.button whileTap={{ scale: 0.95 }} whileHover={{ scale: 1.05 }} {...motionProps}>
+        <CheckboxPrimitive.Indicator
+          data-slot="checkbox-indicator"
+          className="flex items-center justify-center text-current transition-none">
+          <motion.svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="3.5"
+            stroke="currentColor"
+            className="size-3.5"
+            initial="unchecked"
+            animate={isChecked ? 'checked' : 'unchecked'}>
+            <motion.path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4.5 12.75l6 6 9-13.5"
+              variants={{
+                checked: {
+                  pathLength: 1,
+                  opacity: 1,
+                  transition: {
+                    duration: 0.2,
+                    delay: 0.2,
+                  },
                 },
-              },
-              unchecked: {
-                pathLength: 0,
-                opacity: 0,
-                transition: {
-                  duration: 0.2,
+                unchecked: {
+                  pathLength: 0,
+                  opacity: 0,
+                  transition: {
+                    duration: 0.2,
+                  },
                 },
-              },
-            }} />
-        </motion.svg>
-      </CheckboxPrimitive.Indicator>
+              }} />
+          </motion.svg>
+        </CheckboxPrimitive.Indicator>
+      </motion.button>
     </CheckboxPrimitive.Root>
   );
 }

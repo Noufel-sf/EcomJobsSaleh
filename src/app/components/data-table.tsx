@@ -33,6 +33,11 @@ import {
   IconTrendingUp,
 } from "@tabler/icons-react"
 import {
+  type ColumnFiltersState,
+  type PaginationState,
+  type RowSelectionState,
+  type SortingState,
+  type VisibilityState,
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -136,6 +141,7 @@ const columns = [
     header: ({ table }) => (
       <div className="flex items-center justify-center">
         <Checkbox
+          className={""}
           checked={
             table.getIsAllPageRowsSelected() ||
             (table.getIsSomePageRowsSelected() && "indeterminate")
@@ -147,6 +153,7 @@ const columns = [
     cell: ({ row }) => (
       <div className="flex items-center justify-center">
         <Checkbox
+          className={""}
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
           aria-label="Select row" />
@@ -256,9 +263,9 @@ const columns = [
               id={`${row.original.id}-reviewer`}>
               <SelectValue placeholder="Assign reviewer" />
             </SelectTrigger>
-            <SelectContent align="end">
-              <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-              <SelectItem value="Jamik Tashpulatov">
+            <SelectContent className="" align="end">
+              <SelectItem className="" value="Eddie Lake">Eddie Lake</SelectItem>
+              <SelectItem className="" value="Jamik Tashpulatov">
                 Jamik Tashpulatov
               </SelectItem>
             </SelectContent>
@@ -319,15 +326,17 @@ function DraggableRow({
 }
 
 export function DataTable({
-  data: initialData
+  data: initialData,
+}: {
+  data: Array<Record<string, any>>;
 }) {
   const [data, setData] = React.useState(() => initialData)
-  const [rowSelection, setRowSelection] = React.useState({})
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
   const [columnVisibility, setColumnVisibility] =
-    React.useState({})
-  const [columnFilters, setColumnFilters] = React.useState([])
-  const [sorting, setSorting] = React.useState([])
-  const [pagination, setPagination] = React.useState({
+    React.useState<VisibilityState>({})
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   })
@@ -386,23 +395,23 @@ export function DataTable({
           <SelectTrigger className="flex w-fit @4xl/main:hidden" size="sm" id="view-selector">
             <SelectValue placeholder="Select a view" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="outline">Outline</SelectItem>
-            <SelectItem value="past-performance">Past Performance</SelectItem>
-            <SelectItem value="key-personnel">Key Personnel</SelectItem>
-            <SelectItem value="focus-documents">Focus Documents</SelectItem>
+          <SelectContent className="">
+            <SelectItem className="" value="outline">Outline</SelectItem>
+            <SelectItem className="" value="past-performance">Past Performance</SelectItem>
+            <SelectItem className="" value="key-personnel">Key Personnel</SelectItem>
+            <SelectItem className="" value="focus-documents">Focus Documents</SelectItem>
           </SelectContent>
         </Select>
         <TabsList
           className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger value="outline">Outline</TabsTrigger>
-          <TabsTrigger value="past-performance">
-            Past Performance <Badge variant="secondary">3</Badge>
+          <TabsTrigger className="" value="outline">Outline</TabsTrigger>
+          <TabsTrigger className="" value="past-performance">
+            Past Performance <Badge className="" variant="secondary">3</Badge>
           </TabsTrigger>
-          <TabsTrigger value="key-personnel">
-            Key Personnel <Badge variant="secondary">2</Badge>
+          <TabsTrigger className="" value="key-personnel">
+            Key Personnel <Badge className="" variant="secondary">2</Badge>
           </TabsTrigger>
-          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
+          <TabsTrigger className="" value="focus-documents">Focus Documents</TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -503,9 +512,9 @@ export function DataTable({
                 <SelectTrigger size="sm" className="w-20" id="rows-per-page">
                   <SelectValue placeholder={table.getState().pagination.pageSize} />
                 </SelectTrigger>
-                <SelectContent side="top">
+                <SelectContent className="" side="top">
                   {[10, 20, 30, 40, 50].map((pageSize) => (
-                    <SelectItem key={pageSize} value={`${pageSize}`}>
+                    <SelectItem className="" key={pageSize} value={`${pageSize}`}>
                       {pageSize}
                     </SelectItem>
                   ))}
@@ -602,10 +611,10 @@ function TableCellViewer({
           {item.header}
         </Button>
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="">
         <DrawerHeader className="gap-1">
-          <DrawerTitle>{item.header}</DrawerTitle>
-          <DrawerDescription>
+          <DrawerTitle className="">{item.header}</DrawerTitle>
+          <DrawerDescription className="">
             Showing total visitors for the last 6 months
           </DrawerDescription>
         </DrawerHeader>
@@ -645,7 +654,7 @@ function TableCellViewer({
                     stackId="a" />
                 </AreaChart>
               </ChartContainer>
-              <Separator />
+              <Separator className="" />
               <div className="grid gap-2">
                 <div className="flex gap-2 leading-none font-medium">
                   Trending up by 5.2% this month{" "}
@@ -657,7 +666,7 @@ function TableCellViewer({
                   and should wrap around.
                 </div>
               </div>
-              <Separator />
+              <Separator className="" />
             </>
           )}
           <form className="flex flex-col gap-4">
@@ -672,23 +681,23 @@ function TableCellViewer({
                   <SelectTrigger id="type" className="w-full">
                     <SelectValue placeholder="Select a type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="">
                     <SelectItem value="Table of Contents">
                       Table of Contents
                     </SelectItem>
-                    <SelectItem value="Executive Summary">
+                    <SelectItem className="" value="Executive Summary">
                       Executive Summary
                     </SelectItem>
-                    <SelectItem value="Technical Approach">
+                    <SelectItem className="" value="Technical Approach">
                       Technical Approach
                     </SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Capabilities">Capabilities</SelectItem>
-                    <SelectItem value="Focus Documents">
+                    <SelectItem className="" value="Design">Design</SelectItem>
+                    <SelectItem className="" value="Capabilities">Capabilities</SelectItem>
+                    <SelectItem className="" value="Focus Documents">
                       Focus Documents
                     </SelectItem>
-                    <SelectItem value="Narrative">Narrative</SelectItem>
-                    <SelectItem value="Cover Page">Cover Page</SelectItem>
+                    <SelectItem className="" value="Narrative">Narrative</SelectItem>
+                    <SelectItem className=""   value="Cover Page">Cover Page</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -698,7 +707,7 @@ function TableCellViewer({
                   <SelectTrigger id="status" className="w-full">
                     <SelectValue placeholder="Select a status" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="">
                     <SelectItem value="Done">Done</SelectItem>
                     <SelectItem value="In Progress">In Progress</SelectItem>
                     <SelectItem value="Not Started">Not Started</SelectItem>
@@ -722,18 +731,18 @@ function TableCellViewer({
                 <SelectTrigger id="reviewer" className="w-full">
                   <SelectValue placeholder="Select a reviewer" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-                  <SelectItem value="Jamik Tashpulatov">
+                <SelectContent className="">
+                  <SelectItem className="" value="Eddie Lake">Eddie Lake</SelectItem>
+                  <SelectItem className="" value="Jamik Tashpulatov">
                     Jamik Tashpulatov
                   </SelectItem>
-                  <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
+                  <SelectItem className="" value="Emily Whalen">Emily Whalen</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </form>
         </div>
-        <DrawerFooter>
+        <DrawerFooter className="">
           <Button>Submit</Button>
           <DrawerClose asChild>
             <Button variant="outline">Done</Button>

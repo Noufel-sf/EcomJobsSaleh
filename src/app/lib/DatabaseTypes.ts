@@ -1,4 +1,3 @@
-import { Sponsor } from '@/lib/DatabaseTypes';
 // Database Types - Generated from actual database schema
 
 import type { Dispatch, ReactNode, SetStateAction } from "react";
@@ -108,7 +107,14 @@ export interface Product {
   name: string;
   price: number; 
   status:boolean ;
+  sellerInfo: {
+    sellerName: string;
+    sellerEmail: string;
+    sellerPhoneNumber: string;
+    sellerAddress: string;
+  };
   mainImage: string; 
+  ownerID: string;
   extraImages: string[];
   sizes: string[];
   smallDesc: string; 
@@ -285,6 +291,7 @@ export interface AuthProviderProps {
 
 export interface CartItem {
   productId: string;
+  ownerId?: string;
   quantity: number;
   price: number;
   size?: string;

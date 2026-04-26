@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/zodValidation";
 import { useI18n } from "@/context/I18nContext";
+import { useGetSellerStatesQuery } from "@/Redux/Services/OrderApi";
 
 function CompleteOrder() {
   const { messages, t } = useI18n();
@@ -42,6 +43,17 @@ function CompleteOrder() {
   const total = cartData?.totalPrice || 0;
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const sellerId = useMemo(() => {
+    const firstItem = cart[0] as { ownerId?: string } | undefined;
+    return firstItem?.ownerId ?? "";
+  }, [cart]);
+  console.log("the cart is " , cart);
+  
+  console.log("the seller id " , sellerId);
+  
+  const { data: sellerStates } = useGetSellerStatesQuery(sellerId, {
+    skip: !sellerId,
+  });
 
   const [optimisticStatus, setOptimisticStatus] = useOptimistic<
     "idle" | "submitting" | "success"
@@ -60,19 +72,6 @@ function CompleteOrder() {
       note: "",
     },
   });
-
-  // const selectedShippingMethod = form.watch("shippingMethod");
-
-  // const { shippingCost, grandTotal } = useMemo(() => {
-  //   const selectedShipping = shippingOptions.find(
-  //     (opt) => opt.id === selectedShippingMethod,
-  //   );
-  //   const cost = selectedShipping?.price || 0;
-  //   return {
-  //     shippingCost: cost,
-  //     grandTotal: displayTotal + cost,
-  //   };
-  // }, [selectedShippingMethod, displayTotal]);
 
   const SubmitOrder = useCallback(
     async (data: CheckoutFormValues) => {
@@ -102,8 +101,9 @@ function CompleteOrder() {
 
           setOptimisticStatus("success");
           toast.success(messages.checkout.orderPlacedSuccess);
-        } catch (error: any) {
-          toast.error(error?.data?.message || messages.checkout.orderFailed);
+        } catch (error: unknown) {
+          const typedError = error as { data?: { message?: string } };
+          toast.error(typedError?.data?.message || messages.checkout.orderFailed);
         }
       });
     },
@@ -181,7 +181,7 @@ function CompleteOrder() {
                 aria-label="Complete order form"
               >
                 <ContactSection form={form} />
-                <ShippingSection form={form} />
+                <ShippingSection form={form} sellerStates={sellerStates ?? []} />
 
                 {/* Submit Button */}
                 <Button

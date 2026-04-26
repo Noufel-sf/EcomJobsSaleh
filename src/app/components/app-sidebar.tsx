@@ -35,7 +35,7 @@ const data = {
   ],
 };
 
-export function AppSidebar({ ...props }) {
+export function AppSidebar({ ...props }: Record<string, unknown>) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -53,7 +53,7 @@ export function AppSidebar({ ...props }) {
               <SidebarMenu>
                 {item.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
+                    <SidebarMenuButton asChild isActive={(item as { isActive?: boolean }).isActive}>
                       <Link href={item.url}>{item.title}</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

@@ -211,10 +211,10 @@ export default function CreateJobDialog({
       niceToHaves,
       jobCategories,
       requiredSkills,
-      // appliedCount: Number.isFinite(appliedCount) ? appliedCount : 0,
+      appliedCount: Number.isFinite(appliedCount) ? appliedCount : 0,
       totalCapacity: Number.isFinite(totalCapacity) ? totalCapacity : 0,
       applyBefore,
-      // jobPostedOn,
+      jobPostedOn,
     };
 
     try {

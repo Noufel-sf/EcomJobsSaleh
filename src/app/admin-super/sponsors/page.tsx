@@ -50,15 +50,16 @@ import {
 } from "lucide-react";
 import SuperAdminSidebarLayout from "@/components/SuperAdminSidebarLayout";
 import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
-import { Sponsor } from "@/lib/DatabaseTypes";
 import toast from "react-hot-toast";
 
-type SponsorRow = Sponsor & { isActive: boolean };
 import {
+  type Sponsor,
   useDeleteSponsorMutation,
   useGetsponsorsQuery,
   useUpdateSponsorStatusMutation,
 } from "@/Redux/Services/SponsorApi";
+
+type SponsorRow = Sponsor & { isActive: boolean };
 
 import CreateSponsorModal from "./components/CreateSponsorModal";
 import UpdateSponsorUi from "../components/UpdateSponsorUI";
@@ -184,7 +185,13 @@ export default function SuperAdminSponsors() {
   const { language, t } = useI18n();
   const copy = superAdminSponsorsCopy[language];
   const { data: sponsorsData, isLoading, isFetching } = useGetsponsorsQuery();
-  const sponsors = sponsorsData?.content ?? [];
+  const sponsors: SponsorRow[] = useMemo(
+    () => (sponsorsData ?? []).map((sponsor) => ({
+      ...sponsor,
+      isActive: sponsor.isActive ?? false,
+    })),
+    [sponsorsData],
+  );
   const [deleteSponsor] = useDeleteSponsorMutation();
   const [updateSponsorStatus] = useUpdateSponsorStatusMutation();
 

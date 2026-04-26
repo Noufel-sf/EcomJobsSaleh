@@ -28,6 +28,11 @@ interface GetSellerOrdersParams {
   size?: number;
 }
 
+interface SellerState {
+  id: number;
+  name: string;
+}
+
 interface GetSellerOrdersResponse {
   content: Order[];
   totalPages: number;
@@ -38,7 +43,7 @@ interface GetSellerOrdersResponse {
 export const orderApi = createApi({
   reducerPath: "orderApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_URL}/orders`,
+    baseUrl: `${API_URL}/`,
     credentials: "include",
   }),
   tagTypes: ["Orders"],
@@ -47,7 +52,7 @@ export const orderApi = createApi({
    
     createOrder: builder.mutation<CreateOrderResponse, CreateOrderRequest>({
       query: (orderData) => ({
-        url: "",
+        url: "orders",
         method: "POST",
         body: orderData,
       }),
@@ -59,7 +64,7 @@ export const orderApi = createApi({
       GetSellerOrdersParams | void
     >({
       query: (params) => ({
-        url: `/${params?.Seller_id}`,
+        url: `orders/${params?.Seller_id}`,
         params: {
           page: params?.page ?? 0,
           size: params?.size ?? 10,
@@ -68,9 +73,17 @@ export const orderApi = createApi({
       providesTags: ["Orders"],
     }),
 
+    getSellerStates: builder.query<SellerState[], string>({
+      query: (sellerId) => ({
+        url: `deliverycosts/states/${sellerId}`,
+      }),
+      providesTags: ["Orders"],
+    }),
+    
+
     DeleteOrder: builder.mutation<void, string>({
       query: (orderId) => ({
-        url: `/${orderId}`,
+        url: `orders/${orderId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Orders"],
@@ -81,7 +94,7 @@ export const orderApi = createApi({
       { orderId: string; status: string }
     >({
       query: ({ orderId, status }) => ({
-        url: `/${orderId}`,
+        url: `orders/${orderId}`,
         method: "PUT",
         body: { status },
       }),
@@ -91,6 +104,7 @@ export const orderApi = createApi({
 });
 
 export const {
+  useGetSellerStatesQuery,
   useCreateOrderMutation,
   useGetSellerOrdersQuery,
   useDeleteOrderMutation,

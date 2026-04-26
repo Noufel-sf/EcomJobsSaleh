@@ -31,7 +31,7 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-const SidebarContext = React.createContext(null)
+const SidebarContext = React.createContext<any>(null)
 
 function useSidebar() {
   const context = React.useContext(SidebarContext)
@@ -144,7 +144,7 @@ function Sidebar({
   className,
   children,
   ...props
-}) {
+}: any) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
   if (collapsible === "none") {
@@ -257,7 +257,7 @@ function SidebarTrigger({
 function SidebarRail({
   className,
   ...props
-}) {
+}: any) {
   const { toggleSidebar } = useSidebar()
 
   return (
@@ -300,7 +300,7 @@ function SidebarInset({
 function SidebarInput({
   className,
   ...props
-}) {
+}: any) {
   return (
     <Input
       data-slot="sidebar-input"
@@ -313,7 +313,7 @@ function SidebarInput({
 function SidebarHeader({
   className,
   ...props
-}) {
+}: any) {
   return (
     <div
       data-slot="sidebar-header"
@@ -326,7 +326,7 @@ function SidebarHeader({
 function SidebarFooter({
   className,
   ...props
-}) {
+}: any) {
   return (
     <div
       data-slot="sidebar-footer"
@@ -339,7 +339,7 @@ function SidebarFooter({
 function SidebarSeparator({
   className,
   ...props
-}) {
+}: any) {
   return (
     <Separator
       data-slot="sidebar-separator"
@@ -352,7 +352,7 @@ function SidebarSeparator({
 function SidebarContent({
   className,
   ...props
-}) {
+}: any) {
   return (
     <div
       data-slot="sidebar-content"
@@ -368,7 +368,7 @@ function SidebarContent({
 function SidebarGroup({
   className,
   ...props
-}) {
+}: any) {
   return (
     <div
       data-slot="sidebar-group"
@@ -382,7 +382,7 @@ function SidebarGroupLabel({
   className,
   asChild = false,
   ...props
-}) {
+}: any) {
   const Comp = asChild ? Slot : "div"
 
   return (
@@ -402,7 +402,7 @@ function SidebarGroupAction({
   className,
   asChild = false,
   ...props
-}) {
+}: any) {
   const Comp = asChild ? Slot : "button"
 
   return (
@@ -423,7 +423,7 @@ function SidebarGroupAction({
 function SidebarGroupContent({
   className,
   ...props
-}) {
+}: any) {
   return (
     <div
       data-slot="sidebar-group-content"
@@ -436,7 +436,7 @@ function SidebarGroupContent({
 function SidebarMenu({
   className,
   ...props
-}) {
+}: any) {
   return (
     <ul
       data-slot="sidebar-menu"
@@ -449,7 +449,7 @@ function SidebarMenu({
 function SidebarMenuItem({
   className,
   ...props
-}) {
+}: any) {
   return (
     <li
       data-slot="sidebar-menu-item"
@@ -489,7 +489,7 @@ function SidebarMenuButton({
   tooltip,
   className,
   ...props
-}) {
+}: any) {
   const Comp = asChild ? Slot : "button"
   const { isMobile, state } = useSidebar()
 
@@ -530,7 +530,7 @@ function SidebarMenuAction({
   asChild = false,
   showOnHover = false,
   ...props
-}) {
+}: any) {
   const Comp = asChild ? Slot : "button"
 
   return (
@@ -556,7 +556,7 @@ function SidebarMenuAction({
 function SidebarMenuBadge({
   className,
   ...props
-}) {
+}: any) {
   return (
     <div
       data-slot="sidebar-menu-badge"
@@ -578,7 +578,7 @@ function SidebarMenuSkeleton({
   className,
   showIcon = false,
   ...props
-}) {
+}: any) {
   // Random width between 50 to 90%.
   const width = React.useMemo(() => {
     return `${Math.floor(Math.random() * 40) + 50}%`;
@@ -608,7 +608,7 @@ function SidebarMenuSkeleton({
 function SidebarMenuSub({
   className,
   ...props
-}) {
+}: any) {
   return (
     <ul
       data-slot="sidebar-menu-sub"
@@ -625,7 +625,7 @@ function SidebarMenuSub({
 function SidebarMenuSubItem({
   className,
   ...props
-}) {
+}: any) {
   return (
     <li
       data-slot="sidebar-menu-sub-item"
@@ -641,7 +641,7 @@ function SidebarMenuSubButton({
   isActive = false,
   className,
   ...props
-}) {
+}: any) {
   const Comp = asChild ? Slot : "a"
 
   return (

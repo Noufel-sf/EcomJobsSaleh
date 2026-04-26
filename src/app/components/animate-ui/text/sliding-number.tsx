@@ -1,16 +1,53 @@
 'use client';;
 import * as React from 'react';
 import { useSpring, useTransform, motion, useInView } from 'framer-motion';
+import type { MotionValue } from 'framer-motion';
 import useMeasure from 'react-use-measure';
 
 import { cn } from '@/lib/utils';
+
+type SlidingTransition = {
+  stiffness?: number;
+  damping?: number;
+  mass?: number;
+  [key: string]: unknown;
+};
+
+type InViewMargin = NonNullable<Parameters<typeof useInView>[1]>['margin'];
+
+type SlidingNumberRollerProps = {
+  prevValue: number;
+  value: number;
+  place: number;
+  transition: SlidingTransition;
+};
+
+type SlidingNumberDisplayProps = {
+  motionValue: MotionValue<number>;
+  number: number;
+  height: number;
+  transition: SlidingTransition;
+};
+
+type SlidingNumberProps = React.HTMLAttributes<HTMLSpanElement> & {
+  ref?: React.Ref<HTMLSpanElement>;
+  number: number | string;
+  className?: string;
+  inView?: boolean;
+  inViewMargin?: InViewMargin;
+  inViewOnce?: boolean;
+  padStart?: boolean;
+  decimalSeparator?: string;
+  decimalPlaces?: number;
+  transition?: SlidingTransition;
+};
 
 function SlidingNumberRoller({
   prevValue,
   value,
   place,
   transition
-}) {
+}: SlidingNumberRollerProps) {
   const startNumber = Math.floor(prevValue / place) % 10;
   const targetNumber = Math.floor(value / place) % 10;
   const animatedValue = useSpring(startNumber, transition);
@@ -44,7 +81,7 @@ function SlidingNumberDisplay({
   number,
   height,
   transition
-}) {
+}: SlidingNumberDisplayProps) {
   const y = useTransform(motionValue, (latest) => {
     if (!height) return 0;
     const currentNumber = latest % 10;
@@ -74,7 +111,7 @@ function SlidingNumber({
   number,
   className,
   inView = false,
-  inViewMargin = '0px',
+  inViewMargin = '0px' as InViewMargin,
   inViewOnce = true,
   padStart = false,
   decimalSeparator = '.',
@@ -87,9 +124,21 @@ function SlidingNumber({
   },
 
   ...props
-}) {
-  const localRef = React.useRef(null);
-  React.useImperativeHandle(ref, () => localRef.current);
+}: SlidingNumberProps) {
+  const localRef = React.useRef<HTMLSpanElement | null>(null);
+
+  const setRefs = React.useCallback(
+    (node: HTMLSpanElement | null) => {
+      localRef.current = node;
+      if (!ref) return;
+      if (typeof ref === 'function') {
+        ref(node);
+        return;
+      }
+      ref.current = node;
+    },
+    [ref]
+  );
 
   const inViewResult = useInView(localRef, {
     once: inViewOnce,
@@ -101,7 +150,7 @@ function SlidingNumber({
 
   const effectiveNumber = React.useMemo(() => (!isInView ? 0 : Math.abs(Number(number))), [number, isInView]);
 
-  const formatNumber = React.useCallback((num) =>
+  const formatNumber = React.useCallback((num: number) =>
     decimalPlaces != null ? num.toFixed(decimalPlaces) : num.toString(), [decimalPlaces]);
 
   const numberStr = formatNumber(effectiveNumber);
@@ -148,7 +197,7 @@ function SlidingNumber({
 
   return (
     <span
-      ref={localRef}
+      ref={setRefs}
       data-slot="sliding-number"
       className={cn('flex items-center', className)}
       {...props}>

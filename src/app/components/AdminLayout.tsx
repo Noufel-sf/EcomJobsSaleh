@@ -5,6 +5,7 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
+import type { ReactNode } from 'react';
 import { Separator } from '@/components/ui/separator';
 import {
   Breadcrumb,
@@ -24,12 +25,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/Redux/hooks';
-import { AdminAppSidebar } from './admin-app-sidebar';
+import { AdminAppSidebar } from '../admin-seller/admin-app-sidebar';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartAreaInteractive } from '../admin-seller/chart-area-interactive';
 
-export default function AdminLayout({ children }) {
+type AdminLayoutProps = {
+  children: ReactNode;
+};
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
   const { setTheme } = useTheme();
   const user = useAppSelector((state) => state.auth.user);
 
@@ -157,7 +162,7 @@ export default function AdminLayout({ children }) {
                     {stat.change}
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className={""}>
                   <div className="text-2xl font-bold">{stat.value}</div>
                   <div className="flex items-center gap-2 mt-3">
                     <p className="text-xs text-muted-foreground flex items-center gap-1">

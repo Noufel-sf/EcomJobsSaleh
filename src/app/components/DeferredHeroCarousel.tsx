@@ -31,26 +31,34 @@ export default function DeferredHeroCarousel({ sponsors }: DeferredHeroCarouselP
       return;
     }
 
-    if ("requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(
+    const browserWindow = window as Window & {
+      requestIdleCallback?: (
+        callback: IdleRequestCallback,
+        options?: IdleRequestOptions
+      ) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    if (typeof browserWindow.requestIdleCallback === "function") {
+      idleId = browserWindow.requestIdleCallback(
         () => {
           setShouldLoad(true);
         },
         { timeout: 1500 },
       );
     } else {
-      timeoutId = window.setTimeout(() => {
+      timeoutId = browserWindow.setTimeout(() => {
         setShouldLoad(true);
       }, 600);
     }
 
     return () => {
-      if (idleId !== undefined && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleId);
+      if (idleId !== undefined && typeof browserWindow.cancelIdleCallback === "function") {
+        browserWindow.cancelIdleCallback(idleId);
       }
 
       if (timeoutId !== undefined) {
-        window.clearTimeout(timeoutId);
+        browserWindow.clearTimeout(timeoutId);
       }
     };
   }, []);

@@ -70,41 +70,33 @@ export default function OrderDetailsModal({
         <div className="mt-4">
           <h3 className="font-semibold text-sm mb-3">Order Items</h3>
           <div className="space-y-3">
-            {selectedOrder?.products.map((item: OrderItem, idx: number) => (
+            {selectedOrder?.products.map((item, idx: number) => (
               <div
                 key={idx}
                 className="flex items-center gap-4 border rounded-lg p-3"
               >
-                {item.product ? (
-                  <>
-                    <Image
-                      src={item.product.mainImage}
-                      alt={item.product.smallDesc}
-                      width={64}
-                      height={64}
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                    <div className="flex-1 flex flex-col gap-1">
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-primary">
-                        ${(item.product.price).toFixed(2)} x {item.prodNb}
-                      </p>
-                      <p className="text-sm">{item.size}</p>
-                      <p className="w-5 h-5 rounded-full"
-                       style={{ backgroundColor: item.color }}
-                      ></p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">
-                        ${(( item.product.price) * item.prodNb).toFixed(2)}
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-sm text-muted-foreground">
-                    Product information not available.
+                <>
+                  <Image
+                    src={item.mainImage}
+                    alt={item.smallDesc}
+                    width={64}
+                    height={64}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                  <div className="flex-1 flex flex-col gap-1">
+                    <p className="font-medium">{item.name}</p>
+                    <p className="text-sm text-primary">
+                      ${item.price.toFixed(2)} x {item.prodNb}
+                    </p>
+                    <p className="text-sm">{item.size}</p>
+                    {item.color ? (
+                      <p className="w-5 h-5 rounded-full" style={{ backgroundColor: item.color }}></p>
+                    ) : null}
                   </div>
-                )}
+                  <div className="text-right">
+                    <p className="font-semibold">${(item.price * item.prodNb).toFixed(2)}</p>
+                  </div>
+                </>
               </div>
             ))}
           </div>

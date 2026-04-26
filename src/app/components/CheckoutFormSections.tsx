@@ -21,7 +21,11 @@ import { User, MapPin } from 'lucide-react';
 import { useI18n } from '@/context/I18nContext';
 import type { UseFormReturn } from 'react-hook-form';
 import type { CheckoutFormValues } from '@/lib/zodValidation';
-import { wilayas } from '@/lib/data';
+
+interface SellerStateOption {
+  id: number | string;
+  name: string;
+}
 
 interface ContactSectionProps {
   form: UseFormReturn<CheckoutFormValues>;
@@ -87,14 +91,15 @@ export const ContactSection = memo(function ContactSection({ form }: ContactSect
 
 interface ShippingSectionProps {
   form: UseFormReturn<CheckoutFormValues>;
+  sellerStates?: SellerStateOption[];
 }
 
-export const ShippingSection = memo(function ShippingSection({ form }: ShippingSectionProps) {
+export const ShippingSection = memo(function ShippingSection({ form, sellerStates = [] }: ShippingSectionProps) {
   const { messages } = useI18n();
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className={""}>
+      <CardHeader className={""}>
         <CardTitle className="flex items-center gap-2">
           <MapPin className="w-5 h-5" aria-hidden="true" />
           {messages.checkout.shippingDetails}
@@ -126,14 +131,16 @@ export const ShippingSection = memo(function ShippingSection({ form }: ShippingS
                   value={field.value ?? ''}
                 >
                   <FormControl >
-                    <SelectTrigger>
+                    <SelectTrigger
+                      className={""}
+                    >
                       <SelectValue  placeholder={messages.checkout.selectState} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className={""}>
-                    {wilayas.map((wilaya) => (
-                      <SelectItem className={""} key={wilaya.code} value={String(wilaya.code)}>
-                        {wilaya.name}
+                    {sellerStates.map((state) => (
+                      <SelectItem className={""} key={String(state.id)} value={String(state.id)}>
+                        {state.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

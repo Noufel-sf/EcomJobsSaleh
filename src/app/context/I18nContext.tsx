@@ -133,6 +133,8 @@ type CheckoutMessages = {
   cartItems: string;
   quantityLabel: string;
   subtotalWithCount: string;
+  shipping: string;
+  free: string;
   total: string;
   secureCheckout: string;
   orderPlacedSuccess: string;
@@ -322,6 +324,8 @@ const translations: Record<Language, TranslationMessages> = {
       cartItems: 'Cart items',
       quantityLabel: 'Quantity: {count}',
       subtotalWithCount: 'Subtotal ({count} items)',
+      shipping: 'Shipping',
+      free: 'FREE',
       total: 'Total',
       secureCheckout: 'Secure checkout guaranteed',
       orderPlacedSuccess: 'Order placed successfully!',
@@ -491,6 +495,8 @@ const translations: Record<Language, TranslationMessages> = {
       cartItems: 'Articles du panier',
       quantityLabel: 'Quantite: {count}',
       subtotalWithCount: 'Sous-total ({count} articles)',
+      shipping: 'Livraison',
+      free: 'GRATUIT',
       total: 'Total',
       secureCheckout: 'Paiement securise garanti',
       orderPlacedSuccess: 'Commande validee avec succes !',
@@ -654,6 +660,8 @@ const translations: Record<Language, TranslationMessages> = {
       cartItems: 'عناصر السلة',
       quantityLabel: 'الكمية: {count}',
       subtotalWithCount: 'المجموع الفرعي ({count} عناصر)',
+      shipping: 'الشحن',
+      free: 'مجاني',
       total: 'المجموع',
       secureCheckout: 'دفع آمن مضمون',
       orderPlacedSuccess: 'تم تأكيد الطلب بنجاح!',

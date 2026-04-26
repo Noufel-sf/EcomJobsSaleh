@@ -54,20 +54,23 @@ function TableFooter({
   );
 }
 
-function TableRow({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLTableRowElement>) {
+const TableRow = React.forwardRef<
+  HTMLTableRowElement,
+  React.HTMLAttributes<HTMLTableRowElement>
+>(({ className, ...props }, ref) => {
   return (
     <tr
+      ref={ref}
       data-slot="table-row"
       className={cn(
         "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
         className
       )}
-      {...props} />
+      {...props}
+    />
   );
-}
+});
+TableRow.displayName = "TableRow";
 
 function TableHead({
   className,

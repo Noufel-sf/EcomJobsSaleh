@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mail, Phone, MessageCircle, Clock } from 'lucide-react';
-import { contactOptions } from '@/lib/data.tsx';
+import { contactOptions } from '@/lib/data';
 
 
 

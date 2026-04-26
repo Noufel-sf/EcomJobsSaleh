@@ -1,10 +1,16 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface Sponsor {
+  id: string;
   name: string;
+  content?: string;
+  ownerId?: string;
   image?: string;
-  description ?: string;
+  img?: string;
   sponsorLink?: string;
+  link?: string;
+  description?: string;
+  isActive?: boolean;
 }
 
 export interface SponsorPayload {

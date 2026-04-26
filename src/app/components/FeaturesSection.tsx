@@ -1,4 +1,4 @@
-import { whyChooseUs } from '@/lib/data.tsx';
+import { whyChooseUs } from '@/lib/data';
 import React from 'react';
 import ChooseUsCard from './ui/ChooseUsCards';
 

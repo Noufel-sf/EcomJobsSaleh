@@ -7,9 +7,19 @@ import { cn } from "@/lib/utils"
 const THEMES = {
   light: "",
   dark: ".dark"
+} as const
+
+export type ChartConfig = {
+  [k: string]: {
+    label?: React.ReactNode
+    icon?: React.ComponentType
+  } & (
+    | { color?: string; theme?: never }
+    | { color?: never; theme: Record<keyof typeof THEMES, string> }
+  )
 }
 
-const ChartContext = React.createContext(null)
+const ChartContext = React.createContext<{ config: ChartConfig } | null>(null)
 
 function useChart() {
   const context = React.useContext(ChartContext)
@@ -21,19 +31,22 @@ function useChart() {
   return context
 }
 
-function ChartContainer({
-  id,
-  className,
-  children,
-  config,
-  ...props
-}) {
+const ChartContainer = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div"> & {
+    config: ChartConfig
+    children: React.ComponentProps<
+      typeof RechartsPrimitive.ResponsiveContainer
+    >["children"]
+  }
+>(({ id, className, children, config, ...props }, ref) => {
   const uniqueId = React.useId()
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`
 
   return (
     <ChartContext.Provider value={{ config }}>
       <div
+        ref={ref}
         data-slot="chart"
         data-chart={chartId}
         className={cn(
@@ -48,12 +61,10 @@ function ChartContainer({
       </div>
     </ChartContext.Provider>
   );
-}
+})
+ChartContainer.displayName = "Chart"
 
-const ChartStyle = ({
-  id,
-  config
-}) => {
+const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(([, config]) => config.theme || config.color)
 
   if (!colorConfig.length) {
@@ -96,8 +107,8 @@ function ChartTooltipContent({
   formatter,
   color,
   nameKey,
-  labelKey
-}) {
+  labelKey,
+}: any) {
   const { config } = useChart()
 
   const tooltipLabel = React.useMemo(() => {
@@ -182,7 +193,7 @@ function ChartTooltipContent({
                           {
                             "--color-bg": indicatorColor,
                             "--color-border": indicatorColor
-                          }
+                          } as React.CSSProperties
                         } />
                     )
                   )}
@@ -221,7 +232,7 @@ function ChartLegendContent({
   payload,
   verticalAlign = "bottom",
   nameKey
-}) {
+}: any) {
   const { config } = useChart()
 
   if (!payload?.length) {
@@ -264,28 +275,29 @@ function ChartLegendContent({
 
 // Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(
-  config,
-  payload,
-  key
+  config: ChartConfig,
+  payload: unknown,
+  key: string
 ) {
   if (typeof payload !== "object" || payload === null) {
     return undefined
   }
 
+  const payloadRecord = payload as Record<string, unknown>
   const payloadPayload =
-    "payload" in payload &&
-    typeof payload.payload === "object" &&
-    payload.payload !== null
-      ? payload.payload
+    "payload" in payloadRecord &&
+    typeof payloadRecord.payload === "object" &&
+    payloadRecord.payload !== null
+      ? (payloadRecord.payload as Record<string, unknown>)
       : undefined
 
   let configLabelKey = key
 
   if (
-    key in payload &&
-    typeof payload[key] === "string"
+    key in payloadRecord &&
+    typeof payloadRecord[key] === "string"
   ) {
-    configLabelKey = payload[key]
+    configLabelKey = payloadRecord[key]
   } else if (
     payloadPayload &&
     key in payloadPayload &&
