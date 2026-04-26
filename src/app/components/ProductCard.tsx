@@ -9,13 +9,20 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { Product } from "@/lib/DatabaseTypes";
+
+type ProductCardItem = {
+  id: string;
+  name: string;
+  price: number;
+  mainImage: string;
+  smallDesc: string;
+};
 
 export const ProductCard = memo(function ProductCard({
   product,
   // addToCart,
 }: {
-  product: Product;
+  product: ProductCardItem;
 }) {
   // const [isPending, startTransition] = useTransition();
 

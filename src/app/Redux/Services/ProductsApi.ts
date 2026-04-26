@@ -111,6 +111,15 @@ export const productsApi = createApi({
       query: (sellerId) => `/seller/${sellerId}`,
       providesTags: ["Products"],
     }),
+    getSellerProfileProducts: builder.query({
+      query: (sellerId) => `/sellers/${sellerId}`,
+      providesTags: ["Products"],
+    }),
+
+    getSellerProfileInfo: builder.query({
+      query: (sellerId) => `/sellers/${sellerId}`,
+      providesTags: ["Products"],
+    }),
 
     searchProducts: builder.query({
       query: ({
@@ -183,6 +192,8 @@ export const {
   useGetNotAvailableProductsQuery,
   useGetBestSellingQuery,
   useGetProductByIdQuery,
+  useGetSellerProfileProductsQuery,
+  useGetSellerProfileInfoQuery,
   useGetSellerProductsQuery,
   useSearchProductsQuery,
   useLazySearchProductsQuery,

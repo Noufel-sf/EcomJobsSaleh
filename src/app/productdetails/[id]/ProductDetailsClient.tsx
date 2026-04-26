@@ -344,7 +344,10 @@ const ProductDetailsClient = ({
           
           <Card className="p-4 bg-muted/50">
             <div className="space-y-3">
-              <Link href="/seller" className="no-underline">
+              <Link
+                href={`/sellerprofile/${singleProduct?.ownerID}`}
+                className="no-underline"
+              >
                 <div className="flex items-center gap-2 mb-3 hover:text-purple-600 transition-colors">
                   <Store
                     className="h-5 w-5 text-purple-600"
@@ -395,7 +398,7 @@ const ProductDetailsClient = ({
                 </div>
               </address>
             </div>
-          </Card>#
+          </Card>
 
           <Separator className="" />
 
