@@ -149,18 +149,18 @@ export default function SellerProfileClient({
       </div>
 
       <section className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-        <Card className="overflow-hidden rounded-3xl border-nonep-0 text-white shadow-2xl shadow-slate-950/20">
+        <Card className="overflow-hidden rounded-3xl border-nonep-0  shadow-2xl shadow-slate-950/20">
           <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[auto_1fr] lg:items-start">
             <div className="space-y-5">
               <div className="space-y-2">
-                <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+                <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ">
                   <Store className="h-3.5 w-3.5" />
                   {copy.sellerProfileBadge}
                 </p>
                 <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
                   {displayName}
                 </h1>
-                <p className="max-w-2xl text-sm leading-6 text-white/75 sm:text-base">
+                <p className="max-w-2xl text-sm leading-6  sm:text-base">
                   {description}
                 </p>
               </div>
