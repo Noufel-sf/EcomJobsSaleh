@@ -140,7 +140,7 @@ export function useCatalogController() {
 
   const { data: categoriesData } = useGetAllClassificationsQuery(undefined);
 
-  const classificationParam = searchParams.get("classification") ?? "";
+  const classificationParam = searchParams?.get("classification") ?? "";
   const categoryIdsFromUrl = useMemo(() => {
     const rawValues = classificationParam ? [classificationParam] : [];
 
@@ -194,7 +194,8 @@ export function useCatalogController() {
   );
 
   const updateClassificationInUrl = (nextSelected: string[]) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? "");
+    const safePathname = pathname ?? "/products";
 
     if (nextSelected[0]) {
       params.set("classification", nextSelected[0]);
@@ -203,7 +204,7 @@ export function useCatalogController() {
     }
 
     const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
+    router.replace(query ? `${safePathname}?${query}` : safePathname, {
       scroll: false,
     });
   };

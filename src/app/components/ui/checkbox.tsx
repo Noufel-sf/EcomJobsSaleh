@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 function Checkbox({
   className,
   ...props
-}) {
+}: React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>) {
   return (
     <CheckboxPrimitive.Root
       data-slot="checkbox"

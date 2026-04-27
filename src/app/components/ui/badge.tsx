@@ -30,7 +30,10 @@ function Badge({
   variant,
   asChild = false,
   ...props
-}: any) {
+}: React.ComponentPropsWithoutRef<"span"> & {
+  variant?: "default" | "secondary" | "destructive" | "outline";
+  asChild?: boolean;
+}) {
   const Comp = asChild ? Slot : "span"
 
   return (

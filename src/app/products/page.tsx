@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { Suspense, memo } from "react";
 import { Filter } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 import { useState } from "react";
@@ -13,7 +13,7 @@ import { ProductsToolbar } from "./_features/catalog/components/ProductsToolbar"
 
 const ITEMS_PER_PAGE = 12;
 
-function AllProductsPage() {
+function AllProductsContent() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const {
     isLoading,
@@ -102,4 +102,12 @@ function AllProductsPage() {
   );
 }
 
-export default memo(AllProductsPage);
+const MemoizedAllProductsContent = memo(AllProductsContent);
+
+export default function AllProductsPage() {
+  return (
+    <Suspense fallback={<main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8" />}>
+      <MemoizedAllProductsContent />
+    </Suspense>
+  );
+}

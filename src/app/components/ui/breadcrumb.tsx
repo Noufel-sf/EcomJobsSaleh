@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 function Breadcrumb({
   ...props
-}) {
+}: React.ComponentPropsWithoutRef<"nav">) {
   return <nav aria-label="breadcrumb" data-slot="breadcrumb" {...props} />;
 }
 
@@ -89,7 +89,7 @@ function BreadcrumbSeparator({
 function BreadcrumbEllipsis({
   className,
   ...props
-}) {
+}: React.HTMLAttributes<HTMLSpanElement>) {
   return (
     <span
       data-slot="breadcrumb-ellipsis"

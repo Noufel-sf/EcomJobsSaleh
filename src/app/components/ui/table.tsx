@@ -45,7 +45,7 @@ function TableBody({
 function TableFooter({
   className,
   ...props
-}) {
+}: React.HTMLAttributes<HTMLTableSectionElement>) {
   return (
     <tfoot
       data-slot="table-footer"
@@ -105,7 +105,7 @@ function TableCell({
 function TableCaption({
   className,
   ...props
-}) {
+}: React.HTMLAttributes<HTMLTableCaptionElement>) {
   return (
     <caption
       data-slot="table-caption"

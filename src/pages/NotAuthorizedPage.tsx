@@ -4,9 +4,17 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Lock, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useI18n } from '@/context/I18nContext';
+import { I18nProvider, useI18n } from '@/context/I18nContext';
 
 export default function NotAuthorizedPage() {
+  return (
+    <I18nProvider>
+      <NotAuthorizedPageContent />
+    </I18nProvider>
+  );
+}
+
+function NotAuthorizedPageContent() {
   const router = useRouter();
   const { messages } = useI18n();
 

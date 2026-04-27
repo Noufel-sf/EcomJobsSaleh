@@ -28,11 +28,11 @@ import Image from "next/image";
 import type { Categorie, Product } from "@/lib/DatabaseTypes";
 
 
-interface ProductWithRelations extends Product {
+type ProductWithRelations = Omit<Product, "extraImages" | "sizes" | "colors" | "prod_class"> & {
   extraImages?: string[];
   sizes?: string[];
   colors?: string[];
-  prod_class?: string;
+  prod_class?: string | null;
 }
 
 interface UpdateProductUiProps {
