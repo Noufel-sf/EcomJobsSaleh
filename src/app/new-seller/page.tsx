@@ -13,6 +13,7 @@ import {
   User,
   Phone,
   Lock,
+  MapPin ,
   Mail,
   FileText,
   Upload,
@@ -34,6 +35,7 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
     step1: "Your Info",
     step2: "Security",
     step3: "Store Details",
+    location: "Location",
     step4: "Finishing Up",
     imageTypeError: "Please select a valid image file",
     email: "Email Address",
@@ -89,6 +91,7 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
     step2: "Securite",
     step3: "Details boutique",
     step4: "Finalisation",
+    location: "Localisation",
     imageTypeError: "Veuillez selectionner une image valide",
     imageSizeError: "L'image doit faire moins de 5 Mo",
     email: "Adresse email",
@@ -120,6 +123,7 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
     phoneSummary: "Telephone",
     passwordSummary: "Mot de passe",
     storeSummary: "Boutique",
+    locationSummary: "Localisation",
     emailPlaceholder: "enteryouremail@example.com",
     descriptionSummary: "Description",
     emptyValue: "-",
@@ -143,6 +147,7 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
     step1: "بياناتك",
     step2: "الامان",
     step3: "تفاصيل المتجر",
+    location: "الموقع",
     step4: "الخطوة الاخيرة",
     email: "البريد الالكتروني",
     emailHint: "سيتم استخدام هذا البريد الالكتروني لتسجيل الدخول",
@@ -281,6 +286,7 @@ export default function CreateStorePage() {
     firstName: "",
     lastName: "",
     phoneNumber: "",
+    location: "",
     password: "",
     confirmPassword: "",
     storeName: "",
@@ -359,6 +365,7 @@ export default function CreateStorePage() {
       payload.append("firstName", form.firstName);
       payload.append("lastName", form.lastName);
       payload.append("phoneNumber", form.phoneNumber);
+      payload.append("location", form.location);
       payload.append("email", form.email);
       payload.append("password", form.password);
       payload.append("storeName", form.storeName);
@@ -436,6 +443,17 @@ export default function CreateStorePage() {
                   required
                 />
               </Field>
+                    <Field label={copy.location} icon={MapPin} hint={copy.locationHint}>
+                      <Input
+                        name="location"
+                        type="text"
+                        placeholder={copy.locationPlaceholder}
+                        value={form.location}
+                        onChange={handleChange}
+                        className="h-11"
+                        required
+                      />
+                    </Field>
               <Field label={copy.phone} icon={Phone} hint={copy.phoneHint}>
                 <Input
                   name="phoneNumber"
