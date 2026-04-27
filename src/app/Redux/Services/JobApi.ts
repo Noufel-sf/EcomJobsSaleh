@@ -264,6 +264,11 @@ export const jobApi = createApi({
       providesTags: (result, error, id) => [{ type: "Application", id }],
     }),
 
+    fetchemployerProfile: builder.query({
+      query: (companyid) => `/companys/profile/${companyid}`,
+      providesTags: ["Profile"],
+    }),
+
     createApplication: builder.mutation({
       query: (applicationData) => ({
         url: "/jobapplications",
