@@ -1,4 +1,5 @@
 import type { Job, JobCategory } from "@/lib/DatabaseTypes";
+import { JobsHero } from "./_features/listing/components/JobsHero";
 import JobsPageClient from "./JobsPageClient";
 
 const API_URL =
@@ -182,12 +183,15 @@ export default async function AllJobsPage({
   );
 
   return (
-    <JobsPageClient
-      initialJobs={paginatedJobs}
-      initialCategories={categories}
-      initialTotalFiltered={totalFiltered}
-      initialCurrentPage={currentPage}
-      initialTotalPages={totalPages}
-    />
+    <main>
+      <JobsHero />
+      <JobsPageClient
+        initialJobs={paginatedJobs}
+        initialCategories={categories}
+        initialTotalFiltered={totalFiltered}
+        initialCurrentPage={currentPage}
+        initialTotalPages={totalPages}
+      />
+    </main>
   );
 }

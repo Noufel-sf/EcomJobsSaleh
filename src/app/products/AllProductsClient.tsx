@@ -8,11 +8,35 @@ import { useCatalogController } from "./_features/catalog/useCatalogController";
 import { FiltersPanel } from "./_features/catalog/components/FiltersPanel";
 import { ProductsGrid } from "./_features/catalog/components/ProductsGrid";
 import { ProductsToolbar } from "./_features/catalog/components/ProductsToolbar";
+import { useI18n } from "@/context/I18nContext";
 
 const ITEMS_PER_PAGE = 12;
 
 function AllProductsClientContent() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const { language } = useI18n();
+  const labels = {
+    en: {
+      filters: "Filters",
+      productFilters: "Product filters",
+      productsListing: "Products listing",
+      productsPagination: "Products pagination",
+    },
+    fr: {
+      filters: "Filtres",
+      productFilters: "Filtres de produits",
+      productsListing: "Liste des produits",
+      productsPagination: "Pagination des produits",
+    },
+    ar: {
+      filters: "الفلاتر",
+      productFilters: "فلاتر المنتجات",
+      productsListing: "قائمة المنتجات",
+      productsPagination: "ترقيم المنتجات",
+    },
+  } as const;
+  const t = labels[language] ?? labels.en;
+
   const {
     isLoading,
     categories,
@@ -35,12 +59,12 @@ function AllProductsClientContent() {
       <div className="flex flex-col lg:flex-row gap-6">
         <aside
           className="hidden lg:block w-72 shrink-0"
-          aria-label="Product filters"
+          aria-label={t.productFilters}
         >
           <div className="sticky top-4 bg-card border rounded-lg p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
               <Filter className="w-5 h-5" aria-hidden="true" />
-              <h2 className="text-lg font-bold">Filters</h2>
+              <h2 className="text-lg font-bold">{t.filters}</h2>
             </div>
             <FiltersPanel
               categories={categories}
@@ -53,7 +77,7 @@ function AllProductsClientContent() {
           </div>
         </aside>
 
-        <section className="flex-1 min-w-0" aria-label="Products listing">
+        <section className="flex-1 min-w-0" aria-label={t.productsListing}>
           <ProductsToolbar
             totalFiltered={filteredProducts.length}
             totalShown={paginatedProducts.length}
@@ -77,7 +101,7 @@ function AllProductsClientContent() {
           />
 
           {paginatedProducts.length > 0 && (
-            <nav aria-label="Products pagination">
+            <nav aria-label={t.productsPagination}>
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

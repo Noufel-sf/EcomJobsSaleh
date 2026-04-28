@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { JobsFiltersPanel } from "./JobsFiltersPanel";
+import { useI18n } from "@/context/I18nContext";
 
 type SortBy = "featured" | "newest" | "salary-asc" | "salary-desc";
 
@@ -51,13 +52,84 @@ export function JobsToolbar({
   onClearFilters: () => void;
   onSortChange: (value: SortBy) => void;
 }) {
+  const { language } = useI18n();
+  const labels = {
+    en: {
+      allJobs: "All Jobs",
+      showing: "Showing",
+      of: "of",
+      jobs: "jobs",
+      openFiltersMenu: "Open filters menu",
+      filters: "Filters",
+      activeFilters: "active filters",
+      filterJobs: "Filter jobs by type and more",
+      sortJobsBy: "Sort jobs by",
+      sortBy: "Sort by",
+      featured: "Featured",
+      newest: "Newest",
+      salaryLowToHigh: "Salary: Low to High",
+      salaryHighToLow: "Salary: High to Low",
+      activeFiltersLabel: "Active filters:",
+      removeFilter: "Remove",
+      removeSearchFilter: "Remove search filter",
+      searchPrefix: "Search",
+      clearAll: "Clear all",
+      clearAllFilters: "Clear all filters",
+    },
+    fr: {
+      allJobs: "Tous les emplois",
+      showing: "Affichage",
+      of: "sur",
+      jobs: "emplois",
+      openFiltersMenu: "Ouvrir le menu des filtres",
+      filters: "Filtres",
+      activeFilters: "filtres actifs",
+      filterJobs: "Filtrer les emplois par type et plus",
+      sortJobsBy: "Trier les emplois par",
+      sortBy: "Trier par",
+      featured: "En vedette",
+      newest: "Plus recent",
+      salaryLowToHigh: "Salaire: croissant",
+      salaryHighToLow: "Salaire: decroissant",
+      activeFiltersLabel: "Filtres actifs:",
+      removeFilter: "Supprimer",
+      removeSearchFilter: "Supprimer le filtre de recherche",
+      searchPrefix: "Recherche",
+      clearAll: "Tout effacer",
+      clearAllFilters: "Effacer tous les filtres",
+    },
+    ar: {
+      allJobs: "كل الوظائف",
+      showing: "عرض",
+      of: "من",
+      jobs: "وظائف",
+      openFiltersMenu: "فتح قائمة الفلاتر",
+      filters: "الفلاتر",
+      activeFilters: "فلاتر نشطة",
+      filterJobs: "تصفية الوظائف حسب النوع والمزيد",
+      sortJobsBy: "ترتيب الوظائف حسب",
+      sortBy: "ترتيب حسب",
+      featured: "مميزة",
+      newest: "الاحدث",
+      salaryLowToHigh: "الراتب: من الاقل للاعلى",
+      salaryHighToLow: "الراتب: من الاعلى للاقل",
+      activeFiltersLabel: "الفلاتر النشطة:",
+      removeFilter: "ازالة",
+      removeSearchFilter: "ازالة فلتر البحث",
+      searchPrefix: "بحث",
+      clearAll: "مسح الكل",
+      clearAllFilters: "مسح جميع الفلاتر",
+    },
+  } as const;
+  const t = labels[language] ?? labels.en;
+
   return (
     <>
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-1">All Jobs</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1">{t.allJobs}</h1>
           <p className="text-sm text-muted-foreground">
-            Showing {totalShown} of {totalFiltered} jobs
+            {t.showing} {totalShown} {t.of} {totalFiltered} {t.jobs}
           </p>
         </div>
 
@@ -68,20 +140,20 @@ export function JobsToolbar({
                 variant="outline"
                 className="lg:hidden"
                 size="lg"
-                aria-label="Open filters menu"
+                aria-label={t.openFiltersMenu}
               >
                 <SlidersHorizontal
                   className="w-4 h-4 mr-2"
                   aria-hidden="true"
                 />
-                Filters
+                {t.filters}
                 {(selectedCategories.length > 0 ||
                   selectedTypes.length > 0 ||
                   searchQuery) && (
                   <Badge
                     variant="destructive"
                     className="ml-2 px-1.5 py-0.5 text-xs"
-                    aria-label={`${selectedCategories.length + selectedTypes.length + (searchQuery ? 1 : 0)} active filters`}
+                    aria-label={`${selectedCategories.length + selectedTypes.length + (searchQuery ? 1 : 0)} ${t.activeFilters}`}
                   >
                     {selectedCategories.length +
                       selectedTypes.length +
@@ -94,10 +166,10 @@ export function JobsToolbar({
               <SheetHeader className="">
                 <SheetTitle className="flex items-center gap-2">
                   <Filter className="w-5 h-5" aria-hidden="true" />
-                  Filters
+                  {t.filters}
                 </SheetTitle>
                 <SheetDescription className="">
-                  Filter jobs by type and more
+                  {t.filterJobs}
                 </SheetDescription>
               </SheetHeader>
               <div className="mt-6">
@@ -116,21 +188,21 @@ export function JobsToolbar({
           </Sheet>
 
           <Select value={sortBy} onValueChange={onSortChange}>
-            <SelectTrigger className="w-45" aria-label="Sort jobs by">
-              <SelectValue placeholder="Sort by" />
+            <SelectTrigger className="w-45" aria-label={t.sortJobsBy}>
+              <SelectValue placeholder={t.sortBy} />
             </SelectTrigger>
             <SelectContent className="">
               <SelectItem value="featured" className="">
-                Featured
+                {t.featured}
               </SelectItem>
               <SelectItem value="newest" className="">
-                Newest
+                {t.newest}
               </SelectItem>
               <SelectItem value="salary-asc" className="">
-                Salary: Low to High
+                {t.salaryLowToHigh}
               </SelectItem>
               <SelectItem value="salary-desc" className="">
-                Salary: High to Low
+                {t.salaryHighToLow}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -146,7 +218,7 @@ export function JobsToolbar({
           aria-label="Active filters"
         >
           <span className="text-sm font-medium" id="active-filters-label">
-            Active filters:
+            {t.activeFiltersLabel}
           </span>
           <div
             className="flex flex-wrap gap-2"
@@ -166,7 +238,7 @@ export function JobsToolbar({
                     onToggleCategory(category);
                   }
                 }}
-                aria-label={`Remove ${categories.find((item) => item.id === category)?.label ?? category} filter`}
+                aria-label={`${t.removeFilter} ${categories.find((item) => item.id === category)?.label ?? category} ${t.filters}`}
               >
                 {categories.find((item) => item.id === category)?.label ??
                   category}
@@ -187,7 +259,7 @@ export function JobsToolbar({
                     onToggleType(type);
                   }
                 }}
-                aria-label={`Remove ${type} filter`}
+                aria-label={`${t.removeFilter} ${type} ${t.filters}`}
               >
                 {type}
                 <X className="w-3 h-3 ml-1" aria-hidden="true" />
@@ -206,9 +278,9 @@ export function JobsToolbar({
                     onSearchChange("");
                   }
                 }}
-                aria-label="Remove search filter"
+                aria-label={t.removeSearchFilter}
               >
-                Search: &ldquo;{searchQuery}&rdquo;
+                {t.searchPrefix}: &ldquo;{searchQuery}&rdquo;
                 <X className="w-3 h-3 ml-1" aria-hidden="true" />
               </Badge>
             )}
@@ -217,9 +289,9 @@ export function JobsToolbar({
               size="sm"
               onClick={onClearFilters}
               className="h-auto p-0 text-xs"
-              aria-label="Clear all filters"
+              aria-label={t.clearAllFilters}
             >
-              Clear all
+              {t.clearAll}
             </Button>
           </div>
         </div>
