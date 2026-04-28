@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { MapPin, CheckCircle2, Building2 } from "lucide-react";
 import Image from "next/image";
 import { type Job } from "@/lib/DatabaseTypes";
+import { useI18n } from "@/context/I18nContext";
 
 const JobApplicationModal = dynamic(
   () => import("@/components/JobApplicationModal").then((mod) => mod.JobApplicationModal),
@@ -22,7 +23,82 @@ type JobDetailsClientProps = {
 
 const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
+  const { language } = useI18n();
   const job = initialJob;
+
+  const labels = {
+    en: {
+      notFoundTitle: "404 - Job Not Found",
+      notFoundDescription: "Sorry, the job you are looking for does not exist.",
+      backToJobs: "Back to Jobs",
+      home: "Home",
+      jobs: "Jobs",
+      apply: "Apply",
+      applyNow: "Apply Now",
+      description: "Description",
+      responsibilities: "Responsibilities",
+      whoYouAre: "Who You Are",
+      niceToHaves: "Nice-to-Haves",
+      aboutRole: "About this role",
+      applied: "Applied",
+      of: "of",
+      capacity: "capacity",
+      applyBefore: "Apply Before",
+      jobPostedOn: "Job Posted On",
+      jobType: "Job Type",
+      salary: "Salary",
+      categories: "Categories",
+      requiredSkills: "Required Skills",
+    },
+    fr: {
+      notFoundTitle: "404 - Emploi introuvable",
+      notFoundDescription: "Desole, l'emploi que vous recherchez n'existe pas.",
+      backToJobs: "Retour aux emplois",
+      home: "Accueil",
+      jobs: "Emplois",
+      apply: "Postuler",
+      applyNow: "Postuler maintenant",
+      description: "Description",
+      responsibilities: "Responsabilites",
+      whoYouAre: "Votre profil",
+      niceToHaves: "Atouts",
+      aboutRole: "A propos de ce poste",
+      applied: "Candidatures",
+      of: "sur",
+      capacity: "capacite",
+      applyBefore: "Postuler avant",
+      jobPostedOn: "Publie le",
+      jobType: "Type d'emploi",
+      salary: "Salaire",
+      categories: "Categories",
+      requiredSkills: "Competences requises",
+    },
+    ar: {
+      notFoundTitle: "404 - الوظيفة غير موجودة",
+      notFoundDescription: "عذرا، الوظيفة التي تبحث عنها غير موجودة.",
+      backToJobs: "الرجوع الى الوظائف",
+      home: "الرئيسية",
+      jobs: "الوظائف",
+      apply: "تقديم",
+      applyNow: "قدم الان",
+      description: "الوصف",
+      responsibilities: "المسؤوليات",
+      whoYouAre: "من انت",
+      niceToHaves: "مزايا اضافية",
+      aboutRole: "حول هذا الدور",
+      applied: "المتقدمون",
+      of: "من",
+      capacity: "السعة",
+      applyBefore: "اخر موعد للتقديم",
+      jobPostedOn: "تاريخ نشر الوظيفة",
+      jobType: "نوع الوظيفة",
+      salary: "الراتب",
+      categories: "الفئات",
+      requiredSkills: "المهارات المطلوبة",
+    },
+  } as const;
+
+  const t = labels[language] ?? labels.en;
 
   const handleApply = () => {
     setIsApplicationModalOpen(true);
@@ -40,10 +116,10 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
         aria-live="polite"
       >
         <h1 className="text-4xl font-bold text-destructive mb-4">
-          404 - Job Not Found
+          {t.notFoundTitle}
         </h1>
         <p className="text-muted-foreground mb-6">
-          Sorry, the job you are looking for does not exist.
+          {t.notFoundDescription}
         </p>
         <Button
           asChild
@@ -52,7 +128,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
           className=""
           type="button"
         >
-          <Link href="/jobs">Back to Jobs</Link>
+          <Link href="/jobs">{t.backToJobs}</Link>
         </Button>
       </main>
     );
@@ -67,7 +143,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
         <ol className="flex items-center" role="list">
           <li>
             <Link href="/" className="hover:text-foreground transition">
-              Home
+              {t.home}
             </Link>
           </li>
           <li aria-hidden="true" className="mx-2">
@@ -75,7 +151,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
           </li>
           <li>
             <Link href="/jobs" className="hover:text-foreground transition">
-              Jobs
+              {t.jobs}
             </Link>
           </li>
           <li aria-hidden="true" className="mx-2">
@@ -132,7 +208,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
                     variant="default"
                     className="bg-primary hover:bg-primary/90"
                   >
-                    Apply
+                    {t.apply}
                   </Button>
                 </div>
               </div>
@@ -141,7 +217,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
 
           <Card className="">
             <CardContent className="p-6 lg:p-8">
-              <h2 className="text-2xl font-bold mb-4">Description</h2>
+              <h2 className="text-2xl font-bold mb-4">{t.description}</h2>
               <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                 {job.description}
               </p>
@@ -151,7 +227,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
           {job.responsibilities && job.responsibilities.length > 0 && (
             <Card className="">
               <CardContent className="p-6 lg:p-8">
-                <h2 className="text-2xl font-bold mb-4">Responsibilities</h2>
+                <h2 className="text-2xl font-bold mb-4">{t.responsibilities}</h2>
                 <ul className="space-y-3">
                   {job.responsibilities.map((item, index) => (
                     <li key={index} className="flex items-start gap-3">
@@ -167,7 +243,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
           {job.whoYouAre && job.whoYouAre.length > 0 && (
             <Card className="">
               <CardContent className="p-6 lg:p-8">
-                <h2 className="text-2xl font-bold mb-4">Who You Are</h2>
+                <h2 className="text-2xl font-bold mb-4">{t.whoYouAre}</h2>
                 <ul className="space-y-3">
                   {job.whoYouAre.map((item, index) => (
                     <li key={index} className="flex items-start gap-3">
@@ -183,7 +259,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
           {job.niceToHaves && job.niceToHaves.length > 0 && (
             <Card className="">
               <CardContent className="p-6 lg:p-8">
-                <h2 className="text-2xl font-bold mb-4">Nice-to-Haves</h2>
+                <h2 className="text-2xl font-bold mb-4">{t.niceToHaves}</h2>
                 <ul className="space-y-3">
                   {job.niceToHaves.map((item, index) => (
                     <li key={index} className="flex items-start gap-3">
@@ -200,16 +276,16 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
         <div className="space-y-6">
           <Card className="">
             <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-6">About this role</h3>
+              <h3 className="text-xl font-bold mb-6">{t.aboutRole}</h3>
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-2">
                   <span className="text-sm font-medium text-muted-foreground">
-                    Applied
+                    {t.applied}
                   </span>
                   <span className="text-sm font-semibold">
-                    <span className="text-primary">{job.appliedCount}</span> of {" "}
-                    {job.totalCapacity} capacity
+                    <span className="text-primary">{job.appliedCount}</span> {t.of}{" "}
+                    {job.totalCapacity} {t.capacity}
                   </span>
                 </div>
 
@@ -217,7 +293,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
 
                 <div className="flex items-center justify-between py-2">
                   <span className="text-sm font-medium text-muted-foreground">
-                    Apply Before
+                    {t.applyBefore}
                   </span>
                   <span className="text-sm font-semibold">{job.applyBefore}</span>
                 </div>
@@ -226,7 +302,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
 
                 <div className="flex items-center justify-between py-2">
                   <span className="text-sm font-medium text-muted-foreground">
-                    Job Posted On
+                    {t.jobPostedOn}
                   </span>
                   <span className="text-sm font-semibold">{job.jobPostedOn}</span>
                 </div>
@@ -235,7 +311,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
 
                 <div className="flex items-center justify-between py-2">
                   <span className="text-sm font-medium text-muted-foreground">
-                    Job Type
+                    {t.jobType}
                   </span>
                   <span className="text-sm font-semibold">{job.type}</span>
                 </div>
@@ -244,7 +320,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
 
                 <div className="flex items-center justify-between py-2">
                   <span className="text-sm font-medium text-muted-foreground">
-                    Salary
+                    {t.salary}
                   </span>
                   <span className="text-sm font-semibold text-primary">
                     {job.salary}
@@ -257,7 +333,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
           {job.categories && job.categories.length > 0 && (
             <Card className="">
               <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-4">Categories</h3>
+                <h3 className="text-xl font-bold mb-4">{t.categories}</h3>
                 <div className="flex flex-wrap gap-2">
                   {job.categories.map((category, index) => (
                     <Badge
@@ -276,7 +352,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
           {job.requiredSkills && job.requiredSkills.length > 0 && (
             <Card className="">
               <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-4">Required Skills</h3>
+                <h3 className="text-xl font-bold mb-4">{t.requiredSkills}</h3>
                 <div className="flex flex-wrap gap-2">
                   {job.requiredSkills.map((skill, index) => (
                     <Badge
@@ -299,7 +375,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
               variant="default"
               className="w-full bg-primary hover:bg-primary/90 shadow-lg"
             >
-              Apply Now
+              {t.applyNow}
             </Button>
           </div>
         </div>

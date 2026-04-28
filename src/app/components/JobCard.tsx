@@ -12,9 +12,9 @@ interface JobCardProps {
 
 const JobCard = memo(function JobCard({ job }: JobCardProps) {
   return (
-    <Link href={`/jobdetails/${job.id}`} className="block">
-      <Card className="cursor-pointer bg-secondary shadow-lg hover:shadow-xl transition-all duration-300 border-0 overflow-hidden group">
-        <CardContent className="p-6">
+    <Link href={`/jobdetails/${job.id}`} className="block h-full">
+      <Card className="cursor-pointer bg-secondary shadow-lg hover:shadow-xl transition-all duration-300 border-0 overflow-hidden group h-full flex flex-col">
+        <CardContent className="p-6 flex flex-col h-full">
           {/* Company Logo & Info */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3 flex-1">
@@ -22,9 +22,10 @@ const JobCard = memo(function JobCard({ job }: JobCardProps) {
                 <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">
                   {job.title}
                 </h3>
-                <p className="text-sm text-gray-400 line-clamp-2">
-                  {job.description || "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo pariatur eos tenetur"}
-                </p>
+                {/* <p className="text-sm text-gray-400 line-clamp-2">
+                  {job.description ||
+                    "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo pariatur eos tenetur"}
+                </p> */}
               </div>
             </div>
             <Badge
@@ -36,7 +37,7 @@ const JobCard = memo(function JobCard({ job }: JobCardProps) {
           </div>
 
           {/* Job Details */}
-          <div className="space-y-2 mb-4">
+          <div className="space-y-2 mb-4 flex-1">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>{job.location}</span>
@@ -52,7 +53,7 @@ const JobCard = memo(function JobCard({ job }: JobCardProps) {
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-4 pt-4 border-t border-border/50">
+          <div className="flex items-center gap-4 pt-4 border-t border-border/50 mt-auto">
             <div className="ml-auto">
               <Button
                 variant="default"
@@ -62,7 +63,10 @@ const JobCard = memo(function JobCard({ job }: JobCardProps) {
                 onClick={(e: React.MouseEvent) => e.preventDefault()}
               >
                 Apply Now
-                <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+                <ArrowRight
+                  className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform"
+                  aria-hidden="true"
+                />
               </Button>
             </div>
           </div>

@@ -19,7 +19,11 @@ export default function LocalizedSectionTitle({
   const { language } = useI18n();
 
   return (
-    <h2 id={id} className={`${DEFAULT_TITLE_CLASS} ${className}`.trim()}>
+    <h2 
+      id={id} 
+      className={`${DEFAULT_TITLE_CLASS} ${className}`.trim()}
+      suppressHydrationWarning
+    >
       {labels[language]}
     </h2>
   );

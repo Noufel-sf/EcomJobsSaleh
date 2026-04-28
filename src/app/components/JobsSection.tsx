@@ -47,10 +47,7 @@ export default async function JobsSection() {
                 ar: "فرص مميزة",
               }}
             />
-            <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
-              Discover top tech jobs in Algeria. Apply now and take your career to
-              the next level.
-            </p>
+          
           </div>
         </div>
 

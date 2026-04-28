@@ -31,42 +31,51 @@ export default async function BestSellingSection() {
 
   return (
     <section
-      className="mx-auto container px-6 py-12"
+      className="py-20 bg-linear-to-b from-background to-muted/20"
       aria-labelledby="best-selling-heading"
     >
-      <div className="heading mb-6 flex items-center justify-between">
-        <LocalizedSectionTitle
-          id="best-selling-heading"
-          labels={{
-            en: "Best Selling Products",
-            fr: "Produits les plus vendus",
-            ar: "المنتجات الاكثر مبيعا",
-          }}
-        />
-      </div>
-
-      {products.length > 0 ? (
-        <>
-          <DeferredBestSellingCarousel products={products} />
-
-          <div className="text-center">
-            <Link href="/products" prefetch>
-              <Button
-                size="lg"
-                variant="default"
-                className="mt-8 mx-auto bg-primary hover:bg-primary/90 flex items-center gap-2"
-              >
-                View All Products
-                <ShoppingCart className="h-5 w-5" />
-              </Button>
-            </Link>
+      <div className="container mx-auto px-4">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="max-w-4xl">
+            <LocalizedSectionTitle
+              id="best-selling-heading"
+              className="mb-6"
+              labels={{
+                en: "Best Selling Products",
+                fr: "Produits les plus vendus",
+                ar: "المنتجات الاكثر مبيعا",
+              }}
+            />
           </div>
-        </>
-      ) : (
-        <div className="text-center py-8 text-muted-foreground">
-          <p>No products available at the moment.</p>
         </div>
-      )}
+
+        {/* Carousel */}
+        {products.length > 0 ? (
+          <>
+            <DeferredBestSellingCarousel products={products} />
+
+            {/* CTA */}
+            <div className="text-center">
+              <Link href="/products" prefetch className="inline-block">
+                <Button
+                  size="lg"
+                  variant="default"
+                  className="mt-8 bg-primary hover:bg-primary/90 transition-colors"
+                  aria-label="Browse all available products"
+                >
+                  View All Products
+                  <ShoppingCart className="w-5 h-5 ml-2" aria-hidden="true" />
+                </Button>
+              </Link>
+            </div>
+          </>
+        ) : (
+          <div className="mb-12 text-center py-8 text-muted-foreground">
+            <p>No products available at the moment.</p>
+          </div>
+        )}
+      </div>
     </section>
   );
 }
