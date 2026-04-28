@@ -163,7 +163,6 @@ export function useCatalogController() {
     [productsData?.content],
   );
 
-
   const categories = useMemo<CatalogCategory[]>(
     () =>
       (categoriesData?.content ?? []).map((c) => ({ id: c.id, name: c.name })),
@@ -187,7 +186,7 @@ export function useCatalogController() {
     1,
     Math.ceil(filteredProducts.length / ITEMS_PER_PAGE),
   );
-  
+
   const paginatedProducts = filteredProducts.slice(
     (state.currentPage - 1) * ITEMS_PER_PAGE,
     state.currentPage * ITEMS_PER_PAGE,

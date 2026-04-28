@@ -156,7 +156,7 @@ export function JobApplicationModal({
           <DialogDescription className="text-base">
             <span className="font-semibold text-foreground">{jobTitle}</span>
             <br />
-            <span className="text-muted-foreground">{company}</span>
+            {/* <span className="text-muted-foreground">{company}</span> */}
           </DialogDescription>
         </DialogHeader>
 
