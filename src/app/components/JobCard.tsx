@@ -19,7 +19,7 @@ const JobCard = memo(function JobCard({ job }: JobCardProps) {
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3 flex-1">
               <div className="flex flex-col gap-2 flex-1">
-                <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">
+                <h3 className="font-bold text-sm leading-tight group-hover:text-primary transition-colors">
                   {job.title}
                 </h3>
                 {/* <p className="text-sm text-gray-400 line-clamp-2">

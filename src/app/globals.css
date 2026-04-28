@@ -8,6 +8,7 @@
 
 html {
   scroll-behavior: smooth;
+  direction: ltr;
 }
 
 * {
@@ -166,5 +167,6 @@ html[lang="ar"] * {
   }
   body {
     @apply bg-background text-foreground;
+    direction: ltr;
   }
 }
