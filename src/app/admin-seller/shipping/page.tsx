@@ -180,14 +180,16 @@ export default function ShippingManagement() {
     setSelectedState(null);
   };
 
-  // 🔥 Save ALL states to backend
   const handleUpdateStates = async () => {
     try {
-      const payload = editableStates.map((state) => ({
-        stateID: state.id,
-        price: state.price,
-        available: state.available,
-      }));
+      const payload = editableStates
+        .filter((state) => state.available)
+        .map((state) => ({
+          stateID: state.id,
+          price: state.price,
+          available: state.available,
+        }));
+      
 
       await updatePrice({
         ownerId,

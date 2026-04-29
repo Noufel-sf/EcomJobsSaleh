@@ -99,7 +99,18 @@ export interface OrderProduct {
   available: boolean;
   color: string | null; // varchar(255)
   size: string | null; // varchar(255)
-  product: string | null; // uuid → FK to product.id
+  product:
+    | {
+        id: string;
+        name: string;
+        smallDesc: string;
+        bigDesc: string | null;
+        mainImage: string;
+        price: number;
+        available: boolean;
+      }
+    | string
+    | null; // uuid → FK to product.id or populated product details
 }
 
 export interface Product {

@@ -21,6 +21,9 @@ export default function OrderDetailsModal({
     return null;
   }
 
+  const getProductDetails = (product: (typeof selectedOrder.products)[number]["product"]) =>
+    product && typeof product === "object" ? product : null;
+
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -71,14 +74,18 @@ export default function OrderDetailsModal({
           <h3 className="font-semibold text-sm mb-3">Order Items</h3>
           <div className="space-y-3">
             {selectedOrder?.products.map((item, idx: number) => (
+              (() => {
+                const product = getProductDetails(item.product);
+
+                return (
               <div
                 key={idx}
                 className="flex items-center gap-4 border rounded-lg p-3"
               >
                 <>
                   <Image
-                    src={item.mainImage}
-                    alt={item.smallDesc}
+                    src={product?.mainImage ?? item.mainImage}
+                    alt={product?.smallDesc ?? item.name}
                     width={64}
                     height={64}
                     className="w-16 h-16 object-cover rounded"
@@ -86,7 +93,7 @@ export default function OrderDetailsModal({
                   <div className="flex-1 flex flex-col gap-1">
                     <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-primary">
-                      ${item.price.toFixed(2)} x {item.prodNb}
+                      ${((product?.price ?? item.price) ?? 0).toFixed(2)} x {item.prodNb}
                     </p>
                     <p className="text-sm">{item.size}</p>
                     {item.color ? (
@@ -94,10 +101,12 @@ export default function OrderDetailsModal({
                     ) : null}
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold">${(item.price * item.prodNb).toFixed(2)}</p>
+                    <p className="font-semibold">${(((product?.price ?? item.price) ?? 0) * item.prodNb).toFixed(2)}</p>
                   </div>
                 </>
               </div>
+                );
+              })()
             ))}
           </div>
         </div>

@@ -243,6 +243,11 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
             <div className="flex">
               <NavigationMenu className="">
                 <NavigationMenuList className="">
+                  <Link href="/products" className="mx-2">
+                    <span className="font-semibold text-sm cursor-pointer capitalize hover:text-primary transition-colors">
+                      {messages.navbar.allProducts}
+                    </span>
+                  </Link>
                   <Link href="/about" className="mx-2">
                     <span className="font-semibold text-sm cursor-pointer capitalize hover:text-primary transition-colors">
                       {messages.navbar.aboutUs}
@@ -499,6 +504,15 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
               </>
             )}
 
+            <Link
+              href="/products"
+              className="px-3 py-2"
+              onClick={() => setIsOpen(false)}
+            >
+              <span className="font-semibold cursor-pointer capitalize hover:text-primary transition-colors">
+                {messages.navbar.allProducts}
+              </span>
+            </Link>
             <Link
               href="/about"
               className="px-3 py-2"
