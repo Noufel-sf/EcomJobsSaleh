@@ -290,6 +290,8 @@ export const jobApi = createApi({
       ],
     }),
 
+    
+
     updateJobStatus: builder.mutation({
       query: ({ jobID, status }) => ({
         url: `jobs/available/${jobID}`,
@@ -329,6 +331,7 @@ export const jobApi = createApi({
         body: payload,
       }),
     }),
+
   }),
 });
 

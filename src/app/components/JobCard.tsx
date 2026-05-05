@@ -60,7 +60,6 @@ const JobCard = memo(function JobCard({ job }: JobCardProps) {
                 size="sm"
                 className="h-8 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 transition-colors"
                 aria-label={`Apply now for ${job.title} position`}
-                onClick={(e: React.MouseEvent) => e.preventDefault()}
               >
                 Apply Now
                 <ArrowRight

@@ -21,10 +21,19 @@ type JobDetailsClientProps = {
   initialJob: Job | null;
 };
 
+type JobWithCompanyId = Job & {
+  companyId?: string;
+  companyID?: string;
+  ownerId?: string;
+  ownerID?: string;
+};
+
 const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
   const { language } = useI18n();
   const job = initialJob;
+  console.log(job);
+  
 
   const labels = {
     en: {
@@ -189,7 +198,12 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
                   <div className="flex flex-wrap items-center gap-3 text-muted-foreground mb-4">
                     <div className="flex items-center gap-1.5">
                       <Building2 className="w-4 h-4" />
-                      <span className="font-medium">{job.company}</span>
+                        <Link
+                          href={`/employerprofile/${job.company}`}
+                          className="font-medium hover:text-primary hover:underline underline-offset-4 transition"
+                        >
+                          {job.company}
+                        </Link>
                     </div>
                     <span>•</span>
                     <div className="flex items-center gap-1.5">

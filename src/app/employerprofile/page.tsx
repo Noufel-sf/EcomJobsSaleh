@@ -1,8 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Building2, MapPin, Briefcase, Users } from "lucide-react";
 import type { Job } from "@/lib/DatabaseTypes";
+import JobCard from "@/components/JobCard";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
@@ -21,6 +20,7 @@ type CompanyProfile = {
   location: string;
   specialization: string;
   description: string;
+  jobs: Job[];
 };
 
 type RawCompanyProfile = {
@@ -34,6 +34,11 @@ type RawCompanyProfile = {
   industry?: string;
   description?: string;
   profileDescription?: string;
+  jobs?: Job[];
+};
+
+type JobsResponse = {
+  content?: Job[];
 };
 
 type RawCompanyProfileResponse = {
@@ -42,9 +47,7 @@ type RawCompanyProfileResponse = {
   data?: RawCompanyProfile;
 };
 
-type RawJobsResponse = {
-  content?: Job[];
-};
+
 
 function normalizeCompanyProfile(
   response: RawCompanyProfileResponse | RawCompanyProfile,
@@ -70,6 +73,7 @@ function normalizeCompanyProfile(
       source.description ||
       source.profileDescription ||
       "No company description has been provided yet.",
+    jobs: Array.isArray(source.jobs) ? source.jobs : [],
   };
 }
 
@@ -77,7 +81,7 @@ async function fetchCompanyProfileById(
   companyId: string,
 ): Promise<CompanyProfile | null> {
   try {
-    const response = await fetch(`${API_URL}/companys/profile/${companyId}`, {
+    const response = await fetch(`${API_URL}/companys/${companyId}`, {
       cache: "no-store",
     });
 
@@ -105,8 +109,8 @@ async function fetchCompanyJobsById(companyId: string): Promise<Job[]> {
       return [];
     }
 
-    const data = (await response.json()) as RawJobsResponse;
-    return Array.isArray(data?.content) ? data.content : [];
+    const data = (await response.json()) as JobsResponse;
+    return Array.isArray(data.content) ? data.content : [];
   } catch {
     return [];
   }
@@ -145,6 +149,11 @@ export default async function EmployerProfileViewPage({
     );
   }
 
+  const companyWithJobs = {
+    ...company,
+    jobs: company.jobs.length > 0 ? company.jobs : companyJobs,
+  };
+
   return (
     <main className="container mx-auto px-4 py-8 lg:py-12">
       <section className="flex flex-col gap-6 lg:flex-row">
@@ -167,7 +176,7 @@ export default async function EmployerProfileViewPage({
           </div>
         </article>
 
-        <article className="rounded-xl border bg-card p-6">
+        <article className="rounded-xl w-full border bg-card p-6">
           <header className="mb-4">
             <div className="flex items-center gap-3">
               <Building2 className="h-6 w-6 text-primary" />
@@ -198,30 +207,14 @@ export default async function EmployerProfileViewPage({
           <h2 className="text-xl font-semibold">Open Positions</h2>
         </div>
 
-        {companyJobs.length === 0 ? (
+        {companyWithJobs.jobs.length === 0 ? (
           <div className="rounded-xl border bg-card py-10 text-center text-muted-foreground">
             No jobs found for this company yet.
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {companyJobs.map((job) => (
-              <article
-                key={job.id}
-                className="h-full rounded-xl border bg-card p-6"
-              >
-                <h3 className="text-lg font-semibold">{job.title}</h3>
-                <div className="mt-3 space-y-3">
-                  <div className="text-sm text-muted-foreground">
-                    {job.location} · {job.type}
-                  </div>
-                  <p className="line-clamp-3 text-sm text-muted-foreground">
-                    {job.description}
-                  </p>
-                  <Button asChild size="sm" variant="outline">
-                    <Link href={`/jobdetails/${job.id}`}>View Job</Link>
-                  </Button>
-                </div>
-              </article>
+          <div className="grid gap-4 md:grid-cols-3">
+            {companyWithJobs.jobs.map((job) => (
+              <JobCard key={job.id} job={job} />
             ))}
           </div>
         )}
