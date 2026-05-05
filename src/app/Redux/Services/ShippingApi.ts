@@ -5,7 +5,7 @@ export interface ShippingState {
   name: string;
   nameAr: string;
   price: number;
-  available: boolean;
+  availavle: boolean;
 }
 
 export interface UpdateShippingsRequest {

@@ -52,6 +52,11 @@ export interface UpdateEmployerProfilePayload {
   specialization?: string;
 }
 
+type UpdateEmployerProfileArgs = {
+  id: string;
+  payload: UpdateEmployerProfilePayload | FormData;
+};
+
 export interface UpdateEmployerPasswordPayload {
   currentPassword: string;
   newPassword: string;
@@ -290,7 +295,7 @@ export const jobApi = createApi({
       ],
     }),
 
-    
+
 
     updateJobStatus: builder.mutation({
       query: ({ jobID, status }) => ({
@@ -311,10 +316,10 @@ export const jobApi = createApi({
 
     updateEmployerProfile: builder.mutation<
       { message?: string },
-      UpdateEmployerProfilePayload | FormData
+      UpdateEmployerProfileArgs
     >({
-      query: (payload) => ({
-        url: "/companys",
+      query: ({ payload, id }) => ({
+        url: `/companys/${id}`,
         method: "PUT",
         body: payload,
       }),

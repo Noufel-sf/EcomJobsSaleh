@@ -42,7 +42,7 @@ import UpdateProductUi from "@/components/UpdateProductUi";
 import CreateProductUi from "@/components/CreateProductUi";
 
 import {
-  useGetSellerProductsQuery,
+  useGetSellerAdminProductsQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
@@ -128,7 +128,7 @@ export default function AdminProducts() {
   const [deleteProduct] = useDeleteProductMutation();
   const [updateProductStatus] = useUpdateProductStatusMutation();
 
-  const { data: productsData, isLoading } = useGetSellerProductsQuery(ownerId, {
+  const { data: productsData, isLoading } = useGetSellerAdminProductsQuery(ownerId, {
     skip: !ownerId,
   });
   const products = useMemo(

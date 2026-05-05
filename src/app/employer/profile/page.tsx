@@ -259,7 +259,10 @@ export default function EmployerProfilePage() {
         formData.append("industry", values.specialization);
       }
 
-      await updateEmployerProfile(formData).unwrap();
+      await updateEmployerProfile({
+        id: resolvedCompanyId || "",
+        payload: formData,
+      }).unwrap();
 
       toast.success(copy.profileUpdated);
       setLogoFile(null);

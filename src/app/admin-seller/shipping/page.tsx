@@ -267,7 +267,7 @@ export default function ShippingManagement() {
       header: copy.status,
       cell: ({ row }: { row: Row<ShippingState> }) => {
         const state = row.original;
-        const status = state.available ? copy.active : copy.inactive;
+        const status = state.availavle ? copy.active : copy.inactive;
 
         return (
           <DropdownMenu>
