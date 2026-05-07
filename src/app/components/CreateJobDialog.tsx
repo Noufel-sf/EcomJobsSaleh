@@ -21,6 +21,7 @@ import {
   useCreateJobMutation,
   useGetAllCategoriesQuery,
 } from "@/Redux/Services/JobApi";
+import { type Language, useI18n } from "@/context/I18nContext";
 import toast from "react-hot-toast";
 
 type CreateJobDialogProps = {
@@ -31,6 +32,7 @@ type CreateJobDialogProps = {
 
 type PointListInputProps = {
   label: string;
+  addLabel: string;
   inputId: string;
   inputValue: string;
   onInputChange: (value: string) => void;
@@ -43,6 +45,7 @@ type PointListInputProps = {
 
 function PointListInput({
   label,
+  addLabel,
   inputId,
   inputValue,
   onInputChange,
@@ -69,7 +72,7 @@ function PointListInput({
           }}
         />
         <Button type="button" variant="outline" onClick={onAdd}>
-          Add
+          {addLabel}
         </Button>
       </div>
       <div className="flex min-h-8 flex-wrap gap-2">
@@ -93,7 +96,103 @@ export default function CreateJobDialog({
   onOpenChange,
   defaultCompanyId = "",
 }: CreateJobDialogProps) {
+  const { language } = useI18n();
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  const createJobCopy: Record<Language, Record<string, string>> = {
+    en: {
+      selectCategory: "Please select a category",
+      listValidation: "Please add at least one point in each list field",
+      created: "Job created successfully",
+      createFailed: "Failed to create job",
+      postNewJob: "Post a New Job",
+      formDescription: "Fill in all required fields to match the backend job payload.",
+      title: "Title",
+      location: "Location",
+      type: "Type",
+      experience: "Experience",
+      salary: "Salary",
+      description: "Description",
+      category: "Category",
+      loadingCategories: "Loading categories...",
+      selectCategoryOption: "Select a category",
+      requiredSkills: "Required Skills",
+      addRequiredSkill: "Add required skill",
+      responsibilities: "Responsibilities",
+      addResponsibility: "Add responsibility point",
+      whoYouAre: "Who You Are",
+      addWhoYouAre: "Add who-you-are point",
+      niceToHaves: "Nice To Haves",
+      addNiceToHave: "Add nice-to-have point",
+      totalCapacity: "Total Capacity",
+      applyBefore: "Apply Before",
+      cancel: "Cancel",
+      postJob: "Post Job",
+      add: "Add",
+    },
+    fr: {
+      selectCategory: "Veuillez selectionner une categorie",
+      listValidation: "Veuillez ajouter au moins un element dans chaque liste",
+      created: "Offre creee avec succes",
+      createFailed: "Echec de creation de l'offre",
+      postNewJob: "Publier une nouvelle offre",
+      formDescription: "Renseignez tous les champs requis pour correspondre au format attendu.",
+      title: "Titre",
+      location: "Localisation",
+      type: "Type",
+      experience: "Experience",
+      salary: "Salaire",
+      description: "Description",
+      category: "Categorie",
+      loadingCategories: "Chargement des categories...",
+      selectCategoryOption: "Selectionner une categorie",
+      requiredSkills: "Competences requises",
+      addRequiredSkill: "Ajouter une competence",
+      responsibilities: "Responsabilites",
+      addResponsibility: "Ajouter une responsabilite",
+      whoYouAre: "Votre profil",
+      addWhoYouAre: "Ajouter un point profil",
+      niceToHaves: "Atouts",
+      addNiceToHave: "Ajouter un atout",
+      totalCapacity: "Capacite totale",
+      applyBefore: "Postuler avant",
+      cancel: "Annuler",
+      postJob: "Publier",
+      add: "Ajouter",
+    },
+    ar: {
+      selectCategory: "يرجى اختيار فئة",
+      listValidation: "يرجى اضافة عنصر واحد على الاقل في كل قائمة",
+      created: "تم انشاء الوظيفة بنجاح",
+      createFailed: "فشل انشاء الوظيفة",
+      postNewJob: "نشر وظيفة جديدة",
+      formDescription: "املأ جميع الحقول المطلوبة لتطابق بيانات الخادم.",
+      title: "العنوان",
+      location: "الموقع",
+      type: "النوع",
+      experience: "الخبرة",
+      salary: "الراتب",
+      description: "الوصف",
+      category: "الفئة",
+      loadingCategories: "جار تحميل الفئات...",
+      selectCategoryOption: "اختر فئة",
+      requiredSkills: "المهارات المطلوبة",
+      addRequiredSkill: "اضف مهارة مطلوبة",
+      responsibilities: "المسؤوليات",
+      addResponsibility: "اضف مسؤولية",
+      whoYouAre: "من انت",
+      addWhoYouAre: "اضف نقطة عنك",
+      niceToHaves: "مزايا اضافية",
+      addNiceToHave: "اضف ميزة اضافية",
+      totalCapacity: "السعة الكلية",
+      applyBefore: "اخر موعد للتقديم",
+      cancel: "الغاء",
+      postJob: "نشر الوظيفة",
+      add: "اضافة",
+    },
+  };
+
+  const copy = createJobCopy[language] ?? createJobCopy.en;
 
   const [title, setTitle] = useState("");
   const [company, setCompany] = useState(defaultCompanyId);
@@ -184,7 +283,7 @@ export default function CreateJobDialog({
     event.preventDefault();
 
     if (!jobCategories) {
-      toast.error("Please select a category");
+      toast.error(copy.selectCategory);
       return;
     }
 
@@ -194,7 +293,7 @@ export default function CreateJobDialog({
       whoYouAre.length === 0 ||
       niceToHaves.length === 0
     ) {
-      toast.error("Please add at least one point in each list field");
+      toast.error(copy.listValidation);
       return;
     }
 
@@ -219,12 +318,12 @@ export default function CreateJobDialog({
 
     try {
       await createJob(payload).unwrap();
-      toast.success("Job created successfully");
+      toast.success(copy.created);
       onOpenChange(false);
       resetForm();
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
-      toast.error(err?.data?.message || "Failed to create job");
+      toast.error(err?.data?.message || copy.createFailed);
     }
   };
 
@@ -232,22 +331,22 @@ export default function CreateJobDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="primary" size="lg">
-          Post a New Job
+          {copy.postNewJob}
         </Button>
       </DialogTrigger>
 
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-175">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Post a New Job</DialogTitle>
+            <DialogTitle>{copy.postNewJob}</DialogTitle>
             <DialogDescription className="mb-3">
-              Fill in all required fields to match the backend job payload.
+              {copy.formDescription}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="grid gap-2">
-              <Label htmlFor="job-title">Title</Label>
+              <Label htmlFor="job-title">{copy.title}</Label>
               <Input
                 id="job-title"
                 value={title}
@@ -257,7 +356,7 @@ export default function CreateJobDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="job-location">Location</Label>
+              <Label htmlFor="job-location">{copy.location}</Label>
               <Input
                 id="job-location"
                 value={location}
@@ -267,7 +366,7 @@ export default function CreateJobDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="job-type">Type</Label>
+              <Label htmlFor="job-type">{copy.type}</Label>
               <Input
                 id="job-type"
                 value={type}
@@ -278,7 +377,7 @@ export default function CreateJobDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="job-experience">Experience</Label>
+              <Label htmlFor="job-experience">{copy.experience}</Label>
               <Input
                 id="job-experience"
                 value={experience}
@@ -288,7 +387,7 @@ export default function CreateJobDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="job-salary">Salary</Label>
+              <Label htmlFor="job-salary">{copy.salary}</Label>
               <Input
                 id="job-salary"
                 type="number"
@@ -300,7 +399,7 @@ export default function CreateJobDialog({
             </div>
 
             <div className="grid gap-2 md:col-span-2">
-              <Label htmlFor="job-description">Description</Label>
+              <Label htmlFor="job-description">{copy.description}</Label>
               <Textarea
                 id="job-description"
                 rows={4}
@@ -311,7 +410,7 @@ export default function CreateJobDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="job-categories">Category</Label>
+              <Label htmlFor="job-categories">{copy.category}</Label>
               <select
                 id="job-categories"
                 value={jobCategories}
@@ -322,8 +421,8 @@ export default function CreateJobDialog({
               >
                 <option value="" disabled>
                   {isCategoriesLoading
-                    ? "Loading categories..."
-                    : "Select a category"}
+                    ? copy.loadingCategories
+                    : copy.selectCategoryOption}
                 </option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
@@ -334,11 +433,12 @@ export default function CreateJobDialog({
             </div>
 
             <PointListInput
-              label="Required Skills"
+              label={copy.requiredSkills}
+              addLabel={copy.add}
               inputId="job-required-skills"
               inputValue={requiredSkillInput}
               onInputChange={setRequiredSkillInput}
-              placeholder="Add required skill"
+              placeholder={copy.addRequiredSkill}
               items={requiredSkills}
               onAdd={() =>
                 addItem(
@@ -352,11 +452,12 @@ export default function CreateJobDialog({
             />
 
             <PointListInput
-              label="Responsibilities"
+              label={copy.responsibilities}
+              addLabel={copy.add}
               inputId="job-responsibilities"
               inputValue={responsibilityInput}
               onInputChange={setResponsibilityInput}
-              placeholder="Add responsibility point"
+              placeholder={copy.addResponsibility}
               items={responsibilities}
               onAdd={() =>
                 addItem(
@@ -372,11 +473,12 @@ export default function CreateJobDialog({
             />
 
             <PointListInput
-              label="Who You Are"
+              label={copy.whoYouAre}
+              addLabel={copy.add}
               inputId="job-who-you-are"
               inputValue={whoYouAreInput}
               onInputChange={setWhoYouAreInput}
-              placeholder="Add who-you-are point"
+              placeholder={copy.addWhoYouAre}
               items={whoYouAre}
               onAdd={() =>
                 addItem(whoYouAreInput, setWhoYouAreInput, whoYouAre, setWhoYouAre)
@@ -385,11 +487,12 @@ export default function CreateJobDialog({
             />
 
             <PointListInput
-              label="Nice To Haves"
+              label={copy.niceToHaves}
+              addLabel={copy.add}
               inputId="job-nice-to-haves"
               inputValue={niceToHavesInput}
               onInputChange={setNiceToHavesInput}
-              placeholder="Add nice-to-have point"
+              placeholder={copy.addNiceToHave}
               items={niceToHaves}
               onAdd={() =>
                 addItem(
@@ -406,7 +509,7 @@ export default function CreateJobDialog({
           
 
             <div className="grid gap-2">
-              <Label htmlFor="job-total-capacity">Total Capacity</Label>
+              <Label htmlFor="job-total-capacity">{copy.totalCapacity}</Label>
               <Input
                 id="job-total-capacity"
                 type="number"
@@ -418,7 +521,7 @@ export default function CreateJobDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="job-apply-before">Apply Before</Label>
+              <Label htmlFor="job-apply-before">{copy.applyBefore}</Label>
               <Input
                 id="job-apply-before"
                 type="date"
@@ -443,14 +546,14 @@ export default function CreateJobDialog({
           <DialogFooter className="mt-5">
             <DialogClose asChild>
               <Button variant="outline" size="lg">
-                Cancel
+                {copy.cancel}
               </Button>
             </DialogClose>
             {isCreating ? (
               <ButtonLoading />
             ) : (
               <Button type="submit" variant="primary" size="lg">
-                Post Job
+                {copy.postJob}
               </Button>
             )}
           </DialogFooter>

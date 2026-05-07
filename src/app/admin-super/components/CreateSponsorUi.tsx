@@ -121,7 +121,7 @@ export default function CreateSponsorUi() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-120">
         <form onSubmit={handleCreate}>
           <DialogHeader>
             <DialogTitle>{copy.createTitle}</DialogTitle>

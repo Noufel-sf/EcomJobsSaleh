@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Upload, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCreateApplicationMutation } from "@/Redux/Services/JobApi";
+import { type Language, useI18n } from "@/context/I18nContext";
 
 interface JobApplicationModalProps {
   isOpen: boolean;
@@ -32,6 +33,80 @@ export function JobApplicationModal({
   jobTitle,
   company,
 }: JobApplicationModalProps) {
+  const { language } = useI18n();
+  const applicationCopy: Record<Language, Record<string, string>> = {
+    en: {
+      fileTypeError: "Please upload a PDF or Word document",
+      fileSizeError: "File size must be less than 5MB",
+      nameRequired: "Please enter your name",
+      emailInvalid: "Please enter a valid email",
+      phoneRequired: "Please enter your phone number",
+      coverLetterRequired: "Please write a cover letter",
+      submitted: "Application submitted successfully!",
+      submitFailed: "Failed to submit application. Please try again.",
+      title: "Apply for Position",
+      fullName: "Full Name",
+      emailAddress: "Email Address",
+      phoneNumber: "Phone Number",
+      resume: "Resume/CV",
+      optional: "Optional",
+      acceptedFormats: "Accepted formats: PDF, DOC, DOCX (Max 5MB)",
+      coverLetter: "Cover Letter",
+      coverLetterPlaceholder: "Tell us why you're a great fit for this position...",
+      characters: "characters",
+      cancel: "Cancel",
+      submitting: "Submitting...",
+      submitApplication: "Submit Application",
+    },
+    fr: {
+      fileTypeError: "Veuillez televerser un document PDF ou Word",
+      fileSizeError: "La taille du fichier doit etre inferieure a 5MB",
+      nameRequired: "Veuillez entrer votre nom",
+      emailInvalid: "Veuillez entrer un email valide",
+      phoneRequired: "Veuillez entrer votre numero de telephone",
+      coverLetterRequired: "Veuillez rediger une lettre de motivation",
+      submitted: "Candidature envoyee avec succes",
+      submitFailed: "Echec de l'envoi. Veuillez reessayer.",
+      title: "Postuler au poste",
+      fullName: "Nom complet",
+      emailAddress: "Adresse email",
+      phoneNumber: "Numero de telephone",
+      resume: "CV",
+      optional: "Optionnel",
+      acceptedFormats: "Formats acceptes: PDF, DOC, DOCX (Max 5MB)",
+      coverLetter: "Lettre de motivation",
+      coverLetterPlaceholder: "Expliquez pourquoi vous etes un bon candidat pour ce poste...",
+      characters: "caracteres",
+      cancel: "Annuler",
+      submitting: "Envoi...",
+      submitApplication: "Envoyer la candidature",
+    },
+    ar: {
+      fileTypeError: "يرجى رفع ملف PDF او Word",
+      fileSizeError: "يجب ان يكون حجم الملف اقل من 5 ميغابايت",
+      nameRequired: "يرجى ادخال الاسم",
+      emailInvalid: "يرجى ادخال بريد الكتروني صحيح",
+      phoneRequired: "يرجى ادخال رقم الهاتف",
+      coverLetterRequired: "يرجى كتابة رسالة تقديم",
+      submitted: "تم ارسال طلب التوظيف بنجاح",
+      submitFailed: "فشل ارسال الطلب. يرجى المحاولة مرة اخرى.",
+      title: "التقديم على الوظيفة",
+      fullName: "الاسم الكامل",
+      emailAddress: "البريد الالكتروني",
+      phoneNumber: "رقم الهاتف",
+      resume: "السيرة الذاتية",
+      optional: "اختياري",
+      acceptedFormats: "الصيغ المقبولة: PDF, DOC, DOCX (الحد الاقصى 5MB)",
+      coverLetter: "رسالة التقديم",
+      coverLetterPlaceholder: "اخبرنا لماذا انت مناسب لهذا المنصب...",
+      characters: "حرف",
+      cancel: "الغاء",
+      submitting: "جار الارسال...",
+      submitApplication: "ارسال الطلب",
+    },
+  };
+  const copy = applicationCopy[language] ?? applicationCopy.en;
+
   const [formData, setFormData] = useState({
     applicantName: "",
     applicantEmail: "",
@@ -62,12 +137,12 @@ export function JobApplicationModal({
       const maxSize = 5 * 1024 * 1024; // 5MB
 
       if (!validTypes.includes(file.type)) {
-        toast.error("Please upload a PDF or Word document");
+        toast.error(copy.fileTypeError);
         return;
       }
 
       if (file.size > maxSize) {
-        toast.error("File size must be less than 5MB");
+        toast.error(copy.fileSizeError);
         return;
       }
 
@@ -90,22 +165,22 @@ export function JobApplicationModal({
 
     // Validation
     if (!formData.applicantName.trim()) {
-      toast.error("Please enter your name");
+      toast.error(copy.nameRequired);
       return;
     }
 
     if (!formData.applicantEmail.trim() || !formData.applicantEmail.includes("@")) {
-      toast.error("Please enter a valid email");
+      toast.error(copy.emailInvalid);
       return;
     }
 
     if (!formData.applicantPhone.trim()) {
-      toast.error("Please enter your phone number");
+      toast.error(copy.phoneRequired);
       return;
     }
 
     if (!formData.coverLetter.trim()) {
-      toast.error("Please write a cover letter");
+      toast.error(copy.coverLetterRequired);
       return;
     }
 
@@ -124,7 +199,7 @@ export function JobApplicationModal({
 
       await createApplication(form).unwrap();
       
-      toast.success("Application submitted successfully!");
+      toast.success(copy.submitted);
       
       // Reset form
       setFormData({
@@ -138,7 +213,7 @@ export function JobApplicationModal({
       onClose();
     } catch (error) {
       console.error("Error submitting application:", error);
-      toast.error("Failed to submit application. Please try again.");
+      toast.error(copy.submitFailed);
     }
   };
 
@@ -152,7 +227,7 @@ export function JobApplicationModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Apply for Position</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">{copy.title}</DialogTitle>
           <DialogDescription className="text-base">
             <span className="font-semibold text-foreground">{jobTitle}</span>
             <br />
@@ -164,7 +239,7 @@ export function JobApplicationModal({
           {/* Full Name */}
           <div className="space-y-2">
             <Label htmlFor="applicantName" className="text-sm font-medium">
-              Full Name <span className="text-destructive">*</span>
+              {copy.fullName} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="applicantName"
@@ -181,7 +256,7 @@ export function JobApplicationModal({
           {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="applicantEmail" className="text-sm font-medium">
-              Email Address <span className="text-destructive">*</span>
+              {copy.emailAddress} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="applicantEmail"
@@ -198,7 +273,7 @@ export function JobApplicationModal({
           {/* Phone */}
           <div className="space-y-2">
             <Label htmlFor="applicantPhone" className="text-sm font-medium">
-              Phone Number <span className="text-destructive">*</span>
+              {copy.phoneNumber} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="applicantPhone"
@@ -215,7 +290,7 @@ export function JobApplicationModal({
           {/* Resume Upload */}
           <div className="space-y-2">
             <Label htmlFor="resume" className="text-sm font-medium">
-              Resume/CV <span className="text-muted-foreground">(Optional)</span>
+              {copy.resume} <span className="text-muted-foreground">({copy.optional})</span>
             </Label>
             {!formData.resume ? (
               <div className="flex items-center gap-2">
@@ -250,19 +325,19 @@ export function JobApplicationModal({
               </div>
             )}
             <p className="text-xs text-muted-foreground">
-              Accepted formats: PDF, DOC, DOCX (Max 5MB)
+              {copy.acceptedFormats}
             </p>
           </div>
 
           {/* Cover Letter */}
           <div className="space-y-2">
             <Label htmlFor="coverLetter" className="text-sm font-medium">
-              Cover Letter <span className="text-destructive">*</span>
+              {copy.coverLetter} <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="coverLetter"
               name="coverLetter"
-              placeholder="Tell us why you're a great fit for this position..."
+              placeholder={copy.coverLetterPlaceholder}
               value={formData.coverLetter}
               onChange={handleInputChange}
               disabled={isSubmitting}
@@ -271,7 +346,7 @@ export function JobApplicationModal({
               className="resize-none"
             />
             <p className="text-xs text-muted-foreground">
-              {formData.coverLetter.length} characters
+              {formData.coverLetter.length} {copy.characters}
             </p>
           </div>
 
@@ -282,7 +357,7 @@ export function JobApplicationModal({
               onClick={handleClose}
               disabled={isSubmitting}
             >
-              Cancel
+              {copy.cancel}
             </Button>
             <Button
               type="submit"
@@ -292,10 +367,10 @@ export function JobApplicationModal({
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Submitting...
+                  {copy.submitting}
                 </>
               ) : (
-                "Submit Application"
+                copy.submitApplication
               )}
             </Button>
           </DialogFooter>

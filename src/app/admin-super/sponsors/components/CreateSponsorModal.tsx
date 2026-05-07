@@ -51,6 +51,7 @@ const createSponsorCopy: Record<Language, Record<string, string>> = {
     namePlaceholder: "Nom du sponsor",
     imageUrl: "URL de l'image",
     sponsorLink: "Lien du sponsor",
+    sponsorLinkPlaceholder: "https://site-du-sponsor.com",
     description: "Description",
     descriptionPlaceholder: "Courte description du sponsor",
     ownerId: "ID proprietaire",
@@ -69,6 +70,7 @@ const createSponsorCopy: Record<Language, Record<string, string>> = {
     namePlaceholder: "اسم الراعي",
     imageUrl: "رابط الصورة",
     sponsorLink: "رابط الراعي",
+    sponsorLinkPlaceholder: "https://sponsor-website.com",
     description: "الوصف",
     descriptionPlaceholder: "وصف قصير للراعي",
     ownerId: "معرف المالك",
@@ -220,7 +222,7 @@ export default function CreateSponsorModal() {
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setSponsorLink(e.target.value)
                 }
-                placeholder="https://sponsor-website.com"
+                placeholder={copy.sponsorLinkPlaceholder}
                 required
               />
             </div>

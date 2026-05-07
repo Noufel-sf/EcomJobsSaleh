@@ -27,6 +27,7 @@ import {
 import { Plus, X, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import type { Categorie, Product } from "@/lib/DatabaseTypes";
+import { type Language, useI18n } from "@/context/I18nContext";
 
 interface CreateProductUiProps {
   open: boolean;
@@ -45,6 +46,92 @@ export default function CreateProductUi({
   ownerId,
   loading,
 }: CreateProductUiProps) {
+  const { language } = useI18n();
+  const createProductCopy: Record<Language, Record<string, string>> = {
+    en: {
+      createNew: "Create a new product",
+      createTitle: "Create Product",
+      createDescription: "Create a new product. Click save when you are done.",
+      name: "Name",
+      shortDescription: "Short Description",
+      shortDescriptionPlaceholder: "Brief product description",
+      fullDescription: "Full Description",
+      fullDescriptionPlaceholder: "Detailed product description (optional)",
+      price: "Price",
+      mainImage: "Main Product Image",
+      extraImages: "Extra Images (Up to 3)",
+      imageLabel: "Image",
+      category: "Category",
+      selectCategory: "Select category",
+      categories: "Categories",
+      availableSizes: "Available Sizes",
+      clothingSizes: "Clothing Sizes",
+      shoeSizes: "Shoe Sizes",
+      selectedSizes: "Selected",
+      sizes: "sizes",
+      productColors: "Product Colors",
+      colorsAdded: "Added Colors",
+      noColors: "No colors added yet",
+      cancel: "Cancel",
+      save: "Save changes",
+    },
+    fr: {
+      createNew: "Creer un nouveau produit",
+      createTitle: "Creer un produit",
+      createDescription: "Creez un nouveau produit puis enregistrez.",
+      name: "Nom",
+      shortDescription: "Description courte",
+      shortDescriptionPlaceholder: "Breve description du produit",
+      fullDescription: "Description complete",
+      fullDescriptionPlaceholder: "Description detaillee du produit (optionnel)",
+      price: "Prix",
+      mainImage: "Image principale",
+      extraImages: "Images supplementaires (jusqu'a 3)",
+      imageLabel: "Image",
+      category: "Categorie",
+      selectCategory: "Selectionner une categorie",
+      categories: "Categories",
+      availableSizes: "Tailles disponibles",
+      clothingSizes: "Tailles vetements",
+      shoeSizes: "Tailles chaussures",
+      selectedSizes: "Selection",
+      sizes: "tailles",
+      productColors: "Couleurs du produit",
+      colorsAdded: "Couleurs ajoutees",
+      noColors: "Aucune couleur ajoutee",
+      cancel: "Annuler",
+      save: "Enregistrer",
+    },
+    ar: {
+      createNew: "انشاء منتج جديد",
+      createTitle: "انشاء منتج",
+      createDescription: "انشئ منتجا جديدا ثم اضغط حفظ.",
+      name: "الاسم",
+      shortDescription: "وصف قصير",
+      shortDescriptionPlaceholder: "وصف مختصر للمنتج",
+      fullDescription: "الوصف الكامل",
+      fullDescriptionPlaceholder: "وصف مفصل للمنتج (اختياري)",
+      price: "السعر",
+      mainImage: "الصورة الرئيسية للمنتج",
+      extraImages: "صور اضافية (حتى 3)",
+      imageLabel: "صورة",
+      category: "الفئة",
+      selectCategory: "اختر فئة",
+      categories: "الفئات",
+      availableSizes: "المقاسات المتاحة",
+      clothingSizes: "مقاسات الملابس",
+      shoeSizes: "مقاسات الاحذية",
+      selectedSizes: "المحدد",
+      sizes: "مقاسات",
+      productColors: "الوان المنتج",
+      colorsAdded: "الالوان المضافة",
+      noColors: "لا توجد الوان مضافة",
+      cancel: "الغاء",
+      save: "حفظ التغييرات",
+    },
+  };
+  const copy = createProductCopy[language] ?? createProductCopy.en;
+
   const [name, setName] = useState("");
   const [smallDesc, setSmallDesc] = useState("");
   const [bigDesc, setBigDesc] = useState("");
@@ -198,15 +285,15 @@ export default function CreateProductUi({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="" variant="primary" size="sm">
-          Create a new product
+          {copy.createNew}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-225 max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleCreateProduct}>
           <DialogHeader className="">
-            <DialogTitle className="">Create Product</DialogTitle>
+            <DialogTitle className="">{copy.createTitle}</DialogTitle>
             <DialogDescription className="mb-3">
-              Create a new product. Click save when you are done.
+              {copy.createDescription}
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -214,7 +301,7 @@ export default function CreateProductUi({
             <div className="md:col-span-2 space-y-4">
               <div className="grid gap-3">
                 <Label className="" htmlFor="name">
-                  Name
+                  {copy.name}
                 </Label>
                 <Input
                   id="name"
@@ -227,7 +314,7 @@ export default function CreateProductUi({
               </div>
               <div className="grid gap-3">
                 <Label className="" htmlFor="smallDesc">
-                  Short Description
+                  {copy.shortDescription}
                 </Label>
                 <Input
                   id="smallDesc"
@@ -235,13 +322,13 @@ export default function CreateProductUi({
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setSmallDesc(e.target.value)
                   }
-                  placeholder="Brief product description"
+                  placeholder={copy.shortDescriptionPlaceholder}
                   required
                 />
               </div>
               <div className="grid gap-3">
                 <Label className="" htmlFor="bigDesc">
-                  Full Description
+                  {copy.fullDescription}
                 </Label>
                 <textarea
                   id="bigDesc"
@@ -249,14 +336,14 @@ export default function CreateProductUi({
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                     setBigDesc(e.target.value)
                   }
-                  placeholder="Detailed product description (optional)"
+                  placeholder={copy.fullDescriptionPlaceholder}
                   rows={4}
                   className="border rounded-md px-3 py-2 text-sm"
                 />
               </div>
               <div className="grid gap-3">
                 <Label className="" htmlFor="price">
-                  Price
+                  {copy.price}
                 </Label>
                 <Input
                   className={""}
@@ -290,7 +377,7 @@ export default function CreateProductUi({
               {/* Main Image */}
               <div className="grid gap-3">
                 <Label className="" htmlFor="mainImage">
-                  Main Product Image
+                  {copy.mainImage}
                 </Label>
                 <Input
                   id="mainImage"
@@ -322,7 +409,7 @@ export default function CreateProductUi({
               </div>
 
               <div className="grid gap-3">
-                <Label className="">Extra Images (Up to 3)</Label>
+                <Label className="">{copy.extraImages}</Label>
                 <div className="grid grid-cols-3 gap-4">
                   {[0, 1, 2].map((index) => (
                     <div key={index} className="space-y-2">
@@ -330,7 +417,7 @@ export default function CreateProductUi({
                         htmlFor={`extra-image-${index}`}
                         className="text-sm text-muted-foreground"
                       >
-                        Image {index + 1}
+                        {copy.imageLabel} {index + 1}
                       </Label>
                       <Input
                         id={`extra-image-${index}`}
@@ -366,7 +453,7 @@ export default function CreateProductUi({
 
               {/* Classification/Category */}
               <div className="grid gap-3">
-                <Label className="">Category</Label>
+                <Label className="">{copy.category}</Label>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -376,13 +463,13 @@ export default function CreateProductUi({
                     >
                       {prod_class
                         ? categories.find((cat) => cat.id === prod_class)?.name
-                        : "Select category"}
+                        : copy.selectCategory}
                       <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56">
                     <DropdownMenuLabel className="" inset={true}>
-                      Categories
+                      {copy.categories}
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="" />
                     {categories.map((cat) => (
@@ -402,11 +489,11 @@ export default function CreateProductUi({
 
             <div className="space-y-4">
               <div className="grid gap-3">
-                <Label className="">Available Sizes</Label>
-                <div className="border rounded-lg p-4 space-y-2 max-h-[500px] overflow-y-auto">
+                <Label className="">{copy.availableSizes}</Label>
+                <div className="border rounded-lg p-4 space-y-2 max-h-125 overflow-y-auto">
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">
-                      Clothing Sizes
+                      {copy.clothingSizes}
                     </p>
                     <div className="grid grid-cols-3 gap-2">
                       {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
@@ -429,7 +516,7 @@ export default function CreateProductUi({
                   </div>
                   <div className="space-y-2 mt-4">
                     <p className="text-sm font-medium text-muted-foreground">
-                      Shoe Sizes
+                      {copy.shoeSizes}
                     </p>
                     <div className="grid grid-cols-3 gap-2">
                       {[
@@ -464,7 +551,7 @@ export default function CreateProductUi({
                   {sizes.length > 0 && (
                     <div className="mt-4 pt-4 border-t">
                       <p className="text-sm font-medium mb-2">
-                        Selected: {sizes.length} sizes
+                        {copy.selectedSizes}: {sizes.length} {copy.sizes}
                       </p>
                       <div className="flex flex-wrap gap-1">
                         {sizes.map((size) => (
@@ -482,7 +569,7 @@ export default function CreateProductUi({
               </div>
 
               <div className="grid gap-3">
-                <Label className="">Product Colors</Label>
+                <Label className="">{copy.productColors}</Label>
                 <div className="border rounded-lg p-4 space-y-3">
                   {/* Add new color */}
                   <div className="flex gap-2 items-center">
@@ -518,7 +605,7 @@ export default function CreateProductUi({
                   {colors.length > 0 && (
                     <div className="space-y-2 pt-3 border-t">
                       <p className="text-sm font-medium text-muted-foreground">
-                        Added Colors ({colors.length})
+                        {copy.colorsAdded} ({colors.length})
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {colors.map((color, index) => (
@@ -546,7 +633,7 @@ export default function CreateProductUi({
 
                   {colors.length === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-2">
-                      No colors added yet
+                      {copy.noColors}
                     </p>
                   )}
                 </div>
@@ -557,7 +644,7 @@ export default function CreateProductUi({
           <DialogFooter className="mt-5">
             <DialogClose asChild>
               <Button size="lg" className="cursor-pointer" variant="outline">
-                Cancel
+                {copy.cancel}
               </Button>
             </DialogClose>
             {loading ? (
@@ -569,7 +656,7 @@ export default function CreateProductUi({
                 variant="primary"
                 type="submit"
               >
-                Save changes
+                {copy.save}
               </Button>
             )}
           </DialogFooter>
