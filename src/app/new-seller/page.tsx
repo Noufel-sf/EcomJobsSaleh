@@ -288,6 +288,7 @@ export default function CreateStorePage() {
     phoneNumber: "",
     location: "",
     password: "",
+    img: "",
     confirmPassword: "",
     storeName: "",
     description: "",
@@ -371,9 +372,9 @@ export default function CreateStorePage() {
       payload.append("storeName", form.storeName);
       payload.append("description", form.description);
       if (imageFile) {
-        payload.append("logo", imageFile);
+        payload.append("img", imageFile);
       }
-
+      console.log("Submitting form with data:", payload);
       await registerSeller(payload).unwrap();
 
       toast.success(copy.storeLive);
@@ -394,7 +395,7 @@ export default function CreateStorePage() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-zinc-900 dark:bg-white shadow-lg mb-4">
             <Store className="w-6 h-6 text-white dark:text-zinc-900" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-3xl  font-bold tracking-tight text-zinc-900 dark:text-white">
             {copy.title}
           </h1>
           <p className="text-zinc-500 dark:text-zinc-400 mt-2 text-sm">

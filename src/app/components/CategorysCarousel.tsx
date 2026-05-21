@@ -69,9 +69,9 @@ const CategorysCarousel = memo(function CategorysCarousel({
           return (
             <SwiperSlide key={category.id} className="h-auto">
               <Link href={category.href} prefetch className="block h-full">
-                <div className="flex h-full flex-col items-center justify-start gap-3 rounded-2xl border border-white/10 bg-[#1f1f1f] p-3 text-center shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:border-white/20 hover:shadow-md sm:p-4">
+                <div className="flex h-full flex-col items-center justify-start gap-3 rounded-2xl p-3 text-center  transition-transform duration-200 hover:-translate-y-1 hover:border-white/20 hover:shadow-md sm:p-4">
                   <div
-                    className={`flex h-16 w-16 items-center justify-center rounded-full border border-white/10 ${category.accent} shadow-inner sm:h-18 sm:w-18`}
+                    className={`flex h-16 w-16 items-center justify-center rounded-full border  ${category.accent} shadow-inner sm:h-18 sm:w-18`}
                   >
                     <Image 
                         src={category.img || "/phone.png"}
@@ -81,7 +81,7 @@ const CategorysCarousel = memo(function CategorysCarousel({
                         height={40}
                     />
                   </div>
-                  <span className="line-clamp-2 text-xs leading-4 text-zinc-100 sm:text-sm">
+                  <span className="line-clamp-2 text-xs leading-4 sm:text-sm">
                     {category.title}
                   </span>
                 </div>

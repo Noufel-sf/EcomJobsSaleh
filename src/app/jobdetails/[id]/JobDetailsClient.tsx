@@ -177,20 +177,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
           <Card className="">
             <CardContent className="p-6 lg:p-8">
               <div className="flex flex-col sm:flex-row items-start gap-6">
-                {job.companyLogo && (
-                  <div className="shrink-0">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-muted flex items-center justify-center overflow-hidden border">
-                      <Image
-                        src={job.companyLogo}
-                        alt={`${job.company} logo`}
-                        width={80}
-                        height={80}
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-                  </div>
-                )}
-
+             
                 <div className="flex-1 min-w-0">
                   <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3">
                     {job.title}

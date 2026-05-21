@@ -59,8 +59,11 @@ const storeCopy: Record<Language, Record<string, string>> = {
     storeName: "Store Name",
     email: "Email",
     firstName: "First Name",
+    location: "Location",
     lastName: "Last Name",
     phone: "Phone Number",
+    oldPassword: "Old Password",
+    newPassword: "New Password",
     storeDescription: "Store Description",
     reset: "Reset",
     saving: "Saving...",
@@ -71,6 +74,7 @@ const storeCopy: Record<Language, Record<string, string>> = {
     imageTooLarge: "La taille de l'image doit etre inferieure a 5 Mo",
     unauthenticated: "Utilisateur non authentifie",
     updateSuccess: "Informations de la boutique mises a jour !",
+    location: "Emplacement",
     updateFailed: "Echec de mise a jour des informations",
     selectImageFirst: "Veuillez d'abord selectionner une image",
     imageUpdated: "Image de la boutique mise a jour !",
@@ -92,6 +96,8 @@ const storeCopy: Record<Language, Record<string, string>> = {
     firstName: "Prenom",
     lastName: "Nom",
     phone: "Telephone",
+    oldPassword: "Ancien mot de passe",
+    newPassword: "Nouveau mot de passe",
     storeDescription: "Description de la boutique",
     reset: "Reinitialiser",
     saving: "Enregistrement...",
@@ -113,6 +119,7 @@ const storeCopy: Record<Language, Record<string, string>> = {
     logoTitle: "شعار المتجر",
     logoDesc: "ارفع شعار المتجر (الحد الاقصى 5MB)",
     noImage: "لا توجد صورة",
+    location : "الموقع",
     chooseImage: "اختر صورة",
     uploading: "جار الرفع...",
     uploadImage: "رفع الصورة",
@@ -123,6 +130,8 @@ const storeCopy: Record<Language, Record<string, string>> = {
     firstName: "الاسم",
     lastName: "اللقب",
     phone: "رقم الهاتف",
+    oldPassword: "كلمة المرور القديمة",
+    newPassword: "كلمة المرور الجديدة",
     storeDescription: "وصف المتجر",
     reset: "اعادة تعيين",
     saving: "جار الحفظ...",
@@ -168,9 +177,12 @@ export default function StorePage() {
     firstName: "",
     lastName: "",
     image: "",
-    phone: "",
+    location: "",
+    phone_number: "",
     storeName: "",
     description: "",
+    oldPassword: "",
+    newPassword: "",
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -191,7 +203,8 @@ export default function StorePage() {
         firstName: sellerInfo.firstName || "",
         lastName: sellerInfo.lastName || "",
         image: sellerInfo.img || sellerInfo.logo || "", 
-        phone: "",
+        phone_number: "",
+        location: sellerInfo.location || "",
         storeName: sellerInfo.name || "",
         description: sellerInfo.description || "",
       });
@@ -260,11 +273,19 @@ export default function StorePage() {
           lastName: formData.lastName,
           phone: formData.phone,
           storeName: formData.storeName,
+          location: formData.location,
           description: formData.description,
+          oldPassword: formData.oldPassword,
+          newPassword: formData.newPassword,
         },
       }).unwrap();
 
       toast.success(result.message || copy.updateSuccess);
+      setFormData((prev) => ({
+        ...prev,
+        oldPassword: "",
+        newPassword: "",
+      }));
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
       const message =
@@ -437,7 +458,7 @@ export default function StorePage() {
               <CardContent className="space-y-6">
                 {/* Store Name */}
                 <div className="grid gap-3">
-                  <Label htmlFor="storeName" className="text-sm font-medium">
+                  <Label htmlFor="storeName" className="text-sm mt-3 font-medium">
                     <Store className="w-4 h-4 inline mr-2" />
                     {copy.storeName}
                   </Label>
@@ -451,10 +472,23 @@ export default function StorePage() {
                     disabled={isUpdating}
                     className="h-11"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    This will be displayed to customers
-                  </p>
+                
                 </div>
+                  <Label htmlFor="location" className="text-sm  font-medium">
+                    <Store className="w-4 h-4 inline mr-2" />
+                    {copy.location}
+                  </Label>
+                  <Input
+                    id="location"
+                    name="location"
+                    type="text"
+                    placeholder="Store Location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    disabled={isUpdating}
+                    className="h-11"
+                  />
+                
 
                 {/* Email */}
                 <div className="grid gap-3">
@@ -527,12 +561,46 @@ export default function StorePage() {
                     name="phone"
                     type="tel"
                     placeholder="+1234567890"
-                    value={formData.phone}
+                    value={formData.phone_number}
                     onChange={handleInputChange}
                     disabled={isUpdating}
                     required
                     className="h-11"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid gap-3">
+                    <Label htmlFor="oldPassword" className="text-sm font-medium">
+                      {copy.oldPassword}
+                    </Label>
+                    <Input
+                      id="oldPassword"
+                      name="oldPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      value={""}
+                      onChange={handleInputChange}
+                      disabled={isUpdating}
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="grid gap-3">
+                    <Label htmlFor="newPassword" className="text-sm font-medium">
+                      {copy.newPassword}
+                    </Label>
+                    <Input
+                      id="newPassword"
+                      name="newPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      value={""}
+                      onChange={handleInputChange}
+                      disabled={isUpdating}
+                      className="h-11"
+                    />
+                  </div>
                 </div>
 
                 {/* Description */}
@@ -568,9 +636,11 @@ export default function StorePage() {
                         email: sellerInfo.email || "",
                         firstName: user?.name?.split(" ")[0] || "",
                         lastName: user?.name?.split(" ").slice(1).join(" ") || "",
-                        phone: "",
+                        phone_number: "",
                         storeName: sellerInfo.name || "",
                         description: sellerInfo.description || "",
+                        oldPassword: "",
+                        newPassword: "",
                       });
                     }
                   }}

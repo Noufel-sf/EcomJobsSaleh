@@ -34,7 +34,7 @@ const HeroCarousel = memo(function HeroCarousel({ sponsors }: HeroCarouselProps)
         disableOnInteraction: false,
       }}
       modules={[Navigation, Autoplay]}
-      className="mySwiper rounded-sm shadow-lg flex-1"
+      className="mySwiper  flex-1"
     >
       {sponsors.map((sponsor, index) => {
         const imageSrc = sponsor.image || "/placeholder.png";

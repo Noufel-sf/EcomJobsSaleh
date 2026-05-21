@@ -10,7 +10,7 @@ export interface SellerInfo {
   email: string;
   firstName: string;
   lastName: string;
-  phone: string;
+  phone_number?: string;
   img?: string | null;
   description?: string | null;
   storeName?: string | null;
@@ -26,10 +26,13 @@ export interface UpdateSellerRequest {
   email?: string;
   firstName?: string;
   lastName?: string;
-  phone?: string;
+  phone_number?: string;
   description?: string;
+  location?: string;
   storeName?: string;
   img?: string;
+  oldPassword?: string;
+  newPassword?: string;
 }
 
 export interface UpdateSellerResponse {
