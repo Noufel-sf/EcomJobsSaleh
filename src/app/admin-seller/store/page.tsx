@@ -29,7 +29,6 @@ import {
 import toast from "react-hot-toast";
 import { useAppSelector } from "@/Redux/hooks";
 import {
-  useGetSellerInfoQuery,
   useUpdateSellerInfoMutation,
   useUpdateSellerImageMutation,
 } from "@/Redux/Services/SellerApi";
@@ -131,20 +130,31 @@ const storeCopy: Record<Language, Record<string, string>> = {
   },
 };
 
+type SellerAttachmentFields = {
+  id?: string;
+  name?: string;
+  email?: string;
+  description?: string;
+  firstName?: string;
+  lastName?: string;
+  location?: string;
+  specialization?: string;
+  logo?: string;
+  img?: string;
+  createdAt?: string;
+};
+
+type SellerProfileFields = {
+  sellerAtt?: SellerAttachmentFields | null;
+};
+
 export default function StorePage() {
   const { language } = useI18n();
   const copy = storeCopy[language];
   const user = useAppSelector((state) => state.auth.user);
-  const sellerId = user?.userId;
-
-  // Fetch current seller information
-  const {
-    data: sellerInfo,
-    isLoading: isLoadingInfo,
-    error,
-  } = useGetSellerInfoQuery(sellerId || "", {
-    skip: !sellerId,
-  });
+  const sellerProfile = (user ?? {}) as SellerProfileFields;
+  const sellerInfo = sellerProfile.sellerAtt ?? null;
+  const sellerId = sellerInfo?.id || user?.userId || "";
 
   // Mutations
   const [updateSellerInfo, { isLoading: isUpdating }] =
@@ -157,6 +167,7 @@ export default function StorePage() {
     email: "",
     firstName: "",
     lastName: "",
+    image: "",
     phone: "",
     storeName: "",
     description: "",
@@ -165,6 +176,11 @@ export default function StorePage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isInitialized, setIsInitialized] = useState(false);
+  const displaySellerName = sellerInfo?.name || user?.name || "Seller Profile";
+  const displayEmail = sellerInfo?.email || user?.email || "";
+  const displayLocation = sellerInfo?.location || "Location not shared";
+  const displayDescription =
+    sellerInfo?.description || "No description available for this seller yet.";
 
   // Initialize form data when seller info is loaded
   useEffect(() => {
@@ -174,18 +190,19 @@ export default function StorePage() {
         email: sellerInfo.email || "",
         firstName: sellerInfo.firstName || "",
         lastName: sellerInfo.lastName || "",
-        phone: sellerInfo.phone?.toString() || "",
-        storeName: sellerInfo.storeName || "",
+        image: sellerInfo.img || sellerInfo.logo || "", 
+        phone: "",
+        storeName: sellerInfo.name || "",
         description: sellerInfo.description || "",
       });
       
-      if (sellerInfo.img) {
-        setImagePreview(sellerInfo.img);
+      if (sellerInfo.img || sellerInfo.logo) {
+        setImagePreview(sellerInfo.img || sellerInfo.logo || "");
       }
       
       setIsInitialized(true);
     }
-  }, [sellerInfo, isInitialized]);
+  }, [sellerInfo, isInitialized, user?.name]);
 
   // Handle form input changes
   const handleInputChange = (
@@ -281,26 +298,26 @@ export default function StorePage() {
     }
   };
 
-  if (isLoadingInfo) {
-    return (
-      <AdminSidebarLayout breadcrumbTitle="Store Settings">
-        <div className="flex items-center justify-center min-h-100">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      </AdminSidebarLayout>
-    );
-  }
+  // if (isLoadingInfo) {
+  //   return (
+  //     <AdminSidebarLayout breadcrumbTitle="Store Settings">
+  //       <div className="flex items-center justify-center min-h-100">
+  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  //       </div>
+  //     </AdminSidebarLayout>
+  //   );
+  // }
 
-  if (error) {
-    return (
-      <AdminSidebarLayout breadcrumbTitle="Store Settings">
-        <div className="flex flex-col items-center justify-center min-h-100 gap-4">
-          <p className="text-destructive text-lg">{copy.loadFailed}</p>
-          <Button onClick={() => window.location.reload()}>{copy.retry}</Button>
-        </div>
-      </AdminSidebarLayout>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <AdminSidebarLayout breadcrumbTitle="Store Settings">
+  //       <div className="flex flex-col items-center justify-center min-h-100 gap-4">
+  //         <p className="text-destructive text-lg">{copy.loadFailed}</p>
+  //         <Button onClick={() => window.location.reload()}>{copy.retry}</Button>
+  //       </div>
+  //     </AdminSidebarLayout>
+  //   );
+  // }
 
   return (
     <AdminSidebarLayout breadcrumbTitle="Store Settings">
@@ -313,7 +330,7 @@ export default function StorePage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Store Image Card */}
+          {/* Seller Profile Card */}
           <Card className="lg:col-span-1 gap-5">
             <CardHeader className="">
               <CardTitle className="flex items-center gap-2">
@@ -325,13 +342,12 @@ export default function StorePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Image Preview */}
               <div className="flex justify-center">
                 <div className="relative w-40 h-40 rounded-lg border-2 border-dashed border-border overflow-hidden bg-muted flex items-center justify-center">
-                  {imagePreview ? (
+                  {imagePreview || sellerInfo?.img || sellerInfo?.logo ? (
                     <Image
-                      src={imagePreview}
-                      alt="Store logo preview"
+                      src={imagePreview || sellerInfo?.img || sellerInfo?.logo || ""}
+                      alt="Seller profile preview"
                       width={160}
                       height={160}
                       className="w-full h-full object-cover"
@@ -342,6 +358,25 @@ export default function StorePage() {
                       <p className="text-sm">{copy.noImage}</p>
                     </div>
                   )}
+                </div>
+              </div>
+
+              <div className="space-y-3 rounded-lg border bg-background p-4 text-sm">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Name</p>
+                  <p className="font-medium">{displaySellerName}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Email</p>
+                  <p className="font-medium">{displayEmail || copy.notShared}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Location</p>
+                  <p className="font-medium">{displayLocation}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Description</p>
+                  <p className="font-medium">{displayDescription}</p>
                 </div>
               </div>
 
@@ -522,41 +557,6 @@ export default function StorePage() {
                   </p>
                 </div>
 
-                {/* Store Stats (Read-only) */}
-                {sellerInfo && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-primary">
-                        {sellerInfo.total_orders || 0}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Total Orders
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-green-600">
-                        {sellerInfo.successful_orders || 0}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Successful
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-yellow-600">
-                        {sellerInfo.waiting_orders || 0}
-                      </p>
-                      <p className="text-xs text-muted-foreground">Waiting</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-primary">
-                        ${sellerInfo.total_sales?.toFixed(2) || "0.00"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Total Sales
-                      </p>
-                    </div>
-                  </div>
-                )}
               </CardContent>
               <CardFooter className="flex justify-end gap-4">
                 <Button
@@ -566,10 +566,10 @@ export default function StorePage() {
                     if (sellerInfo) {
                       setFormData({
                         email: sellerInfo.email || "",
-                        firstName: sellerInfo.firstName || "",
-                        lastName: sellerInfo.lastName || "",
-                        phone: sellerInfo.phone?.toString() || "",
-                        storeName: sellerInfo.storeName || "",
+                        firstName: user?.name?.split(" ")[0] || "",
+                        lastName: user?.name?.split(" ").slice(1).join(" ") || "",
+                        phone: "",
+                        storeName: sellerInfo.name || "",
                         description: sellerInfo.description || "",
                       });
                     }

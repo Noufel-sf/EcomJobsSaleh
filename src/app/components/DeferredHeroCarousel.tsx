@@ -17,7 +17,7 @@ interface DeferredHeroCarouselProps {
 
 const LazyHeroCarousel = dynamic(() => import("./HeroCarousel"), {
   ssr: false,
-  loading: () => <div className="rounded-sm shadow-lg flex-1 bg-muted animate-pulse min-h-80" />,
+  loading: () => <div className="rounded-sm shadow-lg flex-1 bg-muted animate-pulse min-h-[180px] sm:min-h-[240px] lg:min-h-[320px]" />,
 });
 
 export default function DeferredHeroCarousel({ sponsors }: DeferredHeroCarouselProps) {
@@ -67,11 +67,11 @@ export default function DeferredHeroCarousel({ sponsors }: DeferredHeroCarouselP
 
   if (!shouldLoad) {
     if (!firstSponsor?.image) {
-      return <div className="rounded-sm shadow-lg flex-1 bg-muted animate-pulse min-h-80" />;
+      return <div className="rounded-sm shadow-lg flex-1 bg-muted animate-pulse min-h-[180px] sm:min-h-[240px] lg:min-h-[320px]" />;
     }
 
     return (
-      <div className="relative rounded-sm shadow-lg flex-1 overflow-hidden min-h-80">
+      <div className="relative h-[180px] flex-1 overflow-hidden rounded-sm shadow-lg sm:h-[240px] lg:h-[320px]">
         <Link
           href={firstSponsor.sponsorLink || "#"}
           target="_blank"
@@ -81,12 +81,12 @@ export default function DeferredHeroCarousel({ sponsors }: DeferredHeroCarouselP
           <Image
             src={firstSponsor.image}
             alt={firstSponsor.description || "Featured sponsor banner"}
-            className="w-full h-full cursor-pointer object-cover"
+            className="cursor-pointer object-cover"
             fill
             priority
             fetchPriority="high"
             loading="eager"
-            sizes="(max-width: 768px) 100vw, 80vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 70vw"
           />
         </Link>
       </div>

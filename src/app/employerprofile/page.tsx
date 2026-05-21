@@ -2,6 +2,9 @@ import Image from "next/image";
 import { Building2, MapPin, Briefcase, Users } from "lucide-react";
 import type { Job } from "@/lib/DatabaseTypes";
 import JobCard from "@/components/JobCard";
+import { QueryPagination } from "@/components/QueryPagination";
+
+const JOBS_PER_PAGE = 8;
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
@@ -10,6 +13,7 @@ const API_URL =
 type PageProps = {
   searchParams: Promise<{
     id?: string;
+    page?: string;
   }>;
 };
 
@@ -119,7 +123,7 @@ async function fetchCompanyJobsById(companyId: string): Promise<Job[]> {
 export default async function EmployerProfileViewPage({
   searchParams,
 }: PageProps) {
-  const { id: companyId } = await searchParams;
+  const { id: companyId, page } = await searchParams;
 
   if (!companyId) {
     return (
@@ -153,6 +157,21 @@ export default async function EmployerProfileViewPage({
     ...company,
     jobs: company.jobs.length > 0 ? company.jobs : companyJobs,
   };
+
+  const requestedPage = Number(page ?? "1");
+  const totalPages = Math.max(
+    1,
+    Math.ceil(companyWithJobs.jobs.length / JOBS_PER_PAGE),
+  );
+  const currentPage =
+    Number.isFinite(requestedPage) && requestedPage > 0
+      ? Math.min(Math.floor(requestedPage), totalPages)
+      : 1;
+  const startIndex = (currentPage - 1) * JOBS_PER_PAGE;
+  const visibleJobs = companyWithJobs.jobs.slice(
+    startIndex,
+    startIndex + JOBS_PER_PAGE,
+  );
 
   return (
     <main className="container mx-auto px-4 py-8 lg:py-12">
@@ -212,11 +231,19 @@ export default async function EmployerProfileViewPage({
             No jobs found for this company yet.
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-3">
-            {companyWithJobs.jobs.map((job) => (
+          <>
+            <div className="grid gap-4 md:grid-cols-3">
+              {visibleJobs.map((job) => (
               <JobCard key={job.id} job={job} />
-            ))}
-          </div>
+              ))}
+            </div>
+
+            <QueryPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              ariaLabel="Company jobs pagination"
+            />
+          </>
         )}
       </section>
     </main>

@@ -40,7 +40,7 @@ const Hero = async () => {
 
   return (
     <>
-      <section className="px-6 py-12 mx-auto container flex items-stretch gap-5 min-h-125">
+      <section className="mx-auto container flex items-start gap-5 px-6 py-6 sm:py-8 lg:items-stretch lg:py-12 lg:min-h-125">
         <DeferredHeroCarousel sponsors={sponsors} />
         <div className="hidden lg:flex max-w-[20%]  items-center cursor-pointer relative">
           <Image

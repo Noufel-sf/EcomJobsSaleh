@@ -63,6 +63,7 @@ export default function CreateProductUi({
       imageLabel: "Image",
       category: "Category",
       selectCategory: "Select category",
+      categoryRequired: "Category is required",
       categories: "Categories",
       availableSizes: "Available Sizes",
       clothingSizes: "Clothing Sizes",
@@ -90,6 +91,7 @@ export default function CreateProductUi({
       imageLabel: "Image",
       category: "Categorie",
       selectCategory: "Selectionner une categorie",
+      categoryRequired: "La categorie est obligatoire",
       categories: "Categories",
       availableSizes: "Tailles disponibles",
       clothingSizes: "Tailles vetements",
@@ -117,6 +119,7 @@ export default function CreateProductUi({
       imageLabel: "صورة",
       category: "الفئة",
       selectCategory: "اختر فئة",
+      categoryRequired: "الفئة مطلوبة",
       categories: "الفئات",
       availableSizes: "المقاسات المتاحة",
       clothingSizes: "مقاسات الملابس",
@@ -484,6 +487,7 @@ export default function CreateProductUi({
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
+                <p className="text-xs text-red-500">{copy.categoryRequired}</p>
               </div>
             </div>
 

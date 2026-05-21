@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Hero from "@/components/Hero";
+import CategorysSection from "@/components/CategorysSection";
 import BestSellingSection from "@/components/BestSellingSection";
 import SponsoredProductsSection from "@/components/sponsoredProducts";
 import SponsoredJobsSection from "@/components/SponsoredJobs";
@@ -28,10 +29,10 @@ const SectionFallback = ({
 
 const HeroFallback = () => (
   <section
-    className="px-6 py-12 mx-auto container flex items-stretch gap-5 min-h-125"
+    className="mx-auto container flex items-start gap-5 px-6 py-6 sm:py-8 lg:items-stretch lg:py-12 lg:min-h-125"
     aria-hidden="true"
   >
-    <div className="h-125 animate-pulse bg-muted rounded-lg flex-1" />
+    <div className="h-[180px] animate-pulse rounded-lg bg-muted flex-1 sm:h-[240px] lg:h-125" />
     <div className="hidden lg:block w-[20%] h-125 animate-pulse bg-muted rounded-lg" />
   </section>
 );
@@ -73,6 +74,9 @@ const HomePage = async () => {
     <div>
       <Suspense fallback={<HeroFallback />}>
         <Hero />
+      </Suspense>
+      <Suspense fallback={<SectionFallback sectionClassName="" />}>
+        <CategorysSection />
       </Suspense>
       <Suspense fallback={<SectionFallback sectionClassName="" />}>
         <BestSellingSection />

@@ -61,6 +61,20 @@ import {
 
 type SponsorRow = Sponsor & { isActive: boolean };
 
+type SponsorsResponse = Sponsor[] | { content?: Sponsor[] } | null | undefined;
+
+function normalizeSponsors(response: SponsorsResponse): Sponsor[] {
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  if (response && typeof response === "object" && Array.isArray(response.content)) {
+    return response.content;
+  }
+
+  return [];
+}
+
 import CreateSponsorModal from "./components/CreateSponsorModal";
 import UpdateSponsorUi from "../components/UpdateSponsorUI";
 import Image from "next/image";
@@ -186,10 +200,11 @@ export default function SuperAdminSponsors() {
   const copy = superAdminSponsorsCopy[language];
   const { data: sponsorsData, isLoading, isFetching } = useGetsponsorsQuery();
   const sponsors: SponsorRow[] = useMemo(
-    () => (sponsorsData ?? []).map((sponsor) => ({
-      ...sponsor,
-      isActive: sponsor.isActive ?? false,
-    })),
+    () =>
+      normalizeSponsors(sponsorsData).map((sponsor) => ({
+        ...sponsor,
+        isActive: sponsor.isActive ?? false,
+      })),
     [sponsorsData],
   );
   const [deleteSponsor] = useDeleteSponsorMutation();

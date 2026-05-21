@@ -41,18 +41,20 @@ const HeroCarousel = memo(function HeroCarousel({ sponsors }: HeroCarouselProps)
         const href = sponsor.sponsorLink || "#";
 
         return (
-          <SwiperSlide key={`${imageSrc}-${index}`} className="relative!">
-            <Link href={href} target="_blank" rel="noopener noreferrer">
-              <Image
-                src={imageSrc}
-                alt={sponsor.description || `Sponsor banner ${index + 1}`}
-                className="w-full h-full cursor-pointer object-cover"
-                fill
-                priority={index === 0}
-                fetchPriority={index === 0 ? "high" : "auto"}
-                sizes="(max-width: 768px) 100vw, 80vw"
-              />
-            </Link>
+          <SwiperSlide key={`${imageSrc}-${index}`}>
+            <div className="relative h-[180px] w-full overflow-hidden rounded-sm sm:h-[240px] lg:h-[320px]">
+              <Link href={href} target="_blank" rel="noopener noreferrer" className="absolute inset-0 block">
+                <Image
+                  src={imageSrc}
+                  alt={sponsor.description || `Sponsor banner ${index + 1}`}
+                  className="cursor-pointer object-cover"
+                  fill
+                  priority={index === 0}
+                  fetchPriority={index === 0 ? "high" : "auto"}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 70vw"
+                />
+              </Link>
+            </div>
           </SwiperSlide>
         );
       })}

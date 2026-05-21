@@ -102,6 +102,7 @@ export default function CreateJobDialog({
   const createJobCopy: Record<Language, Record<string, string>> = {
     en: {
       selectCategory: "Please select a category",
+      categoryRequired: "Category is required",
       listValidation: "Please add at least one point in each list field",
       created: "Job created successfully",
       createFailed: "Failed to create job",
@@ -132,6 +133,7 @@ export default function CreateJobDialog({
     },
     fr: {
       selectCategory: "Veuillez selectionner une categorie",
+      categoryRequired: "La categorie est obligatoire",
       listValidation: "Veuillez ajouter au moins un element dans chaque liste",
       created: "Offre creee avec succes",
       createFailed: "Echec de creation de l'offre",
@@ -162,6 +164,7 @@ export default function CreateJobDialog({
     },
     ar: {
       selectCategory: "يرجى اختيار فئة",
+      categoryRequired: "الفئة مطلوبة",
       listValidation: "يرجى اضافة عنصر واحد على الاقل في كل قائمة",
       created: "تم انشاء الوظيفة بنجاح",
       createFailed: "فشل انشاء الوظيفة",
@@ -430,6 +433,7 @@ export default function CreateJobDialog({
                   </option>
                 ))}
               </select>
+              <p className="text-xs text-red-500">{copy.categoryRequired}</p>
             </div>
 
             <PointListInput

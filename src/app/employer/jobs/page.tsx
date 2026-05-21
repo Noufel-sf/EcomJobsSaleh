@@ -303,7 +303,7 @@ export default function EmployerJobs() {
     onRowSelectionChange: setRowSelection,
     initialState: {
       pagination: {
-        pageSize: 10,
+        pageSize: 8,
       },
     },
     state: { sorting, columnFilters, columnVisibility, rowSelection },

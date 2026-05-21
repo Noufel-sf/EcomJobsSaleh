@@ -32,10 +32,12 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import EmployerDashboardStats from './components/EmployerDashboardStats';
 import QuickLinks from './components/QuickLinks';
 import { authApi, useLogoutMutation } from '@/Redux/Services/AuthApi';
+import { useGetAllApplicationsQuery } from '@/Redux/Services/JobApi';
 import { useAppDispatch } from '@/Redux/hooks';
 import { logout as logoutAction } from '@/Redux/slices/AuthSlice';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { MetricAreaChart } from '@/components/MetricAreaChart';
 
 const employerOverviewCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -51,6 +53,9 @@ const employerOverviewCopy: Record<Language, Record<string, string>> = {
     subtitle: 'Manage your job listings and review applications.',
     totalJobs: 'Total Jobs Posted',
     totalApplications: 'Total Applications',
+    applicationsChartTitle: 'Total Applications',
+    applicationsChartDescription: 'Applications across all jobs',
+    applicationsTotalLabel: 'Applications',
     accepted: 'Accepted',
     pending: 'Pending Review',
     jobsDesc: '3 new this month',
@@ -75,6 +80,9 @@ const employerOverviewCopy: Record<Language, Record<string, string>> = {
     subtitle: 'Gerez vos offres et examinez les candidatures.',
     totalJobs: 'Offres publiees',
     totalApplications: 'Total candidatures',
+    applicationsChartTitle: 'Total candidatures',
+    applicationsChartDescription: 'Candidatures sur toutes les offres',
+    applicationsTotalLabel: 'Candidatures',
     accepted: 'Acceptees',
     pending: 'En attente',
     jobsDesc: '3 nouvelles ce mois-ci',
@@ -99,6 +107,9 @@ const employerOverviewCopy: Record<Language, Record<string, string>> = {
     subtitle: 'ادِر الوظائف الخاصة بك وراجع الطلبات.',
     totalJobs: 'اجمالي الوظائف المنشورة',
     totalApplications: 'اجمالي طلبات التوظيف',
+    applicationsChartTitle: 'اجمالي طلبات التوظيف',
+    applicationsChartDescription: 'الطلبات عبر جميع الوظائف',
+    applicationsTotalLabel: 'الطلبات',
     accepted: 'تم القبول',
     pending: 'قيد المراجعة',
     jobsDesc: '3 وظائف جديدة هذا الشهر',
@@ -117,9 +128,15 @@ export default function EmployerOverview() {
   const user = useAppSelector((state) => state.auth.user);
   const { language } = useI18n();
   const copy = employerOverviewCopy[language];
+  const companyId = user?.userId ?? '';
+  const { data: applicationsData } = useGetAllApplicationsQuery(companyId, {
+    skip: !companyId,
+  });
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [logoutMutation] = useLogoutMutation();
+  const totalApplications =
+    applicationsData?.totalApplications ?? applicationsData?.content?.length ?? 0;
 
   const handleLogout = async () => {
     try {
@@ -231,6 +248,15 @@ export default function EmployerOverview() {
 
           {/* Stats Grid - Using memoized component */}
           <EmployerDashboardStats stats={stats} />
+
+          <div className="mb-8">
+            <MetricAreaChart
+              title={copy.applicationsChartTitle}
+              description={copy.applicationsChartDescription}
+              totalLabel={copy.applicationsTotalLabel}
+              totalValue={totalApplications}
+            />
+          </div>
 
           {/* Quick Links - Using memoized component */}
           <QuickLinks />

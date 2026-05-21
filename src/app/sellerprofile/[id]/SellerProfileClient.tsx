@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Mail, Package, Phone, Store } from "lucide-react";
 
 import ProductCard from "@/components/ProductCard";
+import { QueryPagination } from "@/components/QueryPagination";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { type Language, useI18n } from "@/context/I18nContext";
+
+const PRODUCTS_PER_PAGE = 5;
 
 type SellerViewModel = {
   id: string;
@@ -97,6 +101,18 @@ export default function SellerProfileClient({
 }: SellerProfileClientProps) {
   const { language } = useI18n();
   const copy = sellerProfileCopy[language];
+  const searchParams = useSearchParams();
+  const requestedPage = Number(searchParams?.get("page") ?? "1");
+  const totalPages = Math.max(1, Math.ceil(sellerProducts.length / PRODUCTS_PER_PAGE));
+  const currentPage =
+    Number.isFinite(requestedPage) && requestedPage > 0
+      ? Math.min(Math.floor(requestedPage), totalPages)
+      : 1;
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const visibleProducts = sellerProducts.slice(
+    startIndex,
+    startIndex + PRODUCTS_PER_PAGE,
+  );
 
   if (sellerIdMissing) {
     return (
@@ -218,13 +234,21 @@ export default function SellerProfileClient({
             {copy.emptyProducts}
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {sellerProducts.map((product) => (
-              <div key={product.id}>
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </div>
+          <>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {visibleProducts.map((product) => (
+                <div key={product.id}>
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+
+            <QueryPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              ariaLabel="Seller products pagination"
+            />
+          </>
         )}
       </section>
     </main>

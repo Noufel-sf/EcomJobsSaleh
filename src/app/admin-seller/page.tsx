@@ -27,10 +27,11 @@ import { useAppSelector } from '@/Redux/hooks';
 import { AdminAppSidebar } from './admin-app-sidebar';
 import Link from 'next/link';
 import { useMemo } from 'react';
-import dynamic from 'next/dynamic';
 import { type Language, useI18n } from '@/context/I18nContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import DashboardStats from './components/DashboardStats';
+import { MetricAreaChart } from '@/components/MetricAreaChart';
+import { useGetSellerInfoQuery } from '@/Redux/Services/SellerApi';
 
 const adminOverviewCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -47,6 +48,9 @@ const adminOverviewCopy: Record<Language, Record<string, string>> = {
     newCustomers: 'New Customers',
     activeAccounts: 'Active Accounts',
     growthRate: 'Growth Rate',
+    ordersChartTitle: 'Total Orders',
+    ordersChartDescription: 'Orders for the last 3 months',
+    ordersTotalLabel: 'Orders',
     trendUpMonth: 'Trending up this month',
     visitors6Months: 'Visitors for the last 6 months',
     downPeriod: 'Down 20% this period',
@@ -70,6 +74,9 @@ const adminOverviewCopy: Record<Language, Record<string, string>> = {
     newCustomers: 'Nouveaux clients',
     activeAccounts: 'Comptes actifs',
     growthRate: 'Taux de croissance',
+    ordersChartTitle: 'Total des commandes',
+    ordersChartDescription: 'Commandes sur les 3 derniers mois',
+    ordersTotalLabel: 'Commandes',
     trendUpMonth: 'En hausse ce mois-ci',
     visitors6Months: 'Visiteurs sur les 6 derniers mois',
     downPeriod: 'En baisse de 20% sur la periode',
@@ -93,6 +100,9 @@ const adminOverviewCopy: Record<Language, Record<string, string>> = {
     newCustomers: 'عملاء جدد',
     activeAccounts: 'حسابات نشطة',
     growthRate: 'معدل النمو',
+    ordersChartTitle: 'اجمالي الطلبات',
+    ordersChartDescription: 'الطلبات خلال آخر 3 اشهر',
+    ordersTotalLabel: 'الطلبات',
     trendUpMonth: 'ارتفاع هذا الشهر',
     visitors6Months: 'الزوار خلال آخر 6 اشهر',
     downPeriod: 'انخفاض 20% خلال الفترة',
@@ -104,16 +114,16 @@ const adminOverviewCopy: Record<Language, Record<string, string>> = {
   },
 };
 
-const ChartAreaInteractive = dynamic(() => import('./chart-area-interactive').then(mod => ({ default: mod.ChartAreaInteractive })), {
-  loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
-  ssr: false, // Disable SSR to prevent hydration errors from Radix UI Select components
-});
-
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { setTheme } = useTheme();
   const user = useAppSelector((state) => state.auth.user);
   const { language } = useI18n();
   const copy = adminOverviewCopy[language];
+  const sellerId = user?.userId ?? '';
+  const { data: sellerInfo } = useGetSellerInfoQuery(sellerId, {
+    skip: !sellerId,
+  });
+  const totalOrders = sellerInfo?.total_orders ?? 0;
 
   // Memoize stats data to prevent unnecessary re-renders
   const stats = useMemo(() => [
@@ -222,7 +232,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Chart Section */}
           <div className="mb-8">
-            <ChartAreaInteractive />
+            <MetricAreaChart
+              title={copy.ordersChartTitle}
+              description={copy.ordersChartDescription}
+              totalLabel={copy.ordersTotalLabel}
+              totalValue={totalOrders}
+            />
           </div>
         </div>
 
