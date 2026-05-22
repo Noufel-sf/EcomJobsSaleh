@@ -143,12 +143,13 @@ type SellerAttachmentFields = {
   id?: string;
   name?: string;
   email?: string;
+  storeName?: string;
   description?: string;
   firstName?: string;
+  phoneNumber?: number;
   lastName?: string;
   location?: string;
   specialization?: string;
-  logo?: string;
   img?: string;
   createdAt?: string;
 };
@@ -176,11 +177,11 @@ export default function StorePage() {
     email: "",
     firstName: "",
     lastName: "",
-    image: "",
-    location: "",
-    phone_number: "",
-    storeName: "",
     description: "",
+    storeName: "",
+    img: "",
+    location: "",
+    phoneNumber: "",
     oldPassword: "",
     newPassword: "",
   });
@@ -202,20 +203,22 @@ export default function StorePage() {
         email: sellerInfo.email || "",
         firstName: sellerInfo.firstName || "",
         lastName: sellerInfo.lastName || "",
-        image: sellerInfo.img || sellerInfo.logo || "", 
-        phone_number: "",
-        location: sellerInfo.location || "",
-        storeName: sellerInfo.name || "",
         description: sellerInfo.description || "",
+        storeName: sellerInfo.storeName || "",
+        img: sellerInfo.img || "",
+        location: sellerInfo.location || "",
+        phoneNumber: sellerInfo.phoneNumber?.toString() || "" ,
+        oldPassword: "",
+        newPassword: "",
       });
-      
-      if (sellerInfo.img || sellerInfo.logo) {
-        setImagePreview(sellerInfo.img || sellerInfo.logo || "");
+
+      if (sellerInfo.img) {
+        setImagePreview(sellerInfo.img || "");
       }
-      
+
       setIsInitialized(true);
     }
-  }, [sellerInfo, isInitialized, user?.name]);
+  }, [sellerInfo, isInitialized]);
 
   // Handle form input changes
   const handleInputChange = (
@@ -263,22 +266,31 @@ export default function StorePage() {
       toast.error(copy.unauthenticated);
       return;
     }
-
+    
     try {
-      const result = await updateSellerInfo({
-        sellerId,
-        data: {
-          email: formData.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-          storeName: formData.storeName,
-          location: formData.location,
-          description: formData.description,
-          oldPassword: formData.oldPassword,
-          newPassword: formData.newPassword,
-        },
-      }).unwrap();
+      const sellerFormData: FormData = new FormData();
+      sellerFormData.append("firstName", formData.firstName);
+      sellerFormData.append("lastName", formData.lastName);
+      sellerFormData.append("email", formData.email);
+      sellerFormData.append("description", formData.description);
+      sellerFormData.append("storeName", formData.storeName);
+      sellerFormData.append("phoneNumber", formData.phoneNumber || "0");
+      sellerFormData.append("oldPassword", formData.oldPassword);
+      sellerFormData.append("newPassword", formData.newPassword);
+
+      if (formData.location) {
+        sellerFormData.append("location", formData.location);
+      }
+
+      if (imageFile) {
+        sellerFormData.append("img", imageFile);
+      } else if (formData.img) {
+        sellerFormData.append("img", formData.img);
+      } else if (sellerInfo?.img) {
+        sellerFormData.append("img", sellerInfo.img);
+      }
+
+      const result = await updateSellerInfo({ sellerId, data: sellerFormData }).unwrap();
 
       toast.success(result.message || copy.updateSuccess);
       setFormData((prev) => ({
@@ -286,6 +298,9 @@ export default function StorePage() {
         oldPassword: "",
         newPassword: "",
       }));
+      if (imageFile) {
+        setImageFile(null);
+      }
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
       const message =
@@ -301,16 +316,28 @@ export default function StorePage() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("image", imageFile);
+    const uploadFormData = new FormData();
+    uploadFormData.append("image", imageFile);
 
     try {
-      const result = await updateSellerImage({
-        sellerId,
-        formData,
-      }).unwrap();
+      const result = await updateSellerImage({ sellerId, formData: uploadFormData }).unwrap();
 
-      toast.success(result.message || copy.imageUpdated);
+      type UpdateImageResult = {
+        message?: string;
+        img?: string;
+        imageUrl?: string;
+        data?: { img?: string };
+        seller?: { img?: string };
+      };
+      const res = result as UpdateImageResult;
+
+      toast.success(res.message || copy.imageUpdated);
+      const returnedImg = res.img || res.seller?.img || res.data?.img || res.imageUrl || "";
+      if (returnedImg) {
+        setFormData((prev) => ({ ...prev, img: returnedImg }));
+        setImagePreview(returnedImg);
+      }
+
       setImageFile(null);
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
@@ -345,9 +372,7 @@ export default function StorePage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">{copy.title}</h1>
-          <p className="text-muted-foreground mt-2">
-            {copy.subtitle}
-          </p>
+          <p className="text-muted-foreground mt-2">{copy.subtitle}</p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -365,9 +390,9 @@ export default function StorePage() {
             <CardContent className="space-y-4">
               <div className="flex justify-center">
                 <div className="relative w-40 h-40 rounded-lg border-2 border-dashed border-border overflow-hidden bg-muted flex items-center justify-center">
-                  {imagePreview || sellerInfo?.img || sellerInfo?.logo ? (
+                  {imagePreview || sellerInfo?.img ? (
                     <Image
-                      src={imagePreview || sellerInfo?.img || sellerInfo?.logo || ""}
+                      src={imagePreview || sellerInfo?.img || ""}
                       alt="Seller profile preview"
                       width={160}
                       height={160}
@@ -558,10 +583,10 @@ export default function StorePage() {
                   </Label>
                   <Input
                     id="phone"
-                    name="phone"
+                    name="phoneNumber"
                     type="tel"
                     placeholder="+1234567890"
-                    value={formData.phone_number}
+                    value={formData.phoneNumber}
                     onChange={handleInputChange}
                     disabled={isUpdating}
                     required
@@ -579,7 +604,7 @@ export default function StorePage() {
                       name="oldPassword"
                       type="password"
                       placeholder="••••••••"
-                      value={""}
+                      value={formData.oldPassword}
                       onChange={handleInputChange}
                       disabled={isUpdating}
                       className="h-11"
@@ -595,7 +620,7 @@ export default function StorePage() {
                       name="newPassword"
                       type="password"
                       placeholder="••••••••"
-                      value={""}
+                      value={formData.newPassword}
                       onChange={handleInputChange}
                       disabled={isUpdating}
                       className="h-11"
@@ -636,9 +661,11 @@ export default function StorePage() {
                         email: sellerInfo.email || "",
                         firstName: user?.name?.split(" ")[0] || "",
                         lastName: user?.name?.split(" ").slice(1).join(" ") || "",
-                        phone_number: "",
+                        phoneNumber: "",
                         storeName: sellerInfo.name || "",
                         description: sellerInfo.description || "",
+                        img: sellerInfo.img || "",
+                        location: sellerInfo.location || "",
                         oldPassword: "",
                         newPassword: "",
                       });

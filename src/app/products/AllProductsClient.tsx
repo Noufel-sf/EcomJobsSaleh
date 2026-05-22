@@ -65,6 +65,7 @@ function AllProductsClientContent() {
             <div className="flex items-center gap-2 mb-6">
               <Filter className="w-5 h-5" aria-hidden="true" />
               <h2 className="text-lg font-bold">{t.filters}</h2>
+
             </div>
             <FiltersPanel
               categories={categories}

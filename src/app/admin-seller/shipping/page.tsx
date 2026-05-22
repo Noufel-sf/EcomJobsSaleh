@@ -120,16 +120,11 @@ const shippingCopy: Record<Language, Record<string, string>> = {
   },
 };
 
-const getStatusStyle = (status: string) => {
-  switch (status) {
-    case "Active":
-      return "bg-green-500/10 text-green-600 hover:bg-green-500/20 dark:bg-green-500/20 dark:text-green-400";
-    case "Inactive":
-      return "bg-red-500/10 text-red-600 hover:bg-red-500/20 dark:bg-red-500/20 dark:text-red-400";
-    default:
-      return "";
-  }
-};
+// Helper: derive the status class from the boolean flag so localization doesn't affect styling
+const getStatusStyleFromFlag = (available: boolean) =>
+  available
+    ? "bg-green-500/10 text-green-600 hover:bg-green-500/20 dark:bg-green-500/20 dark:text-green-400"
+    : "bg-red-500/10 text-red-600 hover:bg-red-500/20 dark:bg-red-500/20 dark:text-red-400";
 
 export default function ShippingManagement() {
   const { language } = useI18n();
@@ -173,8 +168,6 @@ export default function ShippingManagement() {
       ),
     );
 
-    toast.success(copy.localPriceUpdated);
-
     setEditDialogOpen(false);
     setPriceInput("");
     setSelectedState(null);
@@ -183,11 +176,11 @@ export default function ShippingManagement() {
   const handleUpdateStates = async () => {
     try {
       const payload = editableStates
-        .filter((state) => state.available)
+        .filter((state) => state.availavle)
         .map((state) => ({
           stateID: state.id,
           price: state.price,
-          available: state.available,
+          available: state.availavle,
         }));
       
 
@@ -271,17 +264,17 @@ export default function ShippingManagement() {
 
         return (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="default" className="h-8 px-2">
-                <span
-                  className={`text-xs px-2 py-1 rounded-full ${getStatusStyle(
-                    status,
-                  )}`}
-                >
-                  {status}
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="default" className="h-8 px-2">
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${getStatusStyleFromFlag(
+                        state.availavle,
+                      )}`}
+                    >
+                      {status}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="">
               <DropdownMenuLabel>{copy.changeStatus}</DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -289,7 +282,7 @@ export default function ShippingManagement() {
                 onClick={() =>
                   setEditableStates((prev) =>
                     prev.map((s) =>
-                      s.id === state.id ? { ...s, available: true } : s,
+                      s.id === state.id ? { ...s, availavle: true } : s,
                     ),
                   )
                 }
@@ -300,7 +293,7 @@ export default function ShippingManagement() {
                 onClick={() =>
                   setEditableStates((prev) =>
                     prev.map((s) =>
-                      s.id === state.id ? { ...s, available: false } : s,
+                      s.id === state.id ? { ...s, availavle: false } : s,
                     ),
                   )
                 }
@@ -443,6 +436,7 @@ export default function ShippingManagement() {
                   value={priceInput}
                   onChange={(e) => setPriceInput(e.target.value)}
                   required
+                  className="mt-3"
                 />
               </div>
 

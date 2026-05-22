@@ -69,10 +69,10 @@ export const sellerApi = createApi({
     // Update seller information
     updateSellerInfo: builder.mutation<
       UpdateSellerResponse,
-      { sellerId: string; data: UpdateSellerRequest }
+      { sellerId: string; data: FormData }
     >({
       query: ({ sellerId, data }) => ({
-        url: `store/${sellerId}`,
+        url: `sellers/${sellerId}`,
         method: "PUT",
         body: data,
       }),
