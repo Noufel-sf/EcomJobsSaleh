@@ -33,12 +33,25 @@ export interface GetAdminUsersParams {
 }
 
 export interface SuperAdminStasticsResponse {
+  totalJobs: number;
+  totalJobApplication: number;
+  totalProduct: number;
+  totalPendingProduct: number;
+  totalPendingJobs: number;
   totalSellers: number;
-  totalEmployers: number;
-  activeSellers: number;
-  suspendedSellers: number;
-  activeEmployers: number;
-  suspendedEmployers: number;
+  totalCompanys: number;
+}
+
+export interface AdminSellerStatisticsResponse {
+  totalSales: number;
+  totalOrders: number;
+  successfulOrders: number;
+  waitingOrders: number;
+}
+
+export interface AdminEmployerStatisticsResponse {
+  jobsNb: number;
+  applicationNb: number;
 }
 
 interface UpdateAdminUserStatusPayload {
@@ -87,10 +100,18 @@ export const usersApi = createApi({
       ],
     }),
 
-      getStatistics: builder.query<SuperAdminStasticsResponse, void>({
-          query: () => "/statistics",
+        getAdminSuperStatistics: builder.query<SuperAdminStasticsResponse, void>({
+          query: () => "/DashBoard",
           providesTags: ["Sellers", "Employers"],
       }),
+        getAdminSellerStatistics: builder.query<AdminSellerStatisticsResponse, void>({
+          query: () => "/sellers/dashBoard",
+          providesTags: ["Sellers"],  
+      }),
+        getAdminEmployerStatistics: builder.query<AdminEmployerStatisticsResponse, void>({
+          query: () => "/companys/dashBoard",
+          providesTags: ["Employers"],
+       }),
 
       updateAdminEmployersStatus: builder.mutation<
         AdminUser,
@@ -157,5 +178,7 @@ export const {
   useUpdateAdminEmployersStatusMutation,
   useDeleteAdminSellerMutation,
   useDeleteAdminEmployerMutation,
-  useGetStatisticsQuery,
+  useGetAdminSuperStatisticsQuery,
+  useGetAdminSellerStatisticsQuery,
+  useGetAdminEmployerStatisticsQuery,
 } = usersApi;

@@ -14,7 +14,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Sun, Moon, Briefcase, Users, CheckCircle, Clock } from 'lucide-react';
+import { Sun, Moon, Briefcase, Users } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import {
   DropdownMenu,
@@ -32,7 +32,8 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import EmployerDashboardStats from './components/EmployerDashboardStats';
 import QuickLinks from './components/QuickLinks';
 import { authApi, useLogoutMutation } from '@/Redux/Services/AuthApi';
-import { useGetAllApplicationsQuery, useGetStatisticsQuery } from '@/Redux/Services/JobApi';
+import { useGetAllApplicationsQuery } from '@/Redux/Services/JobApi';
+import { useGetAdminEmployerStatisticsQuery } from '@/Redux/Services/UsersApi';
 import { useAppDispatch } from '@/Redux/hooks';
 import { logout as logoutAction } from '@/Redux/slices/AuthSlice';
 import { useRouter } from 'next/navigation';
@@ -56,16 +57,10 @@ const employerOverviewCopy: Record<Language, Record<string, string>> = {
     applicationsChartTitle: 'Total Applications',
     applicationsChartDescription: 'Applications across all jobs',
     applicationsTotalLabel: 'Applications',
-    accepted: 'Accepted',
-    pending: 'Pending Review',
     jobsDesc: '3 new this month',
     jobsSub: 'Active listings',
     appsDesc: 'Up this week',
     appsSub: 'Across all jobs',
-    acceptedDesc: 'Candidates hired',
-    acceptedSub: 'This quarter',
-    pendingDesc: 'Awaiting decision',
-    pendingSub: 'Action required',
   },
   fr: {
     dashboard: 'Tableau employeur',
@@ -83,16 +78,10 @@ const employerOverviewCopy: Record<Language, Record<string, string>> = {
     applicationsChartTitle: 'Total candidatures',
     applicationsChartDescription: 'Candidatures sur toutes les offres',
     applicationsTotalLabel: 'Candidatures',
-    accepted: 'Acceptees',
-    pending: 'En attente',
     jobsDesc: '3 nouvelles ce mois-ci',
     jobsSub: 'Offres actives',
     appsDesc: 'En hausse cette semaine',
     appsSub: 'Toutes offres confondues',
-    acceptedDesc: 'Candidats recrutes',
-    acceptedSub: 'Ce trimestre',
-    pendingDesc: 'En attente de decision',
-    pendingSub: 'Action requise',
   },
   ar: {
     dashboard: 'لوحة صاحب العمل',
@@ -110,16 +99,10 @@ const employerOverviewCopy: Record<Language, Record<string, string>> = {
     applicationsChartTitle: 'اجمالي طلبات التوظيف',
     applicationsChartDescription: 'الطلبات عبر جميع الوظائف',
     applicationsTotalLabel: 'الطلبات',
-    accepted: 'تم القبول',
-    pending: 'قيد المراجعة',
     jobsDesc: '3 وظائف جديدة هذا الشهر',
     jobsSub: 'وظائف نشطة',
     appsDesc: 'ارتفاع هذا الاسبوع',
     appsSub: 'عبر كل الوظائف',
-    acceptedDesc: 'مرشحون تم توظيفهم',
-    acceptedSub: 'هذا الربع',
-    pendingDesc: 'بانتظار القرار',
-    pendingSub: 'يتطلب اجراء',
   },
 };
 
@@ -132,23 +115,15 @@ export default function EmployerOverview() {
   const { data: applicationsData } = useGetAllApplicationsQuery(companyId, {
     skip: !companyId,
   });
-  const { data: jobStats } = useGetStatisticsQuery();
+  const { data: employerStats } = useGetAdminEmployerStatisticsQuery();
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [logoutMutation] = useLogoutMutation();
-  const totalJobs = jobStats?.totalJobs ?? 0;
+  const totalJobs = employerStats?.jobsNb ?? 0;
   const totalApplications =
-    jobStats?.totalApplications ??
+    employerStats?.applicationNb ??
     applicationsData?.totalApplications ??
     applicationsData?.content?.length ?? 0;
-  const acceptedApplications =
-    jobStats?.totalAcceptedApplications ??
-    applicationsData?.content?.filter((application) => application.status === 'accepted').length ??
-    0;
-  const pendingApplications =
-    jobStats?.totalPendingApplications ??
-    applicationsData?.content?.filter((application) => application.status === 'pending').length ??
-    0;
 
   const handleLogout = async () => {
     try {
@@ -184,39 +159,13 @@ export default function EmployerOverview() {
       subtitle: copy.appsSub,
       icon: Users,
     },
-    {
-      title: copy.accepted,
-      value: String(acceptedApplications),
-      change: acceptedApplications > 0 ? '+1' : '0',
-      trend: 'up' as const,
-      description: copy.acceptedDesc,
-      subtitle: copy.acceptedSub,
-      icon: CheckCircle,
-    },
-    {
-      title: copy.pending,
-      value: String(pendingApplications),
-      change: pendingApplications > 0 ? '-1' : '0',
-      trend: 'down' as const,
-      description: copy.pendingDesc,
-      subtitle: copy.pendingSub,
-      icon: Clock,
-    },
   ], [
-    acceptedApplications,
-    copy.accepted,
-    copy.acceptedDesc,
-    copy.acceptedSub,
     copy.appsDesc,
     copy.appsSub,
     copy.jobsDesc,
     copy.jobsSub,
-    copy.pending,
-    copy.pendingDesc,
-    copy.pendingSub,
     copy.totalApplications,
     copy.totalJobs,
-    pendingApplications,
     totalApplications,
     totalJobs,
   ]);

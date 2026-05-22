@@ -43,10 +43,8 @@ export interface GetAllApplicationsResponse {
 }
 
 export interface JobStatisticsResponse {
-  totalJobs?: number;
-  totalApplications?: number;
-  totalAcceptedApplications?: number;
-  totalPendingApplications?: number;
+  jobsNb: number;
+  applicationNb: number;
 }
 
 export interface UpdateEmployerProfilePayload {

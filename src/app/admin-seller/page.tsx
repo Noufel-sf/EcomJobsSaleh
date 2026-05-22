@@ -31,8 +31,7 @@ import { type Language, useI18n } from '@/context/I18nContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import DashboardStats from './components/DashboardStats';
 import { MetricAreaChart } from '@/components/MetricAreaChart';
-import { useGetSellerInfoQuery } from '@/Redux/Services/SellerApi';
-import { useGetStatisticsQuery } from '@/Redux/Services/ProductsApi';
+import { useGetAdminSellerStatisticsQuery } from '@/Redux/Services/UsersApi';
 
 const adminOverviewCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -49,18 +48,18 @@ const adminOverviewCopy: Record<Language, Record<string, string>> = {
     newCustomers: 'New Customers',
     activeAccounts: 'Active Accounts',
     growthRate: 'Growth Rate',
-    totalProducts: 'Total Products',
-    availableProducts: 'Available Products',
-    unavailableProducts: 'Unavailable Products',
-    sponsoredProducts: 'Sponsored Products',
-    totalProductsDesc: 'All products in your catalog',
-    availableProductsDesc: 'Items currently available',
-    unavailableProductsDesc: 'Items currently unavailable',
-    sponsoredProductsDesc: 'Items marked as sponsored',
-    totalProductsSub: 'Overall inventory',
-    availableProductsSub: 'Ready for customers',
-    unavailableProductsSub: 'Needs attention',
-    sponsoredProductsSub: 'Promoted listings',
+    totalSales: 'Total Sales',
+    totalOrders: 'Total Orders',
+    successfulOrders: 'Successful Orders',
+    waitingOrders: 'Waiting Orders',
+    totalSalesDesc: 'Overall revenue from completed sales',
+    totalOrdersDesc: 'All received orders',
+    successfulOrdersDesc: 'Orders delivered successfully',
+    waitingOrdersDesc: 'Orders still in progress',
+    totalSalesSub: 'Revenue summary',
+    totalOrdersSub: 'Order activity',
+    successfulOrdersSub: 'Completed workflow',
+    waitingOrdersSub: 'Needs follow-up',
     ordersChartTitle: 'Total Orders',
     ordersChartDescription: 'Orders for the last 3 months',
     ordersTotalLabel: 'Orders',
@@ -87,18 +86,18 @@ const adminOverviewCopy: Record<Language, Record<string, string>> = {
     newCustomers: 'Nouveaux clients',
     activeAccounts: 'Comptes actifs',
     growthRate: 'Taux de croissance',
-    totalProducts: 'Produits totaux',
-    availableProducts: 'Produits disponibles',
-    unavailableProducts: 'Produits indisponibles',
-    sponsoredProducts: 'Produits sponsorises',
-    totalProductsDesc: 'Tous les produits de votre catalogue',
-    availableProductsDesc: 'Elements actuellement disponibles',
-    unavailableProductsDesc: 'Elements actuellement indisponibles',
-    sponsoredProductsDesc: 'Elements marques comme sponsorises',
-    totalProductsSub: 'Inventaire global',
-    availableProductsSub: 'Prêts pour les clients',
-    unavailableProductsSub: 'A surveiller',
-    sponsoredProductsSub: 'Annonces promues',
+    totalSales: 'Ventes totales',
+    totalOrders: 'Commandes totales',
+    successfulOrders: 'Commandes reussies',
+    waitingOrders: 'Commandes en attente',
+    totalSalesDesc: 'Revenu global des ventes finalisees',
+    totalOrdersDesc: 'Toutes les commandes recues',
+    successfulOrdersDesc: 'Commandes livrees avec succes',
+    waitingOrdersDesc: 'Commandes encore en cours',
+    totalSalesSub: 'Resume des revenus',
+    totalOrdersSub: 'Activite des commandes',
+    successfulOrdersSub: 'Traitement termine',
+    waitingOrdersSub: 'Suivi requis',
     ordersChartTitle: 'Total des commandes',
     ordersChartDescription: 'Commandes sur les 3 derniers mois',
     ordersTotalLabel: 'Commandes',
@@ -125,18 +124,18 @@ const adminOverviewCopy: Record<Language, Record<string, string>> = {
     newCustomers: 'عملاء جدد',
     activeAccounts: 'حسابات نشطة',
     growthRate: 'معدل النمو',
-    totalProducts: 'اجمالي المنتجات',
-    availableProducts: 'المنتجات المتاحة',
-    unavailableProducts: 'المنتجات غير المتاحة',
-    sponsoredProducts: 'المنتجات المدعومة',
-    totalProductsDesc: 'كل المنتجات في الكتالوج الخاص بك',
-    availableProductsDesc: 'العناصر المتاحة حاليا',
-    unavailableProductsDesc: 'العناصر غير المتاحة حاليا',
-    sponsoredProductsDesc: 'العناصر المعلمة كمدعومة',
-    totalProductsSub: 'المخزون بالكامل',
-    availableProductsSub: 'جاهزة للعملاء',
-    unavailableProductsSub: 'تحتاج متابعة',
-    sponsoredProductsSub: 'المنتجات المروجة',
+    totalSales: 'اجمالي المبيعات',
+    totalOrders: 'اجمالي الطلبات',
+    successfulOrders: 'الطلبات الناجحة',
+    waitingOrders: 'الطلبات قيد الانتظار',
+    totalSalesDesc: 'الايرادات الاجمالية من المبيعات المكتملة',
+    totalOrdersDesc: 'جميع الطلبات المستلمة',
+    successfulOrdersDesc: 'طلبات تم تسليمها بنجاح',
+    waitingOrdersDesc: 'طلبات ما زالت قيد المعالجة',
+    totalSalesSub: 'ملخص الايرادات',
+    totalOrdersSub: 'نشاط الطلبات',
+    successfulOrdersSub: 'عمليات مكتملة',
+    waitingOrdersSub: 'تحتاج متابعة',
     ordersChartTitle: 'اجمالي الطلبات',
     ordersChartDescription: 'الطلبات خلال آخر 3 اشهر',
     ordersTotalLabel: 'الطلبات',
@@ -156,62 +155,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const user = useAppSelector((state) => state.auth.user);
   const { language } = useI18n();
   const copy = adminOverviewCopy[language];
-  const sellerId = user?.userId ?? '';
-  const { data: sellerInfo } = useGetSellerInfoQuery(sellerId, {
-    skip: !sellerId,
-  });
-  const { data: productStats } = useGetStatisticsQuery();
-  const totalOrders = sellerInfo?.total_orders ?? 0;
+  const { data: sellerStats } = useGetAdminSellerStatisticsQuery();
+  const totalOrders = sellerStats?.totalOrders ?? 0;
 
   // Memoize stats data to prevent unnecessary re-renders
   const stats = useMemo(() => [
     {
-      title: copy.totalProducts,
-      value: String(productStats?.totalProducts ?? 0),
-      change: productStats?.totalProducts ? '+1' : '0',
+      title: copy.totalSales,
+      value: String(sellerStats?.totalSales ?? 0),
+      change: (sellerStats?.totalSales ?? 0) > 0 ? '+1' : '0',
       trend: 'up' as const,
-      description: copy.totalProductsDesc,
-      subtitle: copy.totalProductsSub,
+      description: copy.totalSalesDesc,
+      subtitle: copy.totalSalesSub,
     },
     {
-      title: copy.availableProducts,
-      value: String(productStats?.totalAvailableProducts ?? 0),
-      change: productStats?.totalAvailableProducts ? '+1' : '0',
+      title: copy.totalOrders,
+      value: String(sellerStats?.totalOrders ?? 0),
+      change: (sellerStats?.totalOrders ?? 0) > 0 ? '+1' : '0',
       trend: 'up' as const,
-      description: copy.availableProductsDesc,
-      subtitle: copy.availableProductsSub,
+      description: copy.totalOrdersDesc,
+      subtitle: copy.totalOrdersSub,
     },
     {
-      title: copy.unavailableProducts,
-      value: String(productStats?.totalNotAvailableProducts ?? 0),
-      change: productStats?.totalNotAvailableProducts ? '-1' : '0',
+      title: copy.successfulOrders,
+      value: String(sellerStats?.successfulOrders ?? 0),
+      change: (sellerStats?.successfulOrders ?? 0) > 0 ? '+1' : '0',
+      trend: 'up' as const,
+      description: copy.successfulOrdersDesc,
+      subtitle: copy.successfulOrdersSub,
+    },
+    {
+      title: copy.waitingOrders,
+      value: String(sellerStats?.waitingOrders ?? 0),
+      change: (sellerStats?.waitingOrders ?? 0) > 0 ? '-1' : '0',
       trend: 'down' as const,
-      description: copy.unavailableProductsDesc,
-      subtitle: copy.unavailableProductsSub,
+      description: copy.waitingOrdersDesc,
+      subtitle: copy.waitingOrdersSub,
     },
-    {
-      title: copy.sponsoredProducts,
-      value: String(productStats?.totalSponsoredProducts ?? 0),
-      change: productStats?.totalSponsoredProducts ? '+1' : '0',
-      trend: 'up' as const,
-      description: copy.sponsoredProductsDesc,
-      subtitle: copy.sponsoredProductsSub,
-    },
-  ], [
-    copy.availableProducts,
-    copy.availableProductsDesc,
-    copy.availableProductsSub,
-    copy.sponsoredProducts,
-    copy.sponsoredProductsDesc,
-    copy.sponsoredProductsSub,
-    copy.totalProducts,
-    copy.totalProductsDesc,
-    copy.totalProductsSub,
-    copy.unavailableProducts,
-    copy.unavailableProductsDesc,
-    copy.unavailableProductsSub,
-    productStats,
-  ]);
+  ], [copy, sellerStats]);
 
   return (
     <SidebarProvider>

@@ -32,7 +32,7 @@ import { type Language, useI18n } from "@/context/I18nContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import SuperAdminDashboardStats from "./components/SuperAdminDashboardStats";
 import QuickLinks from "./components/QuickLinks";
-import { useGetStatisticsQuery } from "@/Redux/Services/UsersApi";
+import { useGetAdminSuperStatisticsQuery } from "@/Redux/Services/UsersApi";
 
 const superAdminOverviewCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -120,58 +120,76 @@ export default function SuperAdminOverview() {
   const user = useAppSelector((state) => state.auth.user);
   const { language } = useI18n();
   const copy = superAdminOverviewCopy[language];
-  const { data: userStats } = useGetStatisticsQuery();
+  const { data: superStats } = useGetAdminSuperStatisticsQuery();
 
   // Memoize stats data to prevent unnecessary re-renders
   const stats = useMemo(
     () => [
       {
-        title: copy.sellers,
-        value: String(userStats?.totalSellers ?? 0),
-        change: userStats?.totalSellers ? "+1" : "0",
+        title: copy.totalJobs,
+        value: String(superStats?.totalJobs ?? 0),
+        change: (superStats?.totalJobs ?? 0) > 0 ? "+1" : "0",
         trend: "up" as const,
-        description: `${userStats?.activeSellers ?? 0} active`,
-        subtitle: `${userStats?.suspendedSellers ?? 0} suspended`,
+        description: copy.descUpWeek,
+        subtitle: copy.subAllJobs,
+        icon: Briefcase,
+      },
+      {
+        title: copy.totalApplications,
+        value: String(superStats?.totalJobApplication ?? 0),
+        change: (superStats?.totalJobApplication ?? 0) > 0 ? "+1" : "0",
+        trend: "up" as const,
+        description: copy.descMonth,
+        subtitle: copy.subQuarter,
+        icon: Users,
+      },
+      {
+        title: copy.products,
+        value: String(superStats?.totalProduct ?? 0),
+        change: (superStats?.totalProduct ?? 0) > 0 ? "+1" : "0",
+        trend: "up" as const,
+        description: copy.descUpWeek,
+        subtitle: copy.subActive,
+        icon: CheckCircle,
+      },
+      {
+        title: copy.sellers,
+        value: String(superStats?.totalSellers ?? 0),
+        change: (superStats?.totalSellers ?? 0) > 0 ? "+1" : "0",
+        trend: "up" as const,
+        description: copy.descMonth,
+        subtitle: copy.subQuarter,
         icon: Briefcase,
       },
       {
         title: copy.employers,
-        value: String(userStats?.totalEmployers ?? 0),
-        change: userStats?.totalEmployers ? "+1" : "0",
+        value: String(superStats?.totalCompanys ?? 0),
+        change: (superStats?.totalCompanys ?? 0) > 0 ? "+1" : "0",
         trend: "up" as const,
-        description: `${userStats?.activeEmployers ?? 0} active`,
-        subtitle: `${userStats?.suspendedEmployers ?? 0} suspended`,
+        description: copy.descMonth,
+        subtitle: copy.subQuarter,
         icon: Users,
       },
       {
         title: copy.pendingJobs,
-        value: String(userStats?.activeSellers ?? 0),
-        change: userStats?.activeSellers ? "+1" : "0",
-        trend: "up" as const,
-        description: copy.descUpWeek,
-        subtitle: copy.subQuarter,
-        icon: CheckCircle,
+        value: String(superStats?.totalPendingJobs ?? 0),
+        change: (superStats?.totalPendingJobs ?? 0) > 0 ? "-1" : "0",
+        trend: "down" as const,
+        description: copy.descAwaiting,
+        subtitle: copy.subAction,
+        icon: Clock,
       },
       {
-        title: copy.pendingSponsors,
-        value: String(userStats?.activeEmployers ?? 0),
-        change: userStats?.activeEmployers ? "+1" : "0",
+        title: copy.pendingProducts,
+        value: String(superStats?.totalPendingProduct ?? 0),
+        change: (superStats?.totalPendingProduct ?? 0) > 0 ? "-1" : "0",
         trend: "down" as const,
         description: copy.descAwaiting,
         subtitle: copy.subAction,
         icon: Clock,
       },
     ],
-    [
-      copy.descUpWeek,
-      copy.employers,
-      copy.pendingJobs,
-      copy.pendingSponsors,
-      copy.sellers,
-      copy.subAction,
-      copy.subQuarter,
-      userStats,
-    ],
+    [copy, superStats],
   );
 
   return (

@@ -9,7 +9,7 @@ type LocalizedSectionTitleProps = {
 };
 
 const DEFAULT_TITLE_CLASS =
-  'text-2xl lg:text-3xl font-bold bg-linear-to-r from-foreground via-primary  bg-clip-text text-transparent';
+  'text-2xl lg:text-3xl font-bold text-primary';
 
 export default function LocalizedSectionTitle({
   id,

@@ -14,10 +14,10 @@ export interface GetAllProductsParams {
 }
 
 export interface getStatisticsResponse {
-  totalProducts: number;
-  totalAvailableProducts: number;
-  totalNotAvailableProducts: number;
-  totalSponsoredProducts: number;
+  totalSales: number;
+  totalOrders: number;
+  successfulOrders: number;
+  waitingOrders: number;
 }
 
 export interface GetAllProductsResponse {
@@ -78,11 +78,7 @@ export const productsApi = createApi({
       providesTags: ["Products"],
     }),
 
-     getStatistics: builder.query<getStatisticsResponse, void>({
-          query: () => "/statistics",
-          providesTags: ["Products"],
-     }),
-
+  
     getProductsByClassification: builder.query<
       GetAllProductsResponse,
       GetProductsByClassificationArgs
@@ -208,7 +204,6 @@ export const productsApi = createApi({
 export const {
   useGetAllProductsQuery,
   useGetNotAvailableProductsQuery,
-  useGetStatisticsQuery,
   useGetBestSellingQuery,
   useGetSellerAdminProductsQuery,
   useGetProductByIdQuery,
