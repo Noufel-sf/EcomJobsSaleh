@@ -113,6 +113,16 @@ export default function AdminAllOrders() {
     { skip: !sellerId },
   );
   const orders = useMemo(() => ordersData?.content ?? [], [ordersData]);
+
+  type ProductObj = {
+    id: string;
+    name: string;
+    smallDesc: string;
+    bigDesc: string | null;
+    mainImage: string;
+    price: number;
+    available: boolean;
+  };
   const [deleteOrderMutation] = useDeleteOrderMutation();
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
 
@@ -158,20 +168,27 @@ export default function AdminAllOrders() {
       "State": order.state || "N/A",
       "City": order.city || "N/A",
 
-      "Products Count": order.products?.length || 0,
+      "Products Count": (order.products ?? []).length,
 
-      "Products": order.products
-        ?.map(
-          (item) =>
-            `${item.name || "Unknown"} (x${item.prodNb}) - Size: ${
-              item.size || "-"
-            } - Color: ${item.color || "-"}`
-        )
+      "Products": (order.products ?? [])
+        .map((item) => {
+          const isProductObject = item.product && typeof item.product !== "string";
+          const name = isProductObject ? (item.product as ProductObj).name : item.name ?? "Unknown";
+          const qty = item.prodNb ?? 0;
+          return `${name} (x${qty}) - Size: ${item.size || "-"} - Color: ${item.color || "-"}`;
+        })
         .join(" | ") || "N/A",
 
-      "Products Cost": `${order.products.reduce((sum, item) => sum + item.priceAtTime * item.prodNb, 0).toFixed(2)} DA`,
-      "Delivery Cost": `${order.deliveryCost?.toFixed(2) || "0.00"} DA`,
-      "Total Cost": `${order.totalCost?.toFixed(2) || "0.00"} DA`,
+      "Products Cost": `${((order.products ?? []).reduce((sum, item) => {
+        const isProductObject = item.product && typeof item.product !== "string";
+        const productPrice = isProductObject ? (item.product as ProductObj).price : 0;
+        const price = Number(item.priceAtTime ?? item.price ?? productPrice ?? 0) || 0;
+        const qty = Number(item.prodNb ?? 0) || 0;
+        return sum + price * qty;
+      }, 0)).toFixed(2)} DA`,
+
+      "Delivery Cost": `${(Number(order.deliveryCost) || 0).toFixed(2)} DA`,
+      "Total Cost": `${(Number(order.totalCost) || 0).toFixed(2)} DA`,
 
       "Status":
         order.status?.charAt(0).toUpperCase() +
@@ -180,23 +197,23 @@ export default function AdminAllOrders() {
 
     const headers = Object.keys(exportData[0]) as Array<keyof (typeof exportData)[0]>;
 
-    const csvContent = [
-      headers.join(","),
-      ...exportData.map((row) =>
-        headers
-          .map((header) => {
-            const value = row[header];
+    // Build CSV content with proper escaping and UTF-8 BOM for Excel compatibility
+    const rows = exportData.map((row) =>
+      headers
+        .map((header) => {
+          const raw = row[header];
+          const s = raw === null || raw === undefined ? "" : String(raw);
+          const escaped = s.replace(/"/g, '""');
+          // Quote if contains comma, quote, or newline
+          return /[",\n]/.test(s) ? `"${escaped}"` : s;
+        })
+        .join(","),
+    );
 
-            return typeof value === "string" &&
-              (value.includes(",") || value.includes('"'))
-              ? `"${value.replace(/"/g, '""')}"`
-              : value;
-          })
-          .join(",")
-      ),
-    ].join("\n");
+    const BOM = "\uFEFF"; // UTF-8 BOM to help Excel detect UTF-8 encoding
+    const csvContent = [headers.join(","), ...rows].join("\n");
 
-    const blob = new Blob([csvContent], {
+    const blob = new Blob([BOM + csvContent], {
       type: "text/csv;charset=utf-8;",
     });
 
