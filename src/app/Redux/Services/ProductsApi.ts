@@ -13,6 +13,13 @@ export interface GetAllProductsParams {
   maxPrice?: number;
 }
 
+export interface getStatisticsResponse {
+  totalProducts: number;
+  totalAvailableProducts: number;
+  totalNotAvailableProducts: number;
+  totalSponsoredProducts: number;
+}
+
 export interface GetAllProductsResponse {
   content: Product[];
   totalProducts: number;
@@ -53,6 +60,8 @@ export const productsApi = createApi({
       }),
       providesTags: ["Products"],
     }),
+
+
     getNotAvailableProducts: builder.query<
       GetAllProductsResponse,
       GetAllProductsParams | void
@@ -68,6 +77,11 @@ export const productsApi = createApi({
       }),
       providesTags: ["Products"],
     }),
+
+     getStatistics: builder.query<getStatisticsResponse, void>({
+          query: () => "/statistics",
+          providesTags: ["Products"],
+     }),
 
     getProductsByClassification: builder.query<
       GetAllProductsResponse,
@@ -194,6 +208,7 @@ export const productsApi = createApi({
 export const {
   useGetAllProductsQuery,
   useGetNotAvailableProductsQuery,
+  useGetStatisticsQuery,
   useGetBestSellingQuery,
   useGetSellerAdminProductsQuery,
   useGetProductByIdQuery,

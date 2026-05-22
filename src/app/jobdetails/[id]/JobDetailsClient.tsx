@@ -116,6 +116,7 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
   const handleCloseModal = () => {
     setIsApplicationModalOpen(false);
   };
+  console.log(job);
 
   if (!job) {
     return (
@@ -187,9 +188,9 @@ const JobDetailsClient = ({ initialJob }: JobDetailsClientProps) => {
                       <Building2 className="w-4 h-4" />
                         <Link
                           href={`/employerprofile/${job.company}`}
-                          className="font-medium hover:text-primary hover:underline underline-offset-4 transition"
+                          className="font-medium text-primary hover:text-primary/50 hover:underline underline-offset-4 transition"
                         >
-                          {job.company}
+                          {job.companyName}
                         </Link>
                     </div>
                     <span>•</span>

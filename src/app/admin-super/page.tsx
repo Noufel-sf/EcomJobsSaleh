@@ -32,6 +32,7 @@ import { type Language, useI18n } from "@/context/I18nContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import SuperAdminDashboardStats from "./components/SuperAdminDashboardStats";
 import QuickLinks from "./components/QuickLinks";
+import { useGetStatisticsQuery } from "@/Redux/Services/UsersApi";
 
 const superAdminOverviewCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -119,77 +120,42 @@ export default function SuperAdminOverview() {
   const user = useAppSelector((state) => state.auth.user);
   const { language } = useI18n();
   const copy = superAdminOverviewCopy[language];
+  const { data: userStats } = useGetStatisticsQuery();
 
   // Memoize stats data to prevent unnecessary re-renders
   const stats = useMemo(
     () => [
       {
-        title: copy.totalJobs,
-        value: "12",
-        change: "+3",
+        title: copy.sellers,
+        value: String(userStats?.totalSellers ?? 0),
+        change: userStats?.totalSellers ? "+1" : "0",
         trend: "up" as const,
-        description: copy.descMonth,
-        subtitle: copy.subActive,
+        description: `${userStats?.activeSellers ?? 0} active`,
+        subtitle: `${userStats?.suspendedSellers ?? 0} suspended`,
         icon: Briefcase,
       },
       {
-        title: copy.totalApplications,
-        value: "148",
-        change: "+24",
+        title: copy.employers,
+        value: String(userStats?.totalEmployers ?? 0),
+        change: userStats?.totalEmployers ? "+1" : "0",
         trend: "up" as const,
-        description: copy.descUpWeek,
-        subtitle: copy.subAllJobs,
+        description: `${userStats?.activeEmployers ?? 0} active`,
+        subtitle: `${userStats?.suspendedEmployers ?? 0} suspended`,
         icon: Users,
       },
       {
-        title: copy.products,
-        value: "18",
-        change: "+5",
+        title: copy.pendingJobs,
+        value: String(userStats?.activeSellers ?? 0),
+        change: userStats?.activeSellers ? "+1" : "0",
         trend: "up" as const,
         description: copy.descUpWeek,
         subtitle: copy.subQuarter,
         icon: CheckCircle,
       },
       {
-        title: copy.pendingProducts,
-        value: "43",
-        change: "-2",
-        trend: "down" as const,
-        description: copy.descAwaiting,
-        subtitle: copy.subAction,
-        icon: Clock,
-      },
-      {
-        title: copy.pendingJobs,
-        value: "43",
-        change: "-2",
-        trend: "down" as const,
-        description: copy.descAwaiting,
-        subtitle: copy.subAction,
-        icon: Clock,
-      },
-      {
         title: copy.pendingSponsors,
-        value: "43",
-        change: "-2",
-        trend: "down" as const,
-        description: copy.descAwaiting,
-        subtitle: copy.subAction,
-        icon: Clock,
-      },
-           {
-        title: copy.sellers,
-        value: "43",
-        change: "-2",
-        trend: "down" as const,
-        description: copy.descAwaiting,
-        subtitle: copy.subAction,
-        icon: Clock,
-      },
-               {
-        title: copy.employers,
-        value: "43",
-        change: "-2",
+        value: String(userStats?.activeEmployers ?? 0),
+        change: userStats?.activeEmployers ? "+1" : "0",
         trend: "down" as const,
         description: copy.descAwaiting,
         subtitle: copy.subAction,
@@ -197,21 +163,14 @@ export default function SuperAdminOverview() {
       },
     ],
     [
-      copy.descAwaiting,
-      copy.descMonth,
       copy.descUpWeek,
       copy.employers,
       copy.pendingJobs,
-      copy.pendingProducts,
       copy.pendingSponsors,
-      copy.products,
       copy.sellers,
       copy.subAction,
-      copy.subActive,
-      copy.subAllJobs,
       copy.subQuarter,
-      copy.totalApplications,
-      copy.totalJobs,
+      userStats,
     ],
   );
 

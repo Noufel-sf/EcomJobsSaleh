@@ -32,6 +32,15 @@ export interface GetAdminUsersParams {
   limit?: number;
 }
 
+export interface SuperAdminStasticsResponse {
+  totalSellers: number;
+  totalEmployers: number;
+  activeSellers: number;
+  suspendedSellers: number;
+  activeEmployers: number;
+  suspendedEmployers: number;
+}
+
 interface UpdateAdminUserStatusPayload {
   id: string;
   isActive: boolean;
@@ -77,6 +86,11 @@ export const usersApi = createApi({
         { type: "Employers", id: "LIST" },
       ],
     }),
+
+      getStatistics: builder.query<SuperAdminStasticsResponse, void>({
+          query: () => "/statistics",
+          providesTags: ["Sellers", "Employers"],
+      }),
 
       updateAdminEmployersStatus: builder.mutation<
         AdminUser,
@@ -143,4 +157,5 @@ export const {
   useUpdateAdminEmployersStatusMutation,
   useDeleteAdminSellerMutation,
   useDeleteAdminEmployerMutation,
+  useGetStatisticsQuery,
 } = usersApi;

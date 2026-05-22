@@ -42,6 +42,13 @@ export interface GetAllApplicationsResponse {
   totalPages: number;
 }
 
+export interface JobStatisticsResponse {
+  totalJobs?: number;
+  totalApplications?: number;
+  totalAcceptedApplications?: number;
+  totalPendingApplications?: number;
+}
+
 export interface UpdateEmployerProfilePayload {
   name: string;
   email: string;
@@ -181,6 +188,11 @@ export const jobApi = createApi({
     getAllCategories: builder.query<GetAllCategoriesResponse, void>({
       query: () => "/categoriess",
       providesTags: ["JobsCategories"],
+    }),
+
+    getStatistics: builder.query<JobStatisticsResponse, void>({
+      query: () => "/statistics",
+      providesTags: ["Jobs"],
     }),
 
     deleteCategory: builder.mutation<void, string>({
@@ -362,6 +374,7 @@ export const {
   useCreateApplicationMutation,
   useUpdateApplicationStatusMutation,
   useDeleteApplicationMutation,
+  useGetStatisticsQuery,
   useUpdateEmployerProfileMutation,
   useUpdateEmployerPasswordMutation,
 } = jobApi;

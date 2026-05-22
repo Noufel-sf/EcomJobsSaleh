@@ -32,7 +32,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import EmployerDashboardStats from './components/EmployerDashboardStats';
 import QuickLinks from './components/QuickLinks';
 import { authApi, useLogoutMutation } from '@/Redux/Services/AuthApi';
-import { useGetAllApplicationsQuery } from '@/Redux/Services/JobApi';
+import { useGetAllApplicationsQuery, useGetStatisticsQuery } from '@/Redux/Services/JobApi';
 import { useAppDispatch } from '@/Redux/hooks';
 import { logout as logoutAction } from '@/Redux/slices/AuthSlice';
 import { useRouter } from 'next/navigation';
@@ -132,11 +132,23 @@ export default function EmployerOverview() {
   const { data: applicationsData } = useGetAllApplicationsQuery(companyId, {
     skip: !companyId,
   });
+  const { data: jobStats } = useGetStatisticsQuery();
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [logoutMutation] = useLogoutMutation();
+  const totalJobs = jobStats?.totalJobs ?? 0;
   const totalApplications =
-    applicationsData?.totalApplications ?? applicationsData?.content?.length ?? 0;
+    jobStats?.totalApplications ??
+    applicationsData?.totalApplications ??
+    applicationsData?.content?.length ?? 0;
+  const acceptedApplications =
+    jobStats?.totalAcceptedApplications ??
+    applicationsData?.content?.filter((application) => application.status === 'accepted').length ??
+    0;
+  const pendingApplications =
+    jobStats?.totalPendingApplications ??
+    applicationsData?.content?.filter((application) => application.status === 'pending').length ??
+    0;
 
   const handleLogout = async () => {
     try {
@@ -156,8 +168,8 @@ export default function EmployerOverview() {
   const stats = useMemo(() => [
     {
       title: copy.totalJobs,
-      value: '12',
-      change: '+3',
+      value: String(totalJobs),
+      change: totalJobs > 0 ? '+1' : '0',
       trend: 'up' as const,
       description: copy.jobsDesc,
       subtitle: copy.jobsSub,
@@ -165,8 +177,8 @@ export default function EmployerOverview() {
     },
     {
       title: copy.totalApplications,
-      value: '148',
-      change: '+24',
+      value: String(totalApplications),
+      change: totalApplications > 0 ? '+1' : '0',
       trend: 'up' as const,
       description: copy.appsDesc,
       subtitle: copy.appsSub,
@@ -174,8 +186,8 @@ export default function EmployerOverview() {
     },
     {
       title: copy.accepted,
-      value: '18',
-      change: '+5',
+      value: String(acceptedApplications),
+      change: acceptedApplications > 0 ? '+1' : '0',
       trend: 'up' as const,
       description: copy.acceptedDesc,
       subtitle: copy.acceptedSub,
@@ -183,14 +195,31 @@ export default function EmployerOverview() {
     },
     {
       title: copy.pending,
-      value: '43',
-      change: '-2',
+      value: String(pendingApplications),
+      change: pendingApplications > 0 ? '-1' : '0',
       trend: 'down' as const,
       description: copy.pendingDesc,
       subtitle: copy.pendingSub,
       icon: Clock,
     },
-  ], [copy.accepted, copy.acceptedDesc, copy.acceptedSub, copy.appsDesc, copy.appsSub, copy.jobsDesc, copy.jobsSub, copy.pending, copy.pendingDesc, copy.pendingSub, copy.totalApplications, copy.totalJobs]);
+  ], [
+    acceptedApplications,
+    copy.accepted,
+    copy.acceptedDesc,
+    copy.acceptedSub,
+    copy.appsDesc,
+    copy.appsSub,
+    copy.jobsDesc,
+    copy.jobsSub,
+    copy.pending,
+    copy.pendingDesc,
+    copy.pendingSub,
+    copy.totalApplications,
+    copy.totalJobs,
+    pendingApplications,
+    totalApplications,
+    totalJobs,
+  ]);
 
   return (
     <SidebarProvider>

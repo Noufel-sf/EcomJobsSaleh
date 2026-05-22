@@ -71,11 +71,15 @@ import {
 import AdminDataTableSkeleton from "@/components/AdminDataTableSkeleton";
 import { type Language, useI18n } from "@/context/I18nContext";
 
-const superAdminProductCategoriesCopy: Record<Language, Record<string, string>> = {
+const superAdminProductCategoriesCopy: Record<
+  Language,
+  Record<string, string>
+> = {
   en: {
     breadcrumb: "Products Categories",
     title: "Categories",
     description: "View and organize all categories.",
+    img: "Image",
     created: "Category created successfully",
     updated: "Category updated successfully",
     deleted: "Category deleted successfully",
@@ -107,6 +111,7 @@ const superAdminProductCategoriesCopy: Record<Language, Record<string, string>> 
     breadcrumb: "Categories produits",
     title: "Categories",
     description: "Afficher et organiser toutes les categories.",
+    img: "Image",
     created: "Categorie creee avec succes",
     updated: "Categorie mise a jour avec succes",
     deleted: "Categorie supprimee avec succes",
@@ -138,6 +143,7 @@ const superAdminProductCategoriesCopy: Record<Language, Record<string, string>> 
     breadcrumb: "فئات المنتجات",
     title: "الفئات",
     description: "عرض وتنظيم جميع الفئات.",
+    img: "الصورة",
     created: "تم انشاء الفئة بنجاح",
     updated: "تم تحديث الفئة بنجاح",
     deleted: "تم حذف الفئة بنجاح",
@@ -189,24 +195,67 @@ export default function SuperAdminCategories() {
     useState<Classification | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [open, setOpen] = useState(false);
 
   const [deleteCategory] = useDeleteClassificationMutation();
   const [createCategory] = useAddClassificationMutation();
   const [updateCategory] = useUpdateClassificationMutation();
 
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setImageFile(null);
+    setImagePreview("");
+    setSelectedCategory(null);
+    setEditMode(false);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+
+    if (!file) {
+      setImageFile(null);
+      setImagePreview("");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be 5MB or smaller.");
+      return;
+    }
+
+    setImageFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview((reader.result as string) || "");
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const newCategory = await createCategory({
-        name: title,
-        desc: description,
-      }).unwrap();
+      const formData = new FormData();
+      formData.append("name", title);
+      formData.append("desc", description);
+
+      if (imageFile) {
+        formData.append("img", imageFile);
+      }
+
+      const newCategory = await createCategory({ body: formData }).unwrap();
       setData((prev) => [...prev, { ...newCategory, desc: newCategory.desc ?? null }]);
       toast.success(copy.created);
       setOpen(false);
-      setTitle("");
-      setDescription("");
+      resetForm();
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
       toast.error(err?.data?.message || copy.updateFailed);
@@ -218,26 +267,36 @@ export default function SuperAdminCategories() {
     if (!selectedCategory) return;
 
     try {
-      await updateCategory({
+      const formData = new FormData();
+      formData.append("name", title);
+      formData.append("desc", description);
+
+      if (imageFile) {
+        formData.append("img", imageFile);
+      } else if (selectedCategory.img) {
+        formData.append("img", selectedCategory.img);
+      }
+
+      const updatedCategory = await updateCategory({
         id: selectedCategory.id,
-        name: title,
-        desc: description,
+        body: formData,
       }).unwrap();
 
       setData((prev) =>
         prev.map((category) =>
           category.id === selectedCategory.id
-            ? { ...category, name: title, desc: description }
+            ? {
+                ...category,
+                ...updatedCategory,
+                desc: updatedCategory.desc ?? null,
+              }
             : category,
         ),
       );
-      setTitle("");
-      setDescription("");
+      resetForm();
 
       toast.success(copy.updated);
-      setSelectedCategory(null);
       setEditSheetOpen(false);
-      setEditMode(false);
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
       toast.error(err?.data?.message || copy.updateFailed);
@@ -288,6 +347,13 @@ export default function SuperAdminCategories() {
       ),
       enableSorting: false,
       enableHiding: false,
+    },
+    {
+      accessorKey: "img",
+      header: copy.img,
+      cell: ({ row }: { row: Row<Classification> }) => (
+        <div className="font-medium">{row.getValue("img")}</div>
+      ),
     },
 
     {
@@ -381,9 +447,24 @@ export default function SuperAdminCategories() {
       </p>
       <div className="w-full">
         <div className="flex items-center py-4">
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog
+            open={open}
+            onOpenChange={(nextOpen) => {
+              setOpen(nextOpen);
+              if (!nextOpen) {
+                resetForm();
+              }
+            }}
+          >
             <DialogTrigger asChild>
-              <Button variant="primary" size="lg" className="">
+              <Button
+                variant="primary"
+                size="lg"
+                className=""
+                onClick={() => {
+                  resetForm();
+                }}
+              >
                 {copy.createNew}
               </Button>
             </DialogTrigger>
@@ -394,12 +475,29 @@ export default function SuperAdminCategories() {
                     {editMode ? copy.editCategory : copy.createCategory}
                   </DialogTitle>
                   <DialogDescription className="mb-3">
-                    {editMode
-                      ? copy.editDescription
-                      : copy.createDescription}
+                    {editMode ? copy.editDescription : copy.createDescription}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4">
+                  <div className="grid gap-3">
+                    <Label className="" htmlFor="img">
+                      {copy.img}
+                    </Label>
+                    <Input
+                      id="img"
+                      name="img"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                    {(imagePreview || selectedCategory?.img) && (
+                      <img
+                        src={imagePreview || selectedCategory?.img || ""}
+                        alt={title || copy.img}
+                        className="h-28 w-28 rounded-md border object-cover"
+                      />
+                    )}
+                  </div>
                   <div className="grid gap-3">
                     <Label className="" htmlFor="title">
                       {copy.name}
@@ -473,7 +571,15 @@ export default function SuperAdminCategories() {
           </DropdownMenu>
         </div>
 
-        <Sheet open={editSheetOpen} onOpenChange={setEditSheetOpen}>
+        <Sheet
+          open={editSheetOpen}
+          onOpenChange={(nextOpen) => {
+            setEditSheetOpen(nextOpen);
+            if (!nextOpen) {
+              resetForm();
+            }
+          }}
+        >
           <SheetContent className="">
             <form onSubmit={handleUpdate}>
               <SheetHeader className="">
@@ -484,6 +590,25 @@ export default function SuperAdminCategories() {
               </SheetHeader>
 
               <div className="grid gap-4 py-4 px-6">
+                <div className="grid gap-3">
+                  <Label className="" htmlFor="edit-img">
+                    {copy.img}
+                  </Label>
+                  <Input
+                    id="edit-img"
+                    name="edit-img"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                  {(imagePreview || selectedCategory?.img) && (
+                    <img
+                      src={imagePreview || selectedCategory?.img || ""}
+                      alt={title || copy.img}
+                      className="h-28 w-28 rounded-md border object-cover"
+                    />
+                  )}
+                </div>
                 <div className="grid gap-3">
                   <Label className="" htmlFor="title">
                     {copy.titleLabel}

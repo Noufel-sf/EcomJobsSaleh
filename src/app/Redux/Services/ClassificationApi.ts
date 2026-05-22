@@ -6,6 +6,7 @@ interface Classification {
   id: string;
   name: string;
   desc?: string;
+  img?: string | null;
 }
 
 interface GetAllClassificationsResponse {
@@ -13,14 +14,12 @@ interface GetAllClassificationsResponse {
 }
 
 interface CreateClassificationData {
-  name: string;
-  desc?: string;
+  body: FormData;
 }
 
 interface UpdateClassificationData {
   id: string;
-  name?: string;
-  desc?: string;
+  body: FormData;
 }
 
 export const classificationApi = createApi({
@@ -38,19 +37,19 @@ export const classificationApi = createApi({
     }),
 
     addClassification: builder.mutation<Classification, CreateClassificationData>({
-      query: (data) => ({
+      query: ({ body }) => ({
         url: "",
         method: "POST",
-        body: data,
+        body,
       }),
       invalidatesTags: ["Classifications"],
     }),
 
     updateClassification: builder.mutation<Classification, UpdateClassificationData>({
-      query: ({ id, ...data }) => ({
+      query: ({ id, body }) => ({
         url: `/${id}`,
         method: "PUT",
-        body: data,
+        body,
       }),
       invalidatesTags: ["Classifications"],
     }),

@@ -61,6 +61,7 @@ export interface Classification {
   id: string; // uuid
   name: string; // varchar(100)
   desc: string | null; // varchar(500)
+  img?: string | null; // varchar(255)
 }
 
 export interface Sponsor {
@@ -238,6 +239,7 @@ export interface Job {
   categories: string[];
   requiredSkills: string[];
   appliedCount: number;
+  companyName: string;
   totalCapacity: number;
   applyBefore: string;
   jobPostedOn: string;

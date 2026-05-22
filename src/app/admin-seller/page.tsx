@@ -32,6 +32,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import DashboardStats from './components/DashboardStats';
 import { MetricAreaChart } from '@/components/MetricAreaChart';
 import { useGetSellerInfoQuery } from '@/Redux/Services/SellerApi';
+import { useGetStatisticsQuery } from '@/Redux/Services/ProductsApi';
 
 const adminOverviewCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -48,6 +49,18 @@ const adminOverviewCopy: Record<Language, Record<string, string>> = {
     newCustomers: 'New Customers',
     activeAccounts: 'Active Accounts',
     growthRate: 'Growth Rate',
+    totalProducts: 'Total Products',
+    availableProducts: 'Available Products',
+    unavailableProducts: 'Unavailable Products',
+    sponsoredProducts: 'Sponsored Products',
+    totalProductsDesc: 'All products in your catalog',
+    availableProductsDesc: 'Items currently available',
+    unavailableProductsDesc: 'Items currently unavailable',
+    sponsoredProductsDesc: 'Items marked as sponsored',
+    totalProductsSub: 'Overall inventory',
+    availableProductsSub: 'Ready for customers',
+    unavailableProductsSub: 'Needs attention',
+    sponsoredProductsSub: 'Promoted listings',
     ordersChartTitle: 'Total Orders',
     ordersChartDescription: 'Orders for the last 3 months',
     ordersTotalLabel: 'Orders',
@@ -74,6 +87,18 @@ const adminOverviewCopy: Record<Language, Record<string, string>> = {
     newCustomers: 'Nouveaux clients',
     activeAccounts: 'Comptes actifs',
     growthRate: 'Taux de croissance',
+    totalProducts: 'Produits totaux',
+    availableProducts: 'Produits disponibles',
+    unavailableProducts: 'Produits indisponibles',
+    sponsoredProducts: 'Produits sponsorises',
+    totalProductsDesc: 'Tous les produits de votre catalogue',
+    availableProductsDesc: 'Elements actuellement disponibles',
+    unavailableProductsDesc: 'Elements actuellement indisponibles',
+    sponsoredProductsDesc: 'Elements marques comme sponsorises',
+    totalProductsSub: 'Inventaire global',
+    availableProductsSub: 'Prêts pour les clients',
+    unavailableProductsSub: 'A surveiller',
+    sponsoredProductsSub: 'Annonces promues',
     ordersChartTitle: 'Total des commandes',
     ordersChartDescription: 'Commandes sur les 3 derniers mois',
     ordersTotalLabel: 'Commandes',
@@ -100,6 +125,18 @@ const adminOverviewCopy: Record<Language, Record<string, string>> = {
     newCustomers: 'عملاء جدد',
     activeAccounts: 'حسابات نشطة',
     growthRate: 'معدل النمو',
+    totalProducts: 'اجمالي المنتجات',
+    availableProducts: 'المنتجات المتاحة',
+    unavailableProducts: 'المنتجات غير المتاحة',
+    sponsoredProducts: 'المنتجات المدعومة',
+    totalProductsDesc: 'كل المنتجات في الكتالوج الخاص بك',
+    availableProductsDesc: 'العناصر المتاحة حاليا',
+    unavailableProductsDesc: 'العناصر غير المتاحة حاليا',
+    sponsoredProductsDesc: 'العناصر المعلمة كمدعومة',
+    totalProductsSub: 'المخزون بالكامل',
+    availableProductsSub: 'جاهزة للعملاء',
+    unavailableProductsSub: 'تحتاج متابعة',
+    sponsoredProductsSub: 'المنتجات المروجة',
     ordersChartTitle: 'اجمالي الطلبات',
     ordersChartDescription: 'الطلبات خلال آخر 3 اشهر',
     ordersTotalLabel: 'الطلبات',
@@ -123,43 +160,58 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { data: sellerInfo } = useGetSellerInfoQuery(sellerId, {
     skip: !sellerId,
   });
+  const { data: productStats } = useGetStatisticsQuery();
   const totalOrders = sellerInfo?.total_orders ?? 0;
 
   // Memoize stats data to prevent unnecessary re-renders
   const stats = useMemo(() => [
     {
-      title: copy.totalRevenue,
-      value: '$1,250.00',
-      change: '+12.5%',
+      title: copy.totalProducts,
+      value: String(productStats?.totalProducts ?? 0),
+      change: productStats?.totalProducts ? '+1' : '0',
       trend: 'up' as const,
-      description: copy.trendUpMonth,
-      subtitle: copy.visitors6Months,
+      description: copy.totalProductsDesc,
+      subtitle: copy.totalProductsSub,
     },
     {
-      title: copy.newCustomers,
-      value: '1,234',
-      change: '-20%',
+      title: copy.availableProducts,
+      value: String(productStats?.totalAvailableProducts ?? 0),
+      change: productStats?.totalAvailableProducts ? '+1' : '0',
+      trend: 'up' as const,
+      description: copy.availableProductsDesc,
+      subtitle: copy.availableProductsSub,
+    },
+    {
+      title: copy.unavailableProducts,
+      value: String(productStats?.totalNotAvailableProducts ?? 0),
+      change: productStats?.totalNotAvailableProducts ? '-1' : '0',
       trend: 'down' as const,
-      description: copy.downPeriod,
-      subtitle: copy.acquisition,
+      description: copy.unavailableProductsDesc,
+      subtitle: copy.unavailableProductsSub,
     },
     {
-      title: copy.activeAccounts,
-      value: '45,678',
-      change: '+12.5%',
+      title: copy.sponsoredProducts,
+      value: String(productStats?.totalSponsoredProducts ?? 0),
+      change: productStats?.totalSponsoredProducts ? '+1' : '0',
       trend: 'up' as const,
-      description: copy.retention,
-      subtitle: copy.engagement,
+      description: copy.sponsoredProductsDesc,
+      subtitle: copy.sponsoredProductsSub,
     },
-    {
-      title: copy.growthRate,
-      value: '4.5%',
-      change: '+4.5%',
-      trend: 'up' as const,
-      description: copy.steady,
-      subtitle: copy.projections,
-    },
-  ], [copy.activeAccounts, copy.acquisition, copy.engagement, copy.growthRate, copy.newCustomers, copy.projections, copy.retention, copy.steady, copy.totalRevenue, copy.trendUpMonth, copy.visitors6Months, copy.downPeriod]);
+  ], [
+    copy.availableProducts,
+    copy.availableProductsDesc,
+    copy.availableProductsSub,
+    copy.sponsoredProducts,
+    copy.sponsoredProductsDesc,
+    copy.sponsoredProductsSub,
+    copy.totalProducts,
+    copy.totalProductsDesc,
+    copy.totalProductsSub,
+    copy.unavailableProducts,
+    copy.unavailableProductsDesc,
+    copy.unavailableProductsSub,
+    productStats,
+  ]);
 
   return (
     <SidebarProvider>
