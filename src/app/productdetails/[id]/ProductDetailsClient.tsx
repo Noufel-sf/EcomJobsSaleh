@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Mail, Phone, Store, ShoppingCart } from "lucide-react";
+import { Mail, Phone, Store, ShoppingCart } from "lucide-react";
 import { useAddToCartMutation } from "@/Redux/Services/CartApi";
 
 import { type Product } from "@/lib/DatabaseTypes";
@@ -52,6 +52,7 @@ const productMessages: Record<
     buyProductNow: string;
     addedToCart: string;
     failedToAddToCart: string;
+    differentSellerCartError: string;
   }
 > = {
   en: {
@@ -83,6 +84,8 @@ const productMessages: Record<
     buyProductNow: "Buy product now",
     addedToCart: "Added to cart",
     failedToAddToCart: "Failed to add to cart",
+    differentSellerCartError:
+      "You can only add products from one seller at a time.",
   },
   fr: {
     notFoundTitle: "404 - Produit introuvable",
@@ -112,6 +115,8 @@ const productMessages: Record<
     buyProductNow: "Acheter ce produit maintenant",
     addedToCart: "Ajoute au panier",
     failedToAddToCart: "Echec de l'ajout au panier",
+    differentSellerCartError:
+      "Vous ne pouvez ajouter que des produits d'un seul vendeur a la fois.",
   },
   ar: {
     notFoundTitle: "404 - المنتج غير موجود",
@@ -141,6 +146,8 @@ const productMessages: Record<
     buyProductNow: "اشتر هذا المنتج الآن",
     addedToCart: "تمت الاضافة الى السلة",
     failedToAddToCart: "فشل اضافة المنتج الى السلة",
+    differentSellerCartError:
+      "يمكنك اضافة منتجات من بائع واحد فقط في كل مرة.",
   },
 };
 
@@ -174,8 +181,12 @@ const ProductDetailsClient = ({
 
       toast.success(copy.addedToCart);
     } catch (error) {
-      const typedError = error as { data?: { message?: string } };
-      toast.error(typedError?.data?.message || copy.failedToAddToCart);
+      const typedError = error as { data?: { message?: string; code?: string } };
+      toast.error(
+        typedError?.data?.code === "CART_DIFFERENT_SELLER"
+          ? copy.differentSellerCartError
+          : typedError?.data?.message || copy.failedToAddToCart,
+      );
     }
   }, [
     singleProduct,
@@ -184,6 +195,7 @@ const ProductDetailsClient = ({
     selectedColor,
     copy.addedToCart,
     copy.failedToAddToCart,
+    copy.differentSellerCartError,
   ]);
   console.log(singleProduct);
 

@@ -41,6 +41,15 @@ const calculateTotals = (items: CartItem[]): { totalItems: number; totalPrice: n
   return { totalItems, totalPrice };
 };
 
+const createCartOwnerError = () => ({
+  error: {
+    status: 400,
+    data: {
+      code: "CART_DIFFERENT_SELLER",
+    },
+  },
+} as const);
+
 export const cartApi = createApi({
   reducerPath: "cartApi",
   baseQuery: fakeBaseQuery(),
@@ -58,6 +67,12 @@ export const cartApi = createApi({
     addToCart: builder.mutation<CartState, CartItem>({
       queryFn: (newItem) => {
         const cart = getCartFromStorage();
+        const existingOwnerId = cart.items.find((item) => item.ownerId)?.ownerId;
+
+        if (existingOwnerId && newItem.ownerId && existingOwnerId !== newItem.ownerId) {
+          return createCartOwnerError();
+        }
+
         const existingIndex = cart.items.findIndex(
           (item) => item.productId === newItem.productId
         );

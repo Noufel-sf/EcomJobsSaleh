@@ -26,22 +26,7 @@ const CategorysCarousel = memo(function CategorysCarousel({
 }: CategorysCarouselProps) {
   return (
     <div className="relative">
-      <div className="mb-4 flex items-center justify-end gap-3">
-        <button
-          className="category-prev flex h-9 w-9 items-center justify-center rounded-full border bg-background/90 text-foreground shadow-sm transition hover:bg-muted"
-          aria-label="Previous categories"
-          type="button"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <button
-          className="category-next flex h-9 w-9 items-center justify-center rounded-full border bg-background/90 text-foreground shadow-sm transition hover:bg-muted"
-          aria-label="Next categories"
-          type="button"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
-      </div>
+   
 
       <Swiper
         spaceBetween={16}

@@ -2,6 +2,7 @@
 "use no memo";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   type ColumnFiltersState,
   getCoreRowModel,
@@ -247,10 +248,6 @@ export default function SuperAdminSellers() {
     }
   };
 
-  const handleVisitProfile = (user: Seller) => {
-    toast(t(copy.visitingProfileToast, { name: user.name }));
-  };
-
   const columns = [
     {
       id: "select",
@@ -341,14 +338,11 @@ export default function SuperAdminSellers() {
       cell: ({ row }: { row: Row<Seller> }) => {
         const user = row.original;
         return (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 gap-1.5 cursor-pointer text-muted-foreground hover:text-foreground"
-            onClick={() => handleVisitProfile(user)}
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            {copy.view}
+          <Button asChild variant="ghost" size="sm" className="h-8 gap-1.5 cursor-pointer text-muted-foreground hover:text-foreground">
+            <Link href={`/sellerprofile/${user.id}`}>
+              <ExternalLink className="h-3.5 w-3.5" />
+              {copy.view}
+            </Link>
           </Button>
         );
       },
@@ -373,13 +367,11 @@ export default function SuperAdminSellers() {
             <DropdownMenuContent align="end" className="">
               <DropdownMenuLabel>{copy.actions}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="cursor-pointer"
-                inset
-                onClick={() => handleVisitProfile(user)}
-              >
-                <ExternalLink className="mr-2 h-4 w-4" />
-                {copy.visitProfile}
+              <DropdownMenuItem asChild className="cursor-pointer" inset>
+                <Link href={`/sellerprofile/${user.id}`}>
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  {copy.visitProfile}
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
