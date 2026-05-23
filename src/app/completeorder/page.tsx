@@ -8,13 +8,11 @@ import {
   useOptimistic,
 } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import {
   useGetCartQuery,
   useClearCartMutation,
@@ -23,16 +21,15 @@ import { useCreateOrderMutation } from "@/Redux/Services/OrderApi";
 import toast from "react-hot-toast";
 import CompleteOrderSkeleton from "@/components/CompleteOrderSkeleton";
 import OrderSummary from "@/components/OrderSummary";
-import { ContactSection, ShippingSection } from "@/components/CheckoutFormSections";
 import {
-  Lock,
-  Package,
-  ArrowLeft,
-  ShoppingBag,
-} from "lucide-react";
+  ContactSection,
+  ShippingSection,
+} from "@/components/CheckoutFormSections";
+import { Lock, Package, ArrowLeft, ShoppingBag } from "lucide-react";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/zodValidation";
 import { useI18n } from "@/context/I18nContext";
 import { useGetSellerStatesQuery } from "@/Redux/Services/OrderApi";
+import { useGetAllShippingSellerStatesQuery } from "@/Redux/Services/ShippingApi";
 
 function CompleteOrder() {
   const { messages, t } = useI18n();
@@ -47,13 +44,18 @@ function CompleteOrder() {
     const firstItem = cart[0] as { ownerId?: string } | undefined;
     return firstItem?.ownerId ?? "";
   }, [cart]);
-  console.log("the cart is " , cart);
-  
-  console.log("the seller id " , sellerId);
-  
+  console.log("the cart is ", cart);
+
+  console.log("the seller id ", sellerId);
+
   const { data: sellerStates } = useGetSellerStatesQuery(sellerId, {
     skip: !sellerId,
   });
+
+  const { data: shippingStates } = useGetAllShippingSellerStatesQuery(
+    sellerId,
+    { skip: !sellerId },
+  );
 
   const [optimisticStatus, setOptimisticStatus] = useOptimistic<
     "idle" | "submitting" | "success"
@@ -72,6 +74,20 @@ function CompleteOrder() {
       note: "",
     },
   });
+
+  const selectedStateId = useWatch({
+    control: form.control,
+    name: "state",
+  });
+  const shippingPrice = useMemo(() => {
+    if (!shippingStates || !selectedStateId) return 0;
+
+    const selectedState = shippingStates.find(
+      (state) => String(state.id) === String(selectedStateId),
+    );
+
+    return selectedState?.price ?? 0;
+  }, [selectedStateId, shippingStates]);
 
   const SubmitOrder = useCallback(
     async (data: CheckoutFormValues) => {
@@ -103,11 +119,20 @@ function CompleteOrder() {
           toast.success(messages.checkout.orderPlacedSuccess);
         } catch (error: unknown) {
           const typedError = error as { data?: { message?: string } };
-          toast.error(typedError?.data?.message || messages.checkout.orderFailed);
+          toast.error(
+            typedError?.data?.message || messages.checkout.orderFailed,
+          );
         }
       });
     },
-    [cart, clearCart, createOrder, messages.checkout.orderFailed, messages.checkout.orderPlacedSuccess, setOptimisticStatus],
+    [
+      cart,
+      clearCart,
+      createOrder,
+      messages.checkout.orderFailed,
+      messages.checkout.orderPlacedSuccess,
+      setOptimisticStatus,
+    ],
   );
 
   const isSubmitting = isPending || optimisticStatus === "submitting";
@@ -181,7 +206,10 @@ function CompleteOrder() {
                 aria-label="Complete order form"
               >
                 <ContactSection form={form} />
-                <ShippingSection form={form} sellerStates={sellerStates ?? []} />
+                <ShippingSection
+                  form={form}
+                  sellerStates={sellerStates ?? []}
+                />
 
                 {/* Submit Button */}
                 <Button
@@ -190,7 +218,11 @@ function CompleteOrder() {
                   className="w-full"
                   size="lg"
                   variant="default"
-                  aria-label={isSubmitting ? messages.checkout.processingOrder : messages.checkout.placeOrder}
+                  aria-label={
+                    isSubmitting
+                      ? messages.checkout.processingOrder
+                      : messages.checkout.placeOrder
+                  }
                 >
                   {isSubmitting ? (
                     <>
@@ -203,7 +235,9 @@ function CompleteOrder() {
                   ) : (
                     <>
                       <Lock className="w-4 h-4 mr-2" aria-hidden="true" />
-                      {t(messages.checkout.placeOrderWithAmount, { amount: displayTotal.toFixed(2) })}
+                      {t(messages.checkout.placeOrderWithAmount, {
+                        amount: displayTotal.toFixed(2),
+                      })}
                     </>
                   )}
                 </Button>
@@ -216,7 +250,11 @@ function CompleteOrder() {
           </section>
 
           {/* Right: Order Summary */}
-          <OrderSummary items={cart} total={displayTotal} />
+          <OrderSummary
+            items={cart}
+            total={displayTotal}
+            shipping={shippingPrice}
+          />
         </div>
       </div>
     </main>

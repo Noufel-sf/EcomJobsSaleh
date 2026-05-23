@@ -13,7 +13,7 @@ interface JobCardProps {
 const JobCard = memo(function JobCard({ job }: JobCardProps) {
   return (
     <Link href={`/jobdetails/${job.id}`} className="block h-full">
-      <Card className="cursor-pointer bg-secondary shadow-lg hover:shadow-xl transition-all duration-300 border-0 overflow-hidden group h-full flex flex-col">
+      <Card className="cursor-pointer overflow-hidden group flex h-full flex-col border border-border/70 bg-linear-to-br from-card via-background to-muted/40 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800">
         <CardContent className="p-6 flex flex-col h-full">
           {/* Company Logo & Info */}
           <div className="flex items-start justify-between mb-4">

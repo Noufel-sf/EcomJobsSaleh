@@ -56,7 +56,7 @@ export default async function CategorysSection() {
           labels={{
             en: "Browse Categories",
             fr: "Parcourir les categories",
-            ar: "تصفح الفئات",
+            ar: "تصفح الفئات المنتجات",
           }}
         />
 

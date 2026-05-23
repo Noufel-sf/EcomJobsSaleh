@@ -165,7 +165,7 @@ export default function SellerProfileClient({
       </div>
 
       <section className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-        <Card className="overflow-hidden rounded-3xl border-nonep-0  shadow-2xl shadow-slate-950/20">
+        <Card className="overflow-hidden rounded-3xl border-nonep-0 ">
           <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[auto_1fr] lg:items-start">
             <div className="space-y-5">
               <div className="space-y-2">

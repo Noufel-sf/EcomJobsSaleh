@@ -5,15 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import type { CartItem } from '@/lib/DatabaseTypes';
-import { Lock, Package, ShoppingBag } from 'lucide-react';
+import { Lock,  ShoppingBag } from 'lucide-react';
 import { useI18n } from '@/context/I18nContext';
 
 interface OrderSummaryProps {
   items: CartItem[];
   total: number;
+  shipping?: number;
 }
 
-const OrderSummary = memo(function OrderSummary({ items, total }: OrderSummaryProps) {
+const OrderSummary = memo(function OrderSummary({ items, total, shipping = 0 }: OrderSummaryProps) {
   const { messages } = useI18n();
 
   return (
@@ -58,13 +59,17 @@ const OrderSummary = memo(function OrderSummary({ items, total }: OrderSummaryPr
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{messages.checkout.shipping}</span>
-              <Badge variant="secondary">{messages.checkout.free}</Badge>
+              {shipping > 0 ? (
+                <span className='text-primary'>${shipping.toFixed(2)}</span>
+              ) : (
+                <Badge variant="secondary">{messages.checkout.free}</Badge>
+              )}
             </div>
           </div>
 
           <div className="border-t border-border pt-4 flex justify-between text-lg font-bold">
             <span>{messages.checkout.total}</span>
-            <span>${total.toFixed(2)}</span>
+            <span className='text-primary'>${(total + shipping).toFixed(2)}</span>
           </div>
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 p-3 rounded">

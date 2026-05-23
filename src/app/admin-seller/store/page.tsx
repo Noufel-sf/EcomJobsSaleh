@@ -235,11 +235,6 @@ export default function StorePage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        toast.error(copy.invalidImage);
-        return;
-      }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
@@ -275,8 +270,12 @@ export default function StorePage() {
       sellerFormData.append("description", formData.description);
       sellerFormData.append("storeName", formData.storeName);
       sellerFormData.append("phoneNumber", formData.phoneNumber || "0");
-      sellerFormData.append("oldPassword", formData.oldPassword);
-      sellerFormData.append("newPassword", formData.newPassword);
+      if (formData.oldPassword.trim()) {
+        sellerFormData.append("oldPassword", formData.oldPassword);
+      }
+      if (formData.newPassword.trim()) {
+        sellerFormData.append("newPassword", formData.newPassword);
+      }
 
       if (formData.location) {
         sellerFormData.append("location", formData.location);
@@ -449,23 +448,7 @@ export default function StorePage() {
                 )}
               </div>
             </CardContent>
-            <CardFooter className="">
-              {isUploadingImage ? (
-                <Button disabled className="w-full">
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {copy.uploading}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleImageUpload}
-                  disabled={!imageFile}
-                  className="w-full"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  {copy.uploadImage}
-                </Button>
-              )}
-            </CardFooter>
+   
           </Card>
 
           {/* Store Information Card */}

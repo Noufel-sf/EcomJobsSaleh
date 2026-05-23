@@ -31,7 +31,7 @@ export default async function JobsSection() {
 
   return (
     <section
-      className="py-20 bg-linear-to-b from-background to-muted/20"
+      className="py-20"
       aria-labelledby="jobs-heading"
     >
       <div className="container mx-auto px-4">

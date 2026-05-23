@@ -15,6 +15,7 @@ import {
   type VisibilityState,
   flexRender,
 } from "@tanstack/react-table";
+import Image from "next/image";
 
 import {
   Table,
@@ -252,7 +253,10 @@ export default function SuperAdminCategories() {
       }
 
       const newCategory = await createCategory({ body: formData }).unwrap();
-      setData((prev) => [...prev, { ...newCategory, desc: newCategory.desc ?? null }]);
+      setData((prev) => [
+        ...prev,
+        { ...newCategory, desc: newCategory.desc ?? null },
+      ]);
       toast.success(copy.created);
       setOpen(false);
       resetForm();
@@ -352,7 +356,13 @@ export default function SuperAdminCategories() {
       accessorKey: "img",
       header: copy.img,
       cell: ({ row }: { row: Row<Classification> }) => (
-        <div className="font-medium">{row.getValue("img")}</div>
+        <Image
+          width={48}
+          height={48}
+          className="w-12 h-12 object-cover rounded"
+          src={row.getValue("img")}
+          alt="category img"
+        />
       ),
     },
 
