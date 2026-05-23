@@ -31,7 +31,7 @@ export default async function SponsoredJobs() {
 
   return (
     <section
-      className="mx-auto container px-6 py-12"
+      className="mx-auto container px-6 py-12 " 
       aria-labelledby="sponsored-jobs-heading"
     >
       <div className="heading mb-6 flex items-center justify-between">

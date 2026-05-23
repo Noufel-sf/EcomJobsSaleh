@@ -5,7 +5,9 @@ import dynamic from "next/dynamic";
 type CategoryCard = {
   id: string;
   title: string;
+  href: string;
   img?: string;
+  accent: string;
 };
 
 const LazyCategorysCarousel = dynamic(() => import("./CategorysCarousel"), {
