@@ -172,7 +172,27 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/" aria-label="Go to homepage">
-            <h2 className="text-xl font-bold">Ch <span className="text-primary">aid</span></h2>
+            <Image
+              src="/logodesk.png"
+              alt="Logo"
+              width={120}
+              height={40}
+              className="hidden md:block dark:hidden h-auto w-auto object-contain"
+            />
+            <Image
+              src="/logodark.png"
+              alt="Logo"
+              width={120}
+              height={40}
+              className="hidden dark:md:block h-auto w-auto object-contain"
+            />
+            <Image
+              src="/logosmall.png"
+              alt="Logo"
+              width={36}
+              height={36}
+              className="block md:hidden h-auto w-auto object-contain"
+            />
           </Link>
         </div>
 
@@ -185,7 +205,7 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={messages.navbar.searchPlaceholder}
-            className="w-full pl-10 pr-4 py-2 rounded-md bg-zinc-100 dark:bg-zinc-800 text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
+            className="w-full pl-10 pr-4 py-2 ml-2 mr-2 rounded-md bg-zinc-100 dark:bg-zinc-800 text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
             aria-autocomplete="list"
             aria-controls="search-results"
           />
@@ -213,7 +233,7 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
                     <Image
                       src={product.mainImage}
                       alt=""
-                      className="w-10 h-10 object-contain"
+                      className="w-10 h-10  object-contain"
                       width={40}
                       height={40}
                       loading="lazy"

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -10,6 +9,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useI18n } from '@/context/I18nContext';
+import Image from 'next/image';
 
 const Footer = () => {
   const { messages } = useI18n();
@@ -20,7 +20,15 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-foreground">Shopping Jobs</h3>
+            <div className="flex  items-center justify-center rounded-2xl border bg-white shadow-inner h-18 w-38">
+            <Image 
+              src="/logodesk.png"
+              alt="Saleh Store Logo"
+              width={160}
+              height={40}
+              className="h-10 w-auto object-contain"
+            />
+            </div>
             <p className="">
               {messages.footer.tagline}
             </p>

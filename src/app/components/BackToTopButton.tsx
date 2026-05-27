@@ -29,12 +29,12 @@ export default function BackToTopButton() {
   return (
     <Button
       type="button"
-      variant="secondary"
+      variant="primary"
       size="icon"
       onClick={scrollToTop}
       aria-label="Back to top"
       className={[
-        "fixed bottom-6 right-6 z-50 h-11 w-11 rounded-full shadow-lg",
+        "fixed bottom-6 right-6 animate-bounce z-50 h-11 w-11 rounded-full shadow-lg",
         "transition-all duration-300",
         isVisible
           ? "translate-y-0 opacity-100 pointer-events-auto"
