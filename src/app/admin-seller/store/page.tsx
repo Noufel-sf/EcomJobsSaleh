@@ -283,10 +283,6 @@ export default function StorePage() {
 
       if (imageFile) {
         sellerFormData.append("img", imageFile);
-      } else if (formData.img) {
-        sellerFormData.append("img", formData.img);
-      } else if (sellerInfo?.img) {
-        sellerFormData.append("img", sellerInfo.img);
       }
 
       const result = await updateSellerInfo({ sellerId, data: sellerFormData }).unwrap();

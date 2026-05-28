@@ -327,12 +327,12 @@ export default function EmployerJobs() {
 
           {/* Search */}
           <Input
-            placeholder={copy.search}
+            placeholder={copy.search} 
             value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
             onChange={(e) =>
               table.getColumn("title")?.setFilterValue(e.target.value)
             }
-            className="max-w-sm"
+            className="max-w-sm hidden md:block"
           />
 
           {/* Column toggle */}

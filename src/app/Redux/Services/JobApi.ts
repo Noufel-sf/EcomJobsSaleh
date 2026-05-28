@@ -55,6 +55,8 @@ export interface UpdateEmployerProfilePayload {
   description?: string;
   location?: string;
   specialization?: string;
+  oldPassword?: string;
+  newPassword?: string;
 }
 
 type UpdateEmployerProfileArgs = {

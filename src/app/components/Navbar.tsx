@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { memo, useEffect, useRef, useState } from "react";
 import { Moon, Sun, Search, ShoppingCart, User, Menu } from "lucide-react";
@@ -22,7 +22,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { useGetCartQuery } from "@/Redux/Services/CartApi";
-import {  useLazySearchProductsQuery } from "@/Redux/Services/ProductsApi";
+import { useLazySearchProductsQuery } from "@/Redux/Services/ProductsApi";
 import { authApi, useLogoutMutation } from "@/Redux/Services/AuthApi";
 import { useAppSelector, useAppDispatch } from "@/Redux/hooks";
 import { logout as logoutAction } from "@/Redux/slices/AuthSlice";
@@ -54,9 +54,7 @@ function ListItem({ id, name, children }: ListItemProps) {
           href={`/products?classification=${id}`}
           className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
         >
-          <div className="text-sm font-medium leading-none">
-            {name}
-          </div>
+          <div className="text-sm font-medium leading-none">{name}</div>
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>
@@ -67,29 +65,31 @@ function ListItem({ id, name, children }: ListItemProps) {
 }
 
 function getAccountRouteByRole(role?: string) {
-  const normalizedRole = (role || '').trim().toUpperCase().replace(/^ROLE_/, '');
+  const normalizedRole = (role || "")
+    .trim()
+    .toUpperCase()
+    .replace(/^ROLE_/, "");
 
-  if (normalizedRole === 'EMPLOYER') {
-    return '/employer';
+  if (normalizedRole === "EMPLOYER") {
+    return "/employer";
   }
 
-  if (normalizedRole === 'SUPER_ADMIN' || normalizedRole === 'ADMIN-SUPER') {
-    return '/admin-super';
+  if (normalizedRole === "SUPER_ADMIN" || normalizedRole === "ADMIN-SUPER") {
+    return "/admin-super";
   }
 
   if (
-    normalizedRole === 'SELLER' ||
-    normalizedRole === 'SELLER_ADMIN' ||
-    normalizedRole === 'ADMIN-SELLER'
+    normalizedRole === "SELLER" ||
+    normalizedRole === "SELLER_ADMIN" ||
+    normalizedRole === "ADMIN-SELLER"
   ) {
-    return '/admin-seller';
+    return "/admin-seller";
   }
 
-  return '/login';
+  return "/login";
 }
 
 const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
-
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const { setTheme } = useTheme();
@@ -106,10 +106,9 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const searchRequestRef = useRef(0);
-  
+
   const totalItems = cartData?.totalItems || 0;
-  
-  
+
   const handleLogout = async () => {
     try {
       await logoutMutation().unwrap();
@@ -119,11 +118,10 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
     } finally {
       dispatch(logoutAction());
       dispatch(authApi.util.resetApiState());
-      router.replace('/login');
+      router.replace("/login");
       router.refresh();
     }
   };
-
 
   useEffect(() => {
     const normalized = searchTerm.trim();
@@ -167,7 +165,11 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
   }, [router, user, accountRoute]);
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md shadow-sm border-b border-border" role="navigation" aria-label="Main navigation">
+    <nav
+      className="sticky top-0 z-50 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md shadow-sm border-b border-border"
+      role="navigation"
+      aria-label="Main navigation"
+    >
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center">
@@ -198,7 +200,9 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
 
         {/* Search Bar */}
         <div className=" lg:block w-full max-w-md relative">
-          <label htmlFor="product-search" className="sr-only">{messages.navbar.searchLabel}</label>
+          <label htmlFor="product-search" className="sr-only">
+            {messages.navbar.searchLabel}
+          </label>
           <input
             id="product-search"
             type="search"
@@ -209,18 +213,21 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
             aria-autocomplete="list"
             aria-controls="search-results"
           />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-primary text-lg" aria-hidden="true" />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-primary text-lg"
+            aria-hidden="true"
+          />
 
           {/* Search Dropdown */}
           {searchTerm.trim().length >= 2 && (
-            <div 
+            <div
               id="search-results"
               className="absolute top-full mt-2 left-0 right-0 bg-white dark:bg-zinc-900 border border-border rounded-md shadow-md z-50 max-h-96 overflow-y-auto"
               role="listbox"
               aria-label={messages.navbar.searchResultsLabel}
             >
               {searchResults.length > 0 ? (
-                searchResults.map((product : Product) => (
+                searchResults.map((product: Product) => (
                   <Link
                     key={product.id}
                     href={`/productdetails/${product.id}`}
@@ -249,7 +256,10 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
                   </Link>
                 ))
               ) : (
-                <div className="px-4 py-3 text-sm text-muted-foreground" role="status">
+                <div
+                  className="px-4 py-3 text-sm text-muted-foreground"
+                  role="status"
+                >
                   {messages.navbar.noProductsFound}
                 </div>
               )}
@@ -279,9 +289,7 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
                     </span>
                   </Link>
                   <NavigationMenuItem className="">
-                    <NavigationMenuTrigger
-                      className=" text-sm px-3 mx-2 cursor-pointer bg-transparent hover:text-purple-700 dark:hover:text-purple-300"
-                    >
+                    <NavigationMenuTrigger className=" text-sm px-3 mx-2 cursor-pointer bg-transparent hover:text-purple-700 dark:hover:text-purple-300">
                       {messages.navbar.categories}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent className="">
@@ -318,7 +326,10 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
                     className="bg-white dark:bg-zinc-900 shadow-lg border border-border rounded-md"
                   >
                     <Link href={accountRoute}>
-                      <DropdownMenuItem className="cursor-pointer" inset={false}>
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        inset={false}
+                      >
                         {messages.navbar.myAccount}
                       </DropdownMenuItem>
                     </Link>
@@ -348,12 +359,18 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
                     className="bg-white dark:bg-zinc-900 shadow-lg border border-border rounded-md"
                   >
                     <Link href="/login">
-                      <DropdownMenuItem className="cursor-pointer" inset={false}>
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        inset={false}
+                      >
                         {messages.navbar.login}
                       </DropdownMenuItem>
                     </Link>
                     <Link href="/register">
-                      <DropdownMenuItem className="cursor-pointer" inset={false}>
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        inset={false}
+                      >
                         {messages.navbar.register}
                       </DropdownMenuItem>
                     </Link>
@@ -363,11 +380,20 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
             </div>
           </div>
           {/* Icons */}
-          <Link href="/cart" className="relative" aria-label={t(messages.navbar.cartLabel, { count: totalItems })}>
+          <Link
+            href="/cart"
+            className="relative"
+            aria-label={t(messages.navbar.cartLabel, { count: totalItems })}
+          >
             <Button variant="ghost" size="icon" className="cursor-pointer">
               <ShoppingCart className="text-xl" aria-hidden="true" />
               {totalItems > 0 && (
-                <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center" aria-label={t(messages.navbar.cartItemsLabel, { count: totalItems })}>
+                <span
+                  className="absolute top-0 right-0 -mt-1 -mr-1 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center"
+                  aria-label={t(messages.navbar.cartItemsLabel, {
+                    count: totalItems,
+                  })}
+                >
                   {totalItems}
                 </span>
               )}
@@ -378,9 +404,20 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
           <div className="hidden md:block">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="cursor-pointer relative" aria-label={messages.navbar.toggleTheme}>
-                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" aria-hidden="true" />
-                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" aria-hidden="true" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="cursor-pointer relative"
+                  aria-label={messages.navbar.toggleTheme}
+                >
+                  <Sun
+                    className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+                    aria-hidden="true"
+                  />
+                  <Moon
+                    className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+                    aria-hidden="true"
+                  />
                   <span className="sr-only">{messages.navbar.toggleTheme}</span>
                 </Button>
               </DropdownMenuTrigger>
@@ -441,12 +478,15 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
                 className="justify-start px-3 w-full text-left"
                 onClick={() => setIsOpen(false)}
               >
-                <Link href={`/products?classification=${category.id}`} className="flex flex-col w-full">
+                <Link
+                  href={`/products?classification=${category.id}`}
+                  className="flex flex-col w-full"
+                >
                   <span className="text-base font-medium text-zinc-900 dark:text-white">
                     {category.name}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {category.desc ?? ''}
+                    {category.desc ?? ""}
                   </span>
                 </Link>
               </Button>

@@ -667,16 +667,6 @@ export default function CreateStorePage() {
           </div>
         </div>
 
-        {/* Footer note */}
-        <p className="text-center text-xs text-zinc-400 mt-6">
-          {copy.alreadyStore}{" "}
-          <Link
-            href="/admin-seller"
-            className="text-zinc-700 dark:text-zinc-300 font-medium hover:underline"
-          >
-            {copy.goDashboard}
-          </Link>
-        </p>
       </div>
     </div>
   );

@@ -17,10 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppSelector } from "@/Redux/hooks";
-import {
-  useUpdateEmployerPasswordMutation,
-  useUpdateEmployerProfileMutation,
-} from "@/Redux/Services/JobApi";
+import { useUpdateEmployerProfileMutation } from "@/Redux/Services/JobApi";
 import {
   employerPasswordSchema,
   employerProfileSchema,
@@ -53,9 +50,8 @@ const profileCopy: Record<Language, Record<string, string>> = {
     saveChanges: "Save Changes",
     changePassword: "Change Password",
     changePasswordDesc: "Keep your account secure by using a strong password.",
-    currentPassword: "Current Password",
+    oldPassword: "Old Password",
     newPassword: "New Password",
-    confirmPassword: "Confirm New Password",
     savePassword: "Save Password",
     invalidImage: "Please select a valid image file",
     maxImage: "Image size should be less than 5MB",
@@ -85,9 +81,8 @@ const profileCopy: Record<Language, Record<string, string>> = {
     changePassword: "Changer le mot de passe",
     changePasswordDesc:
       "Gardez votre compte securise avec un mot de passe fort.",
-    currentPassword: "Mot de passe actuel",
+    oldPassword: "Ancien mot de passe",
     newPassword: "Nouveau mot de passe",
-    confirmPassword: "Confirmer le nouveau mot de passe",
     savePassword: "Enregistrer le mot de passe",
     invalidImage: "Veuillez selectionner une image valide",
     maxImage: "La taille de l'image doit etre inferieure a 5 Mo",
@@ -114,9 +109,8 @@ const profileCopy: Record<Language, Record<string, string>> = {
     saveChanges: "حفظ التغييرات",
     changePassword: "تغيير كلمة المرور",
     changePasswordDesc: "حافظ على امان حسابك باستخدام كلمة مرور قوية.",
-    currentPassword: "كلمة المرور الحالية",
+    oldPassword: "كلمة المرور القديمة",
     newPassword: "كلمة المرور الجديدة",
-    confirmPassword: "تأكيد كلمة المرور الجديدة",
     savePassword: "حفظ كلمة المرور",
     invalidImage: "الرجاء اختيار ملف صورة صالح",
     maxImage: "يجب ان يكون حجم الصورة اقل من 5MB",
@@ -156,8 +150,6 @@ export default function EmployerProfilePage() {
 
   const [updateEmployerProfile, { isLoading: isSavingProfile }] =
     useUpdateEmployerProfileMutation();
-  const [updateEmployerPassword, { isLoading: isSavingPassword }] =
-    useUpdateEmployerPasswordMutation();
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
 
@@ -176,9 +168,8 @@ export default function EmployerProfilePage() {
   const passwordForm = useForm<EmployerPasswordFormValues>({
     resolver: zodResolver(employerPasswordSchema),
     defaultValues: {
-      currentPassword: "",
+      oldPassword: "",
       newPassword: "",
-      confirmPassword: "",
     },
   });
 
@@ -248,8 +239,6 @@ export default function EmployerProfilePage() {
         formData.append("companyName", values.companyName);
       if (logoFile) {
         formData.append("logo", logoFile);
-      } else if (values.logo) {
-        formData.append("logo", values.logo);
       }
       if (values.description)
         formData.append("description", values.description);
@@ -274,16 +263,31 @@ export default function EmployerProfilePage() {
 
   const onPasswordSubmit = async (values: EmployerPasswordFormValues) => {
     try {
-      await updateEmployerPassword({
-        currentPassword: values.currentPassword,
-        newPassword: values.newPassword,
+      const resolvedCompanyId = companyData.id || user?.userId;
+      const passwordFormData = new FormData();
+
+      if (resolvedCompanyId) {
+        passwordFormData.append("id", resolvedCompanyId);
+      }
+
+      if (values.oldPassword?.trim()) {
+        passwordFormData.append("oldPassword", values.oldPassword);
+      }
+
+      if (values.newPassword?.trim()) {
+        passwordFormData.append("newPassword", values.newPassword);
+      }
+
+      await updateEmployerProfile({
+        id: resolvedCompanyId || "",
+        payload: passwordFormData,
       }).unwrap();
 
       toast.success(copy.passwordUpdated);
       passwordForm.reset();
     } catch (error) {
       toast.error(copy.passwordFailed);
-      console.error("Failed to update employer password", error);
+      console.error("Failed to update employer profile password", error);
     }
   };
 
@@ -471,18 +475,15 @@ export default function EmployerProfilePage() {
 
                 <CardContent className="grid gap-4 max-w-xl">
                   <div className="grid gap-2">
-                    <Label htmlFor="current-password">
-                      {copy.currentPassword}
-                    </Label>
+                    <Label htmlFor="old-password">{copy.oldPassword}</Label>
                     <Input
-                      id="current-password"
+                      id="old-password"
                       type="password"
-                      {...passwordForm.register("currentPassword")}
-                      required
+                      {...passwordForm.register("oldPassword")}
                     />
-                    {passwordForm.formState.errors.currentPassword && (
+                    {passwordForm.formState.errors.oldPassword && (
                       <p className="text-sm text-red-500">
-                        {passwordForm.formState.errors.currentPassword.message}
+                        {passwordForm.formState.errors.oldPassword.message}
                       </p>
                     )}
                   </div>
@@ -493,7 +494,6 @@ export default function EmployerProfilePage() {
                       id="new-password"
                       type="password"
                       {...passwordForm.register("newPassword")}
-                      required
                     />
                     {passwordForm.formState.errors.newPassword && (
                       <p className="text-sm text-red-500">
@@ -501,27 +501,10 @@ export default function EmployerProfilePage() {
                       </p>
                     )}
                   </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="confirm-password">
-                      {copy.confirmPassword}
-                    </Label>
-                    <Input
-                      id="confirm-password"
-                      type="password"
-                      {...passwordForm.register("confirmPassword")}
-                      required
-                    />
-                    {passwordForm.formState.errors.confirmPassword && (
-                      <p className="text-sm text-red-500">
-                        {passwordForm.formState.errors.confirmPassword.message}
-                      </p>
-                    )}
-                  </div>
                 </CardContent>
 
                 <CardFooter className="mt-4">
-                  {isSavingPassword ? (
+                  {isSavingProfile ? (
                     <ButtonLoading />
                   ) : (
                     <Button type="submit" variant="primary" size="lg">

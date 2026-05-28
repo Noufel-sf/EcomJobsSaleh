@@ -290,15 +290,7 @@ export default function CreateJobDialog({
       return;
     }
 
-    if (
-      requiredSkills.length === 0 ||
-      responsibilities.length === 0 ||
-      whoYouAre.length === 0 ||
-      niceToHaves.length === 0
-    ) {
-      toast.error(copy.listValidation);
-      return;
-    }
+
 
     const payload: CreateJobPayload = {
       title,

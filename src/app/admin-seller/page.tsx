@@ -32,6 +32,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import DashboardStats from './components/DashboardStats';
 import { MetricAreaChart } from '@/components/MetricAreaChart';
 import { useGetAdminSellerStatisticsQuery } from '@/Redux/Services/UsersApi';
+import { useGetSellerOrdersQuery } from '@/Redux/Services/OrderApi';
 
 const adminOverviewCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -156,6 +157,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { language } = useI18n();
   const copy = adminOverviewCopy[language];
   const { data: sellerStats } = useGetAdminSellerStatisticsQuery();
+  const { data: ordersData } = useGetSellerOrdersQuery(
+    { Seller_id: user?.userId ?? '', size: 365 },
+    { skip: !user?.userId },
+  );
   const totalOrders = sellerStats?.totalOrders ?? 0;
 
   // Memoize stats data to prevent unnecessary re-renders
@@ -265,12 +270,58 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Chart Section */}
           <div className="mb-8">
-            <MetricAreaChart
-              title={copy.ordersChartTitle}
-              description={copy.ordersChartDescription}
-              totalLabel={copy.ordersTotalLabel}
-              totalValue={totalOrders}
-            />
+              <MetricAreaChart
+                title={copy.ordersChartTitle}
+                description={copy.ordersChartDescription}
+                totalLabel={copy.ordersTotalLabel}
+                totalValue={totalOrders}
+                data={useMemo(() => {
+                  const orders = (ordersData?.content ?? []) as unknown[];
+                  // determine date field name if present
+                  const dateValues = orders
+                    .map((o) => {
+                      const oo = o as unknown as Record<string, unknown>;
+                      const created = (oo['createdAt'] ?? oo['created_at'] ?? oo['date'] ?? oo['orderDate']) as string | undefined;
+                      return created;
+                    })
+                    .filter(Boolean) as string[];
+
+                  if (!dateValues || dateValues.length === 0) {
+                    // fallback: single point with totalOrders
+                    return [
+                      { date: new Date().toISOString().split('T')[0], mobile: totalOrders, desktop: 0 },
+                    ];
+                  }
+
+                  // build counts per day
+                  const counts: Record<string, { total: number; successful: number }> = {};
+                  const isSuccessful = (status?: string) => status === 'Delivered';
+
+                  orders.forEach((o) => {
+                    const oo = o as unknown as Record<string, unknown>;
+                    const created = (oo['createdAt'] ?? oo['created_at'] ?? oo['date'] ?? oo['orderDate']) as string | undefined;
+                    const d = new Date(created ?? '');
+                    if (isNaN(d.getTime())) return;
+                    const key = d.toISOString().split('T')[0];
+                    if (!counts[key]) counts[key] = { total: 0, successful: 0 };
+                    counts[key].total += 1;
+                    const status = (oo['status'] ?? '') as string;
+                    if (isSuccessful(status)) counts[key].successful += 1;
+                  });
+
+                  // create series for last 90 days
+                  const series: { date: string; mobile: number; desktop: number }[] = [];
+                  const today = new Date();
+                  for (let i = 90; i >= 0; i--) {
+                    const d = new Date(today);
+                    d.setDate(d.getDate() - i);
+                    const key = d.toISOString().split('T')[0];
+                    const c = counts[key] ?? { total: 0, successful: 0 };
+                    series.push({ date: key, mobile: c.total, desktop: c.successful });
+                  }
+                  return series;
+                }, [ordersData, totalOrders])}
+              />
           </div>
         </div>
 

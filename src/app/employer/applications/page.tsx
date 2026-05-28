@@ -112,6 +112,8 @@ const applicationsCopy: Record<Language, Record<string, string>> = {
     accept: "Accept",
     reject: "Reject",
     delete: "Delete",
+    seeResume: "See Resume",
+    resumeLanguageLabel: "Resume language",
   },
   fr: {
     title: "Candidatures",
@@ -135,6 +137,8 @@ const applicationsCopy: Record<Language, Record<string, string>> = {
     accept: "Accepter",
     reject: "Refuser",
     delete: "Supprimer",
+    seeResume: "Voir le CV",
+    resumeLanguageLabel: "Langue du CV",
   },
   ar: {
     title: "طلبات التوظيف",
@@ -158,6 +162,8 @@ const applicationsCopy: Record<Language, Record<string, string>> = {
     accept: "قبول",
     reject: "رفض",
     delete: "حذف",
+    seeResume: "عرض السيرة",
+    resumeLanguageLabel: "لغة السيرة",
   },
 };
 
@@ -165,6 +171,16 @@ const applicationsCopy: Record<Language, Record<string, string>> = {
 export default function EmployerApplications() {
   const { language, t } = useI18n();
   const copy = applicationsCopy[language];
+
+  const getResumeLanguageDisplay = (code?: string, uiLang: Language = "en") => {
+    if (!code) return "";
+    const map: Record<string, Record<Language, string>> = {
+      en: { en: "English", fr: "Anglais", ar: "الإنجليزية" },
+      fr: { en: "French", fr: "Français", ar: "الفرنسية" },
+      ar: { en: "Arabic", fr: "Arabe", ar: "العربية" },
+    };
+    return map[code]?.[uiLang] ?? code;
+  };
   const user = useAppSelector((state) => state.auth.user);
   const searchParams = useSearchParams();
   const preFilterJobId = searchParams?.get("jobId") || "all";
@@ -441,6 +457,35 @@ export default function EmployerApplications() {
         },
       },
       {
+        accessorKey: "resume",
+        header: copy.seeResume || "Resume",
+        cell: ({ row }: { row: Row<ApplicationRow> }) => {
+          const app = row.original as ApplicationRow;
+          const resumeUrl = app.resume;
+          const resumeLang = (app as any).resumeLanguage as string | undefined;
+
+          if (!resumeUrl) return <div className="text-sm text-muted-foreground">-</div>;
+
+          return (
+            <div className="flex items-center gap-2">
+              <a
+                href={resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline"
+              >
+                {copy.seeResume}
+              </a>
+              {resumeLang && (
+                <span className="text-xs text-muted-foreground">
+                  {copy.resumeLanguageLabel}: {getResumeLanguageDisplay(resumeLang, language)}
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
         id: "actions",
         enableHiding: false,
         cell: ({ row }: { row: Row<ApplicationRow> }) => {
@@ -498,7 +543,7 @@ export default function EmployerApplications() {
         },
       },
     ],
-    [copy.accept, copy.actions, copy.applicant, copy.appliedFor, copy.changeStatus, copy.contact, copy.date, copy.delete, copy.reject, copy.status, copy.view, handleDelete, handleStatusChange],
+    [copy.accept, copy.actions, copy.applicant, copy.appliedFor, copy.changeStatus, copy.contact, copy.date, copy.delete, copy.reject, copy.status, copy.view, copy.seeResume, copy.resumeLanguageLabel, handleDelete, handleStatusChange, language],
   );
 
   const table = useReactTable({
@@ -563,7 +608,7 @@ export default function EmployerApplications() {
               onChange={(e) =>
                 table.getColumn("applicantName")?.setFilterValue(e.target.value)
               }
-              className="max-w-sm"
+              className="max-w-sm hidden md:block"
             />
           </div>
 
@@ -575,7 +620,7 @@ export default function EmployerApplications() {
               className="cursor-pointer"
             >
               <Download className="mr-2 h-4 w-4" />
-              Export to CSV
+              Export to CSV     
             </Button>
 
             <DropdownMenu>

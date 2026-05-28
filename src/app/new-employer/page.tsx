@@ -669,24 +669,7 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                     </div>
 
                     {/* Terms and Conditions */}
-                    <div className="flex items-start gap-2 text-sm">
-                      <p className="text-muted-foreground leading-relaxed">
-                        {copy.termsPrefix}{" "}
-                        <Link
-                          href="/terms"
-                          className="text-primary hover:underline font-medium"
-                        >
-                          {copy.terms}
-                        </Link>{" "}
-                        {copy.and}{" "}
-                        <Link
-                          href="/privacy"
-                          className="text-primary hover:underline font-medium"
-                        >
-                          {copy.privacy}
-                        </Link>
-                      </p>
-                    </div>
+                
 
                     {/* Submit Button */}
                     <Button

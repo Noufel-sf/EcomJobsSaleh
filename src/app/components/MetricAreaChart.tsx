@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, memo } from "react";
+import { useMemo, useState, memo } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -32,6 +32,8 @@ type MetricAreaChartProps = {
   description: string;
   totalLabel: string;
   totalValue: number;
+  // optional series data (date, mobile, desktop)
+  data?: { date: string; mobile: number; desktop: number }[];
 };
 
 export const MetricAreaChart = memo(function MetricAreaChart({
@@ -39,36 +41,31 @@ export const MetricAreaChart = memo(function MetricAreaChart({
   description,
   totalLabel,
   totalValue,
+  data,
 }: MetricAreaChartProps) {
   const isMobile = useIsMobile();
-  const [timeRange, setTimeRange] = useState("90d");
+  const [timeRange, setTimeRange] = useState(() => (isMobile ? "7d" : "90d"));
 
-  useEffect(() => {
-    if (isMobile) {
-      setTimeRange("7d");
+  const filteredData = useMemo(() => {
+    const source = data && data.length > 0 ? data : chartData;
+
+    const referenceDate = new Date();
+    let daysToSubtract = 90;
+
+    if (timeRange === "30d") {
+      daysToSubtract = 30;
+    } else if (timeRange === "7d") {
+      daysToSubtract = 7;
     }
-  }, [isMobile]);
 
-  const filteredData = useMemo(
-    () =>
-      chartData.filter((item) => {
-        const date = new Date(item.date);
-        const referenceDate = new Date("2024-06-30");
-        let daysToSubtract = 90;
+    const startDate = new Date(referenceDate);
+    startDate.setDate(startDate.getDate() - daysToSubtract);
 
-        if (timeRange === "30d") {
-          daysToSubtract = 30;
-        } else if (timeRange === "7d") {
-          daysToSubtract = 7;
-        }
-
-        const startDate = new Date(referenceDate);
-        startDate.setDate(startDate.getDate() - daysToSubtract);
-
-        return date >= startDate;
-      }),
-    [timeRange],
-  );
+    return source.filter((item) => {
+      const date = new Date(item.date);
+      return date >= startDate;
+    });
+  }, [timeRange, data]);
 
   return (
     <Card className="@container/card">

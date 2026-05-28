@@ -238,13 +238,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
                           <Lock className="w-4 h-4 inline mr-2" aria-hidden="true" />
                           {copy.password}
                         </Label>
-                        <Link
-                          href="/forgot-password"
-                          className="text-xs text-primary hover:underline underline-offset-4 transition-colors"
-                          tabIndex={0}
-                        >
-                          {copy.forgotPassword}
-                        </Link>
+                     
                       </div>
                       <div className="relative">
                         <Input

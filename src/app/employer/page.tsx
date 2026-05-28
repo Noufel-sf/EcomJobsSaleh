@@ -233,6 +233,29 @@ export default function EmployerOverview() {
               description={copy.applicationsChartDescription}
               totalLabel={copy.applicationsTotalLabel}
               totalValue={totalApplications}
+                data={useMemo(() => {
+                  const apps = (applicationsData?.content ?? []) as unknown[];
+                  // count applications per appliedDate
+                  const counts: Record<string, number> = {};
+                  apps.forEach((a) => {
+                    const aa = a as unknown as Record<string, unknown>;
+                    const applied = (aa['appliedDate'] ?? aa['applied_date'] ?? aa['createdAt'] ?? aa['created_at']) as string | undefined;
+                    const d = new Date(applied ?? '');
+                    if (isNaN(d.getTime())) return;
+                    const key = d.toISOString().split('T')[0];
+                    counts[key] = (counts[key] || 0) + 1;
+                  });
+
+                  const series: { date: string; mobile: number; desktop: number }[] = [];
+                  const today = new Date();
+                  for (let i = 90; i >= 0; i--) {
+                    const d = new Date(today);
+                    d.setDate(d.getDate() - i);
+                    const key = d.toISOString().split('T')[0];
+                    series.push({ date: key, mobile: counts[key] || 0, desktop: 0 });
+                  }
+                  return series;
+                }, [applicationsData])}
             />
           </div>
 

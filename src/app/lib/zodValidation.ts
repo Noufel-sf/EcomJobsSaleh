@@ -59,13 +59,24 @@ export type EmployerProfileFormValues = z.infer<typeof employerProfileSchema>;
 
 export const employerPasswordSchema = z
   .object({
-    currentPassword: z.string().min(6, "Current password is required"),
-    newPassword: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string().min(6, "Please confirm your new password"),
+    oldPassword: z.string().optional().or(z.literal("")),
+    newPassword: z.string().optional().or(z.literal("")),
   })
-  .refine((values) => values.newPassword === values.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+  .refine(
+    (values) => {
+      const oldPassword = values.oldPassword?.trim() ?? "";
+      const newPassword = values.newPassword?.trim() ?? "";
+
+      if (!oldPassword && !newPassword) {
+        return true;
+      }
+
+      return Boolean(oldPassword) && Boolean(newPassword);
+    },
+    {
+      message: "Old password and new password are required together",
+      path: ["newPassword"],
+    },
+  );
 
 export type EmployerPasswordFormValues = z.infer<typeof employerPasswordSchema>;
