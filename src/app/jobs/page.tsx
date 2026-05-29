@@ -30,8 +30,18 @@ function getSingleParam(value?: string | string[]): string | undefined {
   return value;
 }
 
-function parseSalary(raw: string): number {
-  return parseInt(raw.replace(/[^0-9]/g, ""), 10) || 0;
+function parseSalary(raw: string | number | null | undefined): number {
+  if (typeof raw === "number") {
+    return Number.isFinite(raw) ? raw : 0;
+  }
+
+  if (raw == null) {
+    return 0;
+  }
+
+  const normalized = String(raw).replace(/[^0-9.-]/g, "");
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function parseCsvParam(value?: string): string[] {

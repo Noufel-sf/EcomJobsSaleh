@@ -7,12 +7,10 @@ import { Separator } from "@/components/ui/separator";
 import { useI18n } from "@/context/I18nContext";
 
 const JOB_TYPES = [
-  "Full-time",
-  "Part-time",
-  "Contract",
-  "Freelance",
-  "Internship",
-  "Remote",
+  "full-time",
+  "part-time",
+  "contract",
+  "freelance",
 ];
 
 export function JobsFiltersPanel({

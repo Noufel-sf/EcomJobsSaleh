@@ -24,6 +24,68 @@ import {
 import { type Language, useI18n } from "@/context/I18nContext";
 import toast from "react-hot-toast";
 
+const JOB_TYPES = [
+  "full-time",
+  "part-time",
+  "contract",
+  "freelance",
+] as const;
+
+type JobType = (typeof JOB_TYPES)[number];
+
+type CreateJobCopy = {
+  selectCategory: string;
+  categoryRequired: string;
+  listValidation: string;
+  created: string;
+  createFailed: string;
+  postNewJob: string;
+  formDescription: string;
+  title: string;
+  location: string;
+  type: string;
+  experience: string;
+  salary: string;
+  description: string;
+  category: string;
+  loadingCategories: string;
+  selectCategoryOption: string;
+  requiredSkills: string;
+  addRequiredSkill: string;
+  responsibilities: string;
+  addResponsibility: string;
+  whoYouAre: string;
+  addWhoYouAre: string;
+  niceToHaves: string;
+  addNiceToHave: string;
+  totalCapacity: string;
+  applyBefore: string;
+  cancel: string;
+  postJob: string;
+  add: string;
+};
+
+const JOB_TYPE_LABELS: Record<Language, Record<JobType, string>> = {
+  en: {
+    "full-time": "Full-time",
+    "part-time": "Part-time",
+    contract: "Contract",
+    freelance: "Freelance",
+  },
+  fr: {
+    "full-time": "Temps plein",
+    "part-time": "Temps partiel",
+    contract: "Contrat",
+    freelance: "Freelance",
+  },
+  ar: {
+    "full-time": "دوام كامل",
+    "part-time": "دوام جزئي",
+    contract: "عقد",
+    freelance: "عمل حر",
+  },
+};
+
 type CreateJobDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -99,7 +161,7 @@ export default function CreateJobDialog({
   const { language } = useI18n();
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
 
-  const createJobCopy: Record<Language, Record<string, string>> = {
+  const createJobCopy: Record<Language, CreateJobCopy> = {
     en: {
       selectCategory: "Please select a category",
       categoryRequired: "Category is required",
@@ -196,6 +258,7 @@ export default function CreateJobDialog({
   };
 
   const copy = createJobCopy[language] ?? createJobCopy.en;
+  const typeOptions = JOB_TYPE_LABELS[language] ?? JOB_TYPE_LABELS.en;
 
   const [title, setTitle] = useState("");
   const [company, setCompany] = useState(defaultCompanyId);
@@ -229,7 +292,7 @@ export default function CreateJobDialog({
 
   const resetForm = () => {
     setTitle("");
-    setCompany("019d0373-9de1-78b4-b177-2274fe9377ff");
+    setCompany(defaultCompanyId);
     setLocation("");
     setType("full-time");
     setExperience("");
@@ -294,7 +357,7 @@ export default function CreateJobDialog({
 
     const payload: CreateJobPayload = {
       title,
-      company: "019d0373-9de1-78b4-b177-2274fe9377ff",
+      company,
       location,
       type,
       experience,
@@ -362,13 +425,19 @@ export default function CreateJobDialog({
 
             <div className="grid gap-2">
               <Label htmlFor="job-type">{copy.type}</Label>
-              <Input
+              <select
                 id="job-type"
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                placeholder="full-time"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 required
-              />
+              >
+                {JOB_TYPES.map((jobType) => (
+                  <option key={jobType} value={jobType}>
+                    {typeOptions[jobType]}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="grid gap-2">
