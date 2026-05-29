@@ -64,6 +64,8 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
       "Tell customers what makes your store special. (max 500 chars)",
     uploadLogo: "Upload logo",
     optionalLater: "Optional - you can add it later",
+    roadmapHint:
+      "Please read the roadmap first to learn how to use the website. Click the image box above to open and upload your image.",
     nameSummary: "Name",
     phoneSummary: "Phone",
     passwordSummary: "Password",
@@ -119,6 +121,8 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
       "Dites aux clients ce qui rend votre boutique speciale. (max 500 caracteres)",
     uploadLogo: "Televerser le logo",
     optionalLater: "Optionnel - vous pouvez l'ajouter plus tard",
+    roadmapHint:
+      "Veuillez d'abord lire la feuille de route pour apprendre a utiliser le site web. Cliquez sur la zone d'image ci-dessus pour ouvrir et televerser votre image.",
     nameSummary: "Nom",
     phoneSummary: "Telephone",
     passwordSummary: "Mot de passe",
@@ -177,6 +181,8 @@ const createStoreCopy: Record<Language, Record<string, string | string[]>> = {
     descriptionHint: "اخبر العملاء لماذا متجرك مميز. (حد اقصى 500 حرف)",
     uploadLogo: "رفع الشعار",
     optionalLater: "اختياري - يمكنك اضافته لاحقا",
+    roadmapHint:
+      "يرجى قراءة خارطة الطريق اولا لمعرفة كيفية استخدام الموقع. اضغط على مربع الصورة في الاعلى لفتح الصورة ورفعها.",
     nameSummary: "الاسم",
     phoneSummary: "الهاتف",
     passwordSummary: "كلمة المرور",
@@ -583,6 +589,20 @@ export default function CreateStorePage() {
                 ) : (
                   <p className="text-xs text-zinc-400">{copy.optionalLater}</p>
                 )}
+                <p className="text-xs text-zinc-500 text-center leading-relaxed max-w-xs">
+                  {copy.roadmapHint}
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Link
+                    href="/road1.png"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-full bg-zinc-900 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+                  >
+                    Open road1.png
+                  </Link>
+              
+                </div>
               </div>
 
               {/* Summary */}

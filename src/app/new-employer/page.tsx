@@ -84,6 +84,8 @@ const employerSignupCopy: Record<Language, Record<string, string>> = {
     specializationAria: "Company specialization",
     logo: "Logo",
     logoPreviewAlt: "Logo preview",
+    roadmapHint:
+      "Please read the roadmap first to learn how to use the website. Use the image add button above to open and upload an image.",
     companyDescription: "Company Description",
     descriptionPlaceholder: "Tell job seekers about your company...",
     descriptionAria: "Company description",
@@ -142,6 +144,8 @@ const employerSignupCopy: Record<Language, Record<string, string>> = {
     specializationAria: "Specialisation de l'entreprise",
     logo: "Logo",
     logoPreviewAlt: "Apercu du logo",
+    roadmapHint:
+      "Veuillez d'abord lire la feuille de route pour apprendre a utiliser le site web. Utilisez le bouton d'ajout d'image ci-dessus pour ouvrir et televerser une image.",
     companyDescription: "Description de l'entreprise",
     descriptionPlaceholder: "Parlez de votre entreprise aux candidats...",
     descriptionAria: "Description de l'entreprise",
@@ -200,6 +204,8 @@ const employerSignupCopy: Record<Language, Record<string, string>> = {
     specializationAria: "تخصص الشركة",
     logo: "الشعار",
     logoPreviewAlt: "معاينة الشعار",
+    roadmapHint:
+      "يرجى قراءة خارطة الطريق اولا لمعرفة كيفية استخدام الموقع. استخدم زر اضافة الصورة في الاعلى لفتح الصورة ورفعها.",
     companyDescription: "وصف الشركة",
     descriptionPlaceholder: "اخبر الباحثين عن العمل عن شركتك...",
     descriptionAria: "وصف الشركة",
@@ -636,6 +642,20 @@ const EmployerSignupPage: React.FC<EmployerSignupPageProps> = ({
                             </button>
                           </div>
                         )}
+                        <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
+                          {copy.roadmapHint}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                       
+                          <Link
+                            href="/road2.png"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-full border border-zinc-300 px-3 py-1.5 text-[11px] font-semibold text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          >
+                            Open road2.png
+                          </Link>
+                        </div>
                       </div>
 
                       {/* Company Description */}

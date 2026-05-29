@@ -93,7 +93,7 @@ export default function SponsorWhatyouWant() {
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
-                  <Link href="mailto:support@salehstore.com">
+                  <Link href="/help">
                     <Mail className="mr-2 h-4 w-4" />
                     {copy.secondaryCta}
                   </Link>
