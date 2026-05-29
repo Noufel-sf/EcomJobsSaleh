@@ -277,8 +277,6 @@ export default function SuperAdminCategories() {
 
       if (imageFile) {
         formData.append("img", imageFile);
-      } else if (selectedCategory.img) {
-        formData.append("img", selectedCategory.img);
       }
 
       const updatedCategory = await updateCategory({

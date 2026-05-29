@@ -695,7 +695,7 @@ function formatMessage(template: string, values?: Record<string, string | number
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>('ar');
   const hasLoadedStoredLanguageRef = useRef(false);
 
   useEffect(() => {
@@ -721,7 +721,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
     window.localStorage.setItem(STORAGE_KEY, language);
     window.document.documentElement.lang = language;
-    window.document.documentElement.dir = 'ltr';
+    window.document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
   }, [language]);
 
   const messages = useMemo(() => translations[language], [language]);

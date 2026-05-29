@@ -87,12 +87,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://wadkniss-r6ar.onrender.com" crossOrigin="anonymous" />
       </head>
-      <body className={`antialiased ${outfit.variable} ${alexandria.variable}`} dir="ltr">
+      <body className={`antialiased ${outfit.variable} ${alexandria.variable}`} dir="rtl">
         <ClientProviders>
           <LayoutWrapper>
             {children}

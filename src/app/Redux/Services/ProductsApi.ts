@@ -34,6 +34,11 @@ export interface GetProductsByClassificationArgs {
   size?: number;
 }
 
+export interface OrdersGraph {
+  ApprovedApplications: number;
+  RejectedApplications: number;
+}
+
 export const productsApi = createApi({
   reducerPath: "productsApi",
   baseQuery: fetchBaseQuery({
@@ -60,7 +65,12 @@ export const productsApi = createApi({
       }),
       providesTags: ["Products"],
     }),
-
+    getOrdersGraph: builder.query<OrdersGraph, void>({
+      query: (id) => ({
+        url: `/ordersgraph/${id}`,
+      }),
+      providesTags: ["Products"],
+    }),
 
     getNotAvailableProducts: builder.query<
       GetAllProductsResponse,
@@ -78,7 +88,6 @@ export const productsApi = createApi({
       providesTags: ["Products"],
     }),
 
-  
     getProductsByClassification: builder.query<
       GetAllProductsResponse,
       GetProductsByClassificationArgs
@@ -210,6 +219,7 @@ export const {
   useGetSellerProfileProductsQuery,
   useGetSellerProfileInfoQuery,
   useGetSellerProductsQuery,
+  useGetOrdersGraphQuery,
   useSearchProductsQuery,
   useLazySearchProductsQuery,
   useGetProductsByClassificationQuery,

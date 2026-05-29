@@ -32,7 +32,10 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import EmployerDashboardStats from './components/EmployerDashboardStats';
 import QuickLinks from './components/QuickLinks';
 import { authApi, useLogoutMutation } from '@/Redux/Services/AuthApi';
-import { useGetAllApplicationsQuery } from '@/Redux/Services/JobApi';
+import {
+  useGetAllApplicationsQuery,
+  useGetApplicationsGraphQuery,
+} from '@/Redux/Services/JobApi';
 import { useGetAdminEmployerStatisticsQuery } from '@/Redux/Services/UsersApi';
 import { useAppDispatch } from '@/Redux/hooks';
 import { logout as logoutAction } from '@/Redux/slices/AuthSlice';
@@ -115,6 +118,9 @@ export default function EmployerOverview() {
   const { data: applicationsData } = useGetAllApplicationsQuery(companyId, {
     skip: !companyId,
   });
+  const { data: applicationsGraphData } = useGetApplicationsGraphQuery(companyId, {
+    skip: !companyId,
+  });
   const { data: employerStats } = useGetAdminEmployerStatisticsQuery();
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -124,6 +130,26 @@ export default function EmployerOverview() {
     employerStats?.applicationNb ??
     applicationsData?.totalApplications ??
     applicationsData?.content?.length ?? 0;
+
+  const applicationsChartData = Array.isArray(applicationsGraphData)
+    ? applicationsGraphData
+    : applicationsGraphData?.content ?? [];
+
+  // Fake data for local testing / preview when backend returns no series
+  const fakeApplicationsChartData = [
+    { date: '2026-05-23', ApprovedApplications: 3, RejectedApplications: 1 },
+    { date: '2026-05-24', ApprovedApplications: 5, RejectedApplications: 2 },
+    { date: '2026-05-25', ApprovedApplications: 2, RejectedApplications: 0 },
+    { date: '2026-05-26', ApprovedApplications: 6, RejectedApplications: 3 },
+    { date: '2026-05-27', ApprovedApplications: 4, RejectedApplications: 1 },
+    { date: '2026-05-28', ApprovedApplications: 7, RejectedApplications: 2 },
+    { date: '2026-05-29', ApprovedApplications: 5, RejectedApplications: 4 },
+  ];
+
+  const usedApplicationsChartData =
+    (applicationsChartData && applicationsChartData.length > 0)
+      ? applicationsChartData
+      : fakeApplicationsChartData;
 
   const handleLogout = async () => {
     try {
@@ -139,42 +165,43 @@ export default function EmployerOverview() {
     }
   };
 
-  // Memoize stats data to prevent unnecessary re-renders
-  const stats = useMemo(() => [
-    {
-      title: copy.totalJobs,
-      value: String(totalJobs),
-      change: totalJobs > 0 ? '+1' : '0',
-      trend: 'up' as const,
-      description: copy.jobsDesc,
-      subtitle: copy.jobsSub,
-      icon: Briefcase,
-    },
-    {
-      title: copy.totalApplications,
-      value: String(totalApplications),
-      change: totalApplications > 0 ? '+1' : '0',
-      trend: 'up' as const,
-      description: copy.appsDesc,
-      subtitle: copy.appsSub,
-      icon: Users,
-    },
-  ], [
-    copy.appsDesc,
-    copy.appsSub,
-    copy.jobsDesc,
-    copy.jobsSub,
-    copy.totalApplications,
-    copy.totalJobs,
-    totalApplications,
-    totalJobs,
-  ]);
+  const stats = useMemo(
+    () => [
+      {
+        title: copy.totalJobs,
+        value: String(totalJobs),
+        change: totalJobs > 0 ? '+1' : '0',
+        trend: 'up' as const,
+        description: copy.jobsDesc,
+        subtitle: copy.jobsSub,
+        icon: Briefcase,
+      },
+      {
+        title: copy.totalApplications,
+        value: String(totalApplications),
+        change: totalApplications > 0 ? '+1' : '0',
+        trend: 'up' as const,
+        description: copy.appsDesc,
+        subtitle: copy.appsSub,
+        icon: Users,
+      },
+    ],
+    [
+      copy.appsDesc,
+      copy.appsSub,
+      copy.jobsDesc,
+      copy.jobsSub,
+      copy.totalApplications,
+      copy.totalJobs,
+      totalApplications,
+      totalJobs,
+    ],
+  );
 
   return (
     <SidebarProvider>
       <EmployerAppSidebar />
       <SidebarInset>
-        {/* Header */}
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
@@ -207,9 +234,15 @@ export default function EmployerOverview() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="">
-                <DropdownMenuItem className="cursor-pointer" onClick={() => setTheme('light')}>{copy.light}</DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer" onClick={() => setTheme('dark')}>{copy.dark}</DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer" onClick={() => setTheme('system')}>{copy.system}</DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => setTheme('light')}>
+                  {copy.light}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => setTheme('dark')}>
+                  {copy.dark}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => setTheme('system')}>
+                  {copy.system}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -219,12 +252,9 @@ export default function EmployerOverview() {
           <h1 className="font-medium text-xl mb-8">
             {copy.welcome} <span>{user?.name}</span> 👋🏻
             <br />
-            <span className="text-gray-600 dark:text-gray-400">
-              {copy.subtitle}
-            </span>
+            <span className="text-gray-600 dark:text-gray-400">{copy.subtitle}</span>
           </h1>
 
-          {/* Stats Grid - Using memoized component */}
           <EmployerDashboardStats stats={stats} />
 
           <div className="mb-8">
@@ -233,33 +263,17 @@ export default function EmployerOverview() {
               description={copy.applicationsChartDescription}
               totalLabel={copy.applicationsTotalLabel}
               totalValue={totalApplications}
-                data={useMemo(() => {
-                  const apps = (applicationsData?.content ?? []) as unknown[];
-                  // count applications per appliedDate
-                  const counts: Record<string, number> = {};
-                  apps.forEach((a) => {
-                    const aa = a as unknown as Record<string, unknown>;
-                    const applied = (aa['appliedDate'] ?? aa['applied_date'] ?? aa['createdAt'] ?? aa['created_at']) as string | undefined;
-                    const d = new Date(applied ?? '');
-                    if (isNaN(d.getTime())) return;
-                    const key = d.toISOString().split('T')[0];
-                    counts[key] = (counts[key] || 0) + 1;
-                  });
-
-                  const series: { date: string; mobile: number; desktop: number }[] = [];
-                  const today = new Date();
-                  for (let i = 90; i >= 0; i--) {
-                    const d = new Date(today);
-                    d.setDate(d.getDate() - i);
-                    const key = d.toISOString().split('T')[0];
-                    series.push({ date: key, mobile: counts[key] || 0, desktop: 0 });
-                  }
-                  return series;
-                }, [applicationsData])}
+              data={usedApplicationsChartData}
+              dateKey="date"
+              primaryKey="ApprovedApplications"
+              secondaryKey="RejectedApplications"
+              primaryLabel="Approved"
+              secondaryLabel="Rejected"
+              primaryColor="var(--primary)"
+              secondaryColor="hsl(var(--destructive))"
             />
           </div>
 
-          {/* Quick Links - Using memoized component */}
           <QuickLinks />
         </div>
       </SidebarInset>

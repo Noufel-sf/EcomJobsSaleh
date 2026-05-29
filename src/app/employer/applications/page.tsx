@@ -613,16 +613,7 @@ export default function EmployerApplications() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button
-              variant="primary"
-              size="default"
-              onClick={exportToCSV}
-              className="cursor-pointer"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export to CSV     
-            </Button>
-
+       
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button

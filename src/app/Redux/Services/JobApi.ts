@@ -88,6 +88,21 @@ export interface CreateJobPayload {
   jobPostedOn: string;
 }
 
+export interface ApplicationsGraphPoint {
+  date?: string;
+  appliedDate?: string;
+  createdAt?: string;
+  approvedApplications?: number;
+  rejectedApplications?: number;
+  ApprovedApplications?: number;
+  RejectedApplications?: number;
+}
+
+export type ApplicationsGraphResponse =
+  | ApplicationsGraphPoint[]
+  | { content?: ApplicationsGraphPoint[] };
+
+
 export const jobApi = createApi({
   reducerPath: "jobApi",
   baseQuery: fetchBaseQuery({
@@ -138,6 +153,16 @@ export const jobApi = createApi({
               ...(params.maxSalary && { maxSalary: params.maxSalary }),
             }
           : undefined,
+      }),
+      providesTags: ["Jobs"],
+    }),
+
+    getApplicationsGraph: builder.query<
+      ApplicationsGraphResponse,
+      string
+    >({
+      query: (id) => ({
+        url: `/applicationgraph/${id}`,
       }),
       providesTags: ["Jobs"],
     }),
@@ -307,8 +332,6 @@ export const jobApi = createApi({
       ],
     }),
 
-
-
     updateJobStatus: builder.mutation({
       query: ({ jobID, status }) => ({
         url: `jobs/available/${jobID}`,
@@ -348,7 +371,6 @@ export const jobApi = createApi({
         body: payload,
       }),
     }),
-
   }),
 });
 
@@ -356,6 +378,7 @@ export const {
   useGetAllJobsQuery,
   useGetJobsByCategoryQuery,
   useGetJobByIdQuery,
+  useGetApplicationsGraphQuery,
   useSearchJobsQuery,
   useCreateJobMutation,
   useUpdateJobMutation,

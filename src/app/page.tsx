@@ -78,7 +78,7 @@ const HomePage = async () => {
       <Suspense fallback={<SectionFallback sectionClassName="" />}>
         <CategorysSection />
       </Suspense>
-      <Suspense fallback={<SectionFallback sectionClassName="" />}>
+      {/* <Suspense fallback={<SectionFallback sectionClassName="" />}>
         <BestSellingSection />
       </Suspense>
       <Suspense fallback={<SectionFallback sectionClassName="" />}>
@@ -86,7 +86,7 @@ const HomePage = async () => {
       </Suspense>
       <Suspense fallback={<SectionFallback sectionClassName="" />}>
         <SponsoredJobsSection />
-      </Suspense>
+      </Suspense> */}
       <Suspense
         fallback={
           <SectionFallback sectionClassName="py-20 bg-linear-to-b from-background to-muted/20" />

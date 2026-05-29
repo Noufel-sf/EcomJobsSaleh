@@ -25,15 +25,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { chartData, chartConfig } from "@/admin-seller/lib/chartData";
+import { chartData } from "@/admin-seller/lib/chartData";
 
 type MetricAreaChartProps = {
   title: string;
   description: string;
   totalLabel: string;
   totalValue: number;
-  // optional series data (date, mobile, desktop)
-  data?: { date: string; mobile: number; desktop: number }[];
+  data?: Array<Record<string, number | string>>;
+  dateKey?: string;
+  primaryKey?: string;
+  secondaryKey?: string;
+  primaryLabel?: string;
+  secondaryLabel?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
 };
 
 export const MetricAreaChart = memo(function MetricAreaChart({
@@ -42,9 +48,24 @@ export const MetricAreaChart = memo(function MetricAreaChart({
   totalLabel,
   totalValue,
   data,
+  dateKey = "date",
+  primaryKey = "mobile",
+  secondaryKey = "desktop",
+  primaryLabel = "Mobile",
+  secondaryLabel = "Desktop",
+  primaryColor = "var(--primary)",
+  secondaryColor = "var(--primary)",
 }: MetricAreaChartProps) {
   const isMobile = useIsMobile();
   const [timeRange, setTimeRange] = useState(() => (isMobile ? "7d" : "90d"));
+
+  const dynamicConfig = useMemo(
+    () => ({
+      [primaryKey]: { label: primaryLabel, color: primaryColor },
+      [secondaryKey]: { label: secondaryLabel, color: secondaryColor },
+    }),
+    [primaryColor, primaryKey, primaryLabel, secondaryColor, secondaryKey, secondaryLabel],
+  );
 
   const filteredData = useMemo(() => {
     const source = data && data.length > 0 ? data : chartData;
@@ -62,10 +83,10 @@ export const MetricAreaChart = memo(function MetricAreaChart({
     startDate.setDate(startDate.getDate() - daysToSubtract);
 
     return source.filter((item) => {
-      const date = new Date(item.date);
+      const date = new Date(String(item[dateKey] ?? ""));
       return date >= startDate;
     });
-  }, [timeRange, data]);
+  }, [dateKey, timeRange, data]);
 
   return (
     <Card className="@container/card">
@@ -85,7 +106,7 @@ export const MetricAreaChart = memo(function MetricAreaChart({
               value={timeRange}
               onValueChange={setTimeRange}
               variant="outline"
-              className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
+              className="hidden *:data-[slot=toggle-group-item]:px-4! @[767px]/card:flex"
             >
               <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
               <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
@@ -115,16 +136,16 @@ export const MetricAreaChart = memo(function MetricAreaChart({
         </CardAction>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
+        <ChartContainer config={dynamicConfig} className="aspect-auto h-62.5 w-full">
           <AreaChart data={filteredData}>
             <defs>
-              <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-desktop)" stopOpacity={1.0} />
-                <stop offset="95%" stopColor="var(--color-desktop)" stopOpacity={0.1} />
+              <linearGradient id={`fill-${secondaryKey}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={`var(--color-${secondaryKey})`} stopOpacity={1.0} />
+                <stop offset="95%" stopColor={`var(--color-${secondaryKey})`} stopOpacity={0.1} />
               </linearGradient>
-              <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-mobile)" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="var(--color-mobile)" stopOpacity={0.1} />
+              <linearGradient id={`fill-${primaryKey}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={`var(--color-${primaryKey})`} stopOpacity={0.8} />
+                <stop offset="95%" stopColor={`var(--color-${primaryKey})`} stopOpacity={0.1} />
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} />
@@ -158,17 +179,17 @@ export const MetricAreaChart = memo(function MetricAreaChart({
               }
             />
             <Area
-              dataKey="mobile"
+              dataKey={primaryKey}
               type="natural"
-              fill="url(#fillMobile)"
-              stroke="var(--color-mobile)"
+              fill={`url(#fill-${primaryKey})`}
+              stroke={`var(--color-${primaryKey})`}
               stackId="a"
             />
             <Area
-              dataKey="desktop"
+              dataKey={secondaryKey}
               type="natural"
-              fill="url(#fillDesktop)"
-              stroke="var(--color-desktop)"
+              fill={`url(#fill-${secondaryKey})`}
+              stroke={`var(--color-${secondaryKey})`}
               stackId="a"
             />
           </AreaChart>

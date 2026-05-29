@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Mail, Package, Phone, Store } from "lucide-react";
+import Image from "next/image";
 
 import ProductCard from "@/components/ProductCard";
 import { QueryPagination } from "@/components/QueryPagination";
@@ -167,6 +168,21 @@ export default function SellerProfileClient({
       <section className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
         <Card className="overflow-hidden rounded-3xl border-nonep-0 ">
           <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[auto_1fr] lg:items-start">
+            <div className="flex-shrink-0">
+              {seller.img ? (
+                <Image
+                  src={seller.img}
+                  alt={`${displayName} avatar`}
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 rounded-full object-cover"
+                />
+              ) : (
+                <div className="h-24 w-24 rounded-full bg-muted-foreground flex items-center justify-center text-xl font-semibold text-white">
+                  {displayName?.charAt(0) ?? "S"}
+                </div>
+              )}
+            </div>
             <div className="space-y-5">
               <div className="space-y-2">
                 <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ">
