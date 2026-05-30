@@ -13,23 +13,29 @@ const JOB_TYPES = [
   "freelance",
 ];
 
+const EXPERIENCE_RANGES = ["1-5", "5-10", "10+"];
+
 export function JobsFiltersPanel({
   searchQuery,
   selectedCategories,
   selectedTypes,
+  selectedExperiences,
   categories,
   onSearchChange,
   onToggleCategory,
   onToggleType,
+  onToggleExperience,
   onClearFilters,
 }: {
   searchQuery: string;
   selectedCategories: string[];
   selectedTypes: string[];
+  selectedExperiences?: string[];
   categories: Array<{ id: string; label: string }>;
   onSearchChange: (query: string) => void;
   onToggleCategory: (categoryValue: string) => void;
   onToggleType: (type: string) => void;
+  onToggleExperience?: (experience: string) => void;
   onClearFilters: () => void;
 }) {
   const { language } = useI18n();
@@ -47,8 +53,11 @@ export function JobsFiltersPanel({
         "Part-time": "Part-time",
         Contract: "Contract",
         Freelance: "Freelance",
-        Internship: "Internship",
-        Remote: "Remote",
+      } as Record<string, string>,
+      experienceLabel: {
+        "1-5": "1 - 5 years",
+        "5-10": "5 - 10 years",
+        "10+": "More than 10 years",
       } as Record<string, string>,
     },
     fr: {
@@ -64,8 +73,11 @@ export function JobsFiltersPanel({
         "Part-time": "Temps partiel",
         Contract: "Contrat",
         Freelance: "Freelance",
-        Internship: "Stage",
-        Remote: "A distance",
+      } as Record<string, string>,
+      experienceLabel: {
+        "1-5": "1 - 5 ans",
+        "5-10": "5 - 10 ans",
+        "10+": "Plus de 10 ans",
       } as Record<string, string>,
     },
     ar: {
@@ -83,6 +95,11 @@ export function JobsFiltersPanel({
         Freelance: "عمل حر",
         Internship: "تدريب",
         Remote: "عن بعد",
+      } as Record<string, string>,
+      experienceLabel: {
+        "1-5": "من 1 إلى 5 سنوات",
+        "5-10": "من 5 إلى 10 سنوات",
+        "10+": "أكثر من 10 سنوات",
       } as Record<string, string>,
     },
   } as const;
@@ -170,6 +187,42 @@ export function JobsFiltersPanel({
                 className="text-sm flex-1 cursor-pointer flex items-center justify-between"
               >
                 <span>{t.typeLabel[type] ?? type}</span>
+              </label>
+            </div>
+          ))}
+        </div>
+      </fieldset>
+
+      <Separator className="" />
+
+      <fieldset className="px-6 lg:px-0" aria-label={t.searchJobs}>
+        <div className="flex items-center justify-between mb-3">
+          <legend className="text-sm font-semibold">{"Experience"}</legend>
+          {selectedExperiences && selectedExperiences.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClearFilters}
+              className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+            >
+              {t.clear}
+            </Button>
+          )}
+        </div>
+        <div className="space-y-2">
+          {EXPERIENCE_RANGES.map((range) => (
+            <div key={range} className="flex items-center space-x-2">
+              <Checkbox
+                id={`experience-${range}`}
+                checked={selectedExperiences?.includes(range) ?? false}
+                onCheckedChange={() => onToggleExperience?.(range)}
+                className=""
+              />
+              <label
+                htmlFor={`experience-${range}`}
+                className="text-sm flex-1 cursor-pointer flex items-center justify-between"
+              >
+                <span>{t.experienceLabel[range] ?? range}</span>
               </label>
             </div>
           ))}

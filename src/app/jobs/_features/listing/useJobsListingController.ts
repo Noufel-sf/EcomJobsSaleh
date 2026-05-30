@@ -49,6 +49,11 @@ export function useJobsListingController({
     [searchParams],
   );
 
+  const selectedExperiences = useMemo(
+    () => parseCsvParam(searchParams?.get("experience") ?? null),
+    [searchParams],
+  );
+
   const searchQuery = searchParams?.get("search") ?? "";
   const sortBy = sanitizeSort(searchParams?.get("sort") ?? null);
 
@@ -79,6 +84,7 @@ export function useJobsListingController({
     currentPage,
     selectedCategories,
     selectedTypes,
+    selectedExperiences,
     searchQuery,
     sortBy,
     setPage: (page: number) => {
@@ -112,6 +118,23 @@ export function useJobsListingController({
             params.set("type", nextSelected.join(","));
           } else {
             params.delete("type");
+          }
+        },
+        { resetPage: true },
+      );
+    },
+    toggleExperience: (experience: string) => {
+      const exists = selectedExperiences.includes(experience);
+      const nextSelected = exists
+        ? selectedExperiences.filter((item) => item !== experience)
+        : [...selectedExperiences, experience];
+
+      updateUrl(
+        (params) => {
+          if (nextSelected.length > 0) {
+            params.set("experience", nextSelected.join(","));
+          } else {
+            params.delete("experience");
           }
         },
         { resetPage: true },

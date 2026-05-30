@@ -92,6 +92,7 @@ async function fetchJobs(): Promise<Job[]> {
     }
 
     const data = (await response.json()) as JobsResponse;
+    console.log("Fetched jobs:", data);
     return Array.isArray(data.content) ? data.content : [];
   } catch {
     return [];
@@ -147,12 +148,14 @@ export default async function AllJobsPage({
 
   const rawCategory = getSingleParam(params.category);
   const rawTypes = getSingleParam(params.type);
+  const rawExperience = getSingleParam(params.experience);
   const rawSearch = getSingleParam(params.search);
   const rawSort = getSingleParam(params.sort);
   const rawPage = getSingleParam(params.page);
 
   const selectedCategories = parseCsvParam(rawCategory).slice(0, 1);
   const selectedTypes = parseCsvParam(rawTypes);
+  const selectedExperiences = parseCsvParam(rawExperience);
   const searchQuery = rawSearch?.trim() ?? "";
   const sortBy = sanitizeSort(rawSort);
 
@@ -166,6 +169,38 @@ export default async function AllJobsPage({
 
   if (selectedTypes.length > 0) {
     filteredJobs = filteredJobs.filter((job) => selectedTypes.includes(job.type));
+  }
+
+  if (selectedExperiences.length > 0) {
+    function extractYears(value: string | number | null | undefined): number | null {
+      if (value == null) return null;
+      const s = String(value).toLowerCase();
+      // try to extract first integer
+      const m = s.match(/(\d+)/);
+      if (m) {
+        const n = Number.parseInt(m[1], 10);
+        return Number.isFinite(n) ? n : null;
+      }
+      return null;
+    }
+
+    filteredJobs = filteredJobs.filter((job) => {
+      const years = extractYears(job.experience);
+      // match each selected range; if job.experience contains the label string, match too
+      return selectedExperiences.some((range) => {
+        if (range === "1-5") {
+          if (years != null) return years >= 1 && years <= 5;
+        }
+        if (range === "5-10") {
+          if (years != null) return years > 5 && years <= 10;
+        }
+        if (range === "10+") {
+          if (years != null) return years > 10;
+        }
+        // fallback: match label text
+        return String(job.experience).toLowerCase().includes(range.toLowerCase());
+      });
+    });
   }
 
   if (searchQuery) {

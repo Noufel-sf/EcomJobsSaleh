@@ -53,7 +53,7 @@ export function JobsGrid({
       </div>
     );
   }
-
+console.log("jobs " , jobs);
   if (jobs.length === 0) {
     return (
       <div className="text-center py-16" role="status" aria-live="polite">

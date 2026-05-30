@@ -27,6 +27,7 @@ export function JobsToolbar({
   categories,
   selectedCategories,
   selectedTypes,
+  selectedExperiences,
   searchQuery,
   sortBy,
   mobileFiltersOpen,
@@ -34,6 +35,7 @@ export function JobsToolbar({
   onSearchChange,
   onToggleCategory,
   onToggleType,
+  onToggleExperience,
   onClearFilters,
   onSortChange,
 }: {
@@ -42,6 +44,7 @@ export function JobsToolbar({
   categories: Array<{ id: string; label: string }>;
   selectedCategories: string[];
   selectedTypes: string[];
+  selectedExperiences: string[];
   searchQuery: string;
   sortBy: SortBy;
   mobileFiltersOpen: boolean;
@@ -49,6 +52,7 @@ export function JobsToolbar({
   onSearchChange: (query: string) => void;
   onToggleCategory: (category: string) => void;
   onToggleType: (type: string) => void;
+  onToggleExperience: (experience: string) => void;
   onClearFilters: () => void;
   onSortChange: (value: SortBy) => void;
 }) {
@@ -75,6 +79,11 @@ export function JobsToolbar({
       searchPrefix: "Search",
       clearAll: "Clear all",
       clearAllFilters: "Clear all filters",
+      experienceOptions: {
+        "1-5": "1 - 5 years",
+        "5-10": "5 - 10 years",
+        "10+": "More than 10 years",
+      } as Record<string, string>,
     },
     fr: {
       allJobs: "Tous les emplois",
@@ -97,6 +106,11 @@ export function JobsToolbar({
       searchPrefix: "Recherche",
       clearAll: "Tout effacer",
       clearAllFilters: "Effacer tous les filtres",
+      experienceOptions: {
+        "1-5": "1 - 5 ans",
+        "5-10": "5 - 10 ans",
+        "10+": "Plus de 10 ans",
+      } as Record<string, string>,
     },
     ar: {
       allJobs: "كل الوظائف",
@@ -119,6 +133,11 @@ export function JobsToolbar({
       searchPrefix: "بحث",
       clearAll: "مسح الكل",
       clearAllFilters: "مسح جميع الفلاتر",
+      experienceOptions: {
+        "1-5": "من 1 إلى 5 سنوات",
+        "5-10": "من 5 إلى 10 سنوات",
+        "10+": "أكثر من 10 سنوات",
+      } as Record<string, string>,
     },
   } as const;
   const t = labels[language] ?? labels.en;
@@ -149,14 +168,16 @@ export function JobsToolbar({
                 {t.filters}
                 {(selectedCategories.length > 0 ||
                   selectedTypes.length > 0 ||
+                  selectedExperiences.length > 0 ||
                   searchQuery) && (
                   <Badge
                     variant="destructive"
                     className="ml-2 px-1.5 py-0.5 text-xs"
-                    aria-label={`${selectedCategories.length + selectedTypes.length + (searchQuery ? 1 : 0)} ${t.activeFilters}`}
+                    aria-label={`${selectedCategories.length + selectedTypes.length + selectedExperiences.length + (searchQuery ? 1 : 0)} ${t.activeFilters}`}
                   >
                     {selectedCategories.length +
                       selectedTypes.length +
+                      selectedExperiences.length +
                       (searchQuery ? 1 : 0)}
                   </Badge>
                 )}
@@ -177,10 +198,12 @@ export function JobsToolbar({
                   searchQuery={searchQuery}
                   selectedCategories={selectedCategories}
                   selectedTypes={selectedTypes}
+                  selectedExperiences={selectedExperiences}
                   categories={categories}
                   onSearchChange={onSearchChange}
                   onToggleCategory={onToggleCategory}
                   onToggleType={onToggleType}
+                  onToggleExperience={onToggleExperience}
                   onClearFilters={onClearFilters}
                 />
               </div>
@@ -192,9 +215,7 @@ export function JobsToolbar({
               <SelectValue placeholder={t.sortBy} />
             </SelectTrigger>
             <SelectContent className="">
-              <SelectItem value="featured" className="">
-                {t.featured}
-              </SelectItem>
+         
               <SelectItem value="newest" className="">
                 {t.newest}
               </SelectItem>
@@ -211,6 +232,7 @@ export function JobsToolbar({
 
       {(selectedCategories.length > 0 ||
         selectedTypes.length > 0 ||
+        selectedExperiences.length > 0 ||
         searchQuery) && (
         <div
           className="flex flex-wrap items-center gap-2 mb-6"
@@ -262,6 +284,26 @@ export function JobsToolbar({
                 aria-label={`${t.removeFilter} ${type} ${t.filters}`}
               >
                 {type}
+                <X className="w-3 h-3 ml-1" aria-hidden="true" />
+              </Badge>
+            ))}
+            {selectedExperiences.map((exp) => (
+              <Badge
+                key={exp}
+                variant="secondary"
+                className="cursor-pointer hover:bg-primary transition duration-300"
+                onClick={() => onToggleExperience(exp)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e: React.KeyboardEvent) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onToggleExperience(exp);
+                  }
+                }}
+                aria-label={`${t.removeFilter} ${t.experienceOptions[exp] ?? exp} ${t.filters}`}
+              >
+                {t.experienceOptions[exp] ?? exp}
                 <X className="w-3 h-3 ml-1" aria-hidden="true" />
               </Badge>
             ))}

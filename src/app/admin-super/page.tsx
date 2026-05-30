@@ -273,7 +273,7 @@ export default function SuperAdminOverview() {
           <QuickLinks />
 
 
-          <ChartAreaInteractive />
+          {/* <ChartAreaInteractive /> */}
         </div>
       </SidebarInset>
     </SidebarProvider>

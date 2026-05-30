@@ -58,11 +58,13 @@ function JobsPageClient({
     currentPage,
     selectedCategories,
     selectedTypes,
+    selectedExperiences,
     searchQuery,
     sortBy,
     setPage,
     toggleCategory,
     toggleType,
+    toggleExperience,
     setSearchQuery,
     setSortBy,
     clearFilters,
@@ -90,10 +92,12 @@ function JobsPageClient({
               searchQuery={searchQuery}
               selectedCategories={selectedCategories}
               selectedTypes={selectedTypes}
+              selectedExperiences={selectedExperiences}
               categories={categories}
               onSearchChange={setSearchQuery}
               onToggleCategory={toggleCategory}
               onToggleType={toggleType}
+              onToggleExperience={toggleExperience}
               onClearFilters={clearFilters}
             />
           </div>
@@ -106,6 +110,7 @@ function JobsPageClient({
             categories={categories}
             selectedCategories={selectedCategories}
             selectedTypes={selectedTypes}
+            selectedExperiences={selectedExperiences}
             searchQuery={searchQuery}
             sortBy={sortBy}
             mobileFiltersOpen={mobileFiltersOpen}
@@ -113,6 +118,7 @@ function JobsPageClient({
             onSearchChange={setSearchQuery}
             onToggleCategory={toggleCategory}
             onToggleType={toggleType}
+            onToggleExperience={toggleExperience}
             onClearFilters={clearFilters}
             onSortChange={setSortBy}
           />
