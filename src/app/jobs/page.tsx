@@ -20,6 +20,7 @@ type CategoriesResponse = {
 type SearchParams = {
   category?: string | string[];
   type?: string | string[];
+  experience?: string | string[];
   search?: string | string[];
   sort?: string | string[];
   page?: string | string[];
@@ -81,24 +82,6 @@ function sortJobs(items: Job[], sortBy: SortBy): Job[] {
   return sorted;
 }
 
-async function fetchJobs(): Promise<Job[]> {
-  try {
-    const response = await fetch(`${API_URL}/jobs`, {
-      next: { revalidate: 120 },
-    });
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = (await response.json()) as JobsResponse;
-    console.log("Fetched jobs:", data);
-    return Array.isArray(data.content) ? data.content : [];
-  } catch {
-    return [];
-  }
-}
-
 async function fetchJobsByCategory(categoryId: string): Promise<Job[]> {
   try {
     const response = await fetch(`${API_URL}/jobs/ByCategory/${categoryId}`, {
@@ -114,6 +97,55 @@ async function fetchJobsByCategory(categoryId: string): Promise<Job[]> {
   } catch {
     return [];
   }
+}
+
+async function fetchJobsWithQuery(query?: string): Promise<Job[]> {
+  try {
+    console.log("Fetching jobs with query:", query);
+    const url = query ? `${API_URL}/jobs?${query}` : `${API_URL}/jobs`;
+    const response = await fetch(url, { next: { revalidate: 120 } });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const data = (await response.json()) as JobsResponse;
+    return Array.isArray(data.content) ? data.content : [];
+  } catch {
+    return [];
+  }
+}
+
+function buildJobsQuery(params: {
+  type?: string[];
+  experience?: string[];
+  search?: string;
+  sort?: string;
+  page?: string;
+}): string {
+  const apiParams = new URLSearchParams();
+
+  if (params.type && params.type.length > 0) {
+    apiParams.set("type", params.type.join(","));
+  }
+
+  if (params.experience && params.experience.length > 0) {
+    apiParams.set("experience", params.experience.join(","));
+  }
+
+  if (params.search) {
+    apiParams.set("search", params.search);
+  }
+
+  if (params.sort) {
+    apiParams.set("sort", params.sort);
+  }
+
+  if (params.page) {
+    apiParams.set("page", params.page);
+  }
+
+  return apiParams.toString();
 }
 
 async function fetchCategories(): Promise<Array<{ id: string; label: string }>> {
@@ -146,23 +178,31 @@ export default async function AllJobsPage({
   const categoriesPromise = fetchCategories();
   const params = await searchParams;
 
-  const rawCategory = getSingleParam(params.category);
   const rawTypes = getSingleParam(params.type);
   const rawExperience = getSingleParam(params.experience);
   const rawSearch = getSingleParam(params.search);
   const rawSort = getSingleParam(params.sort);
   const rawPage = getSingleParam(params.page);
 
-  const selectedCategories = parseCsvParam(rawCategory).slice(0, 1);
   const selectedTypes = parseCsvParam(rawTypes);
   const selectedExperiences = parseCsvParam(rawExperience);
   const searchQuery = rawSearch?.trim() ?? "";
   const sortBy = sanitizeSort(rawSort);
 
-  const selectedCategoryId = selectedCategories[0];
+  const selectedCategoryId = getSingleParam(params.category);
+  const jobsQuery = buildJobsQuery({
+    type: selectedTypes,
+    experience: selectedExperiences,
+    search: searchQuery,
+    sort: rawSort,
+    page: rawPage,
+  });
+
   const [categories, jobs] = await Promise.all([
     categoriesPromise,
-    selectedCategoryId ? fetchJobsByCategory(selectedCategoryId) : fetchJobs(),
+    selectedCategoryId
+      ? fetchJobsByCategory(selectedCategoryId)
+      : fetchJobsWithQuery(jobsQuery),
   ]);
 
   let filteredJobs = jobs;

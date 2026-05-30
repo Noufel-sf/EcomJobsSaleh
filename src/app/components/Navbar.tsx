@@ -278,6 +278,11 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
                       {messages.navbar.allProducts}
                     </span>
                   </Link>
+                  <Link href="/jobs" className="mx-2">
+                    <span className="font-semibold text-sm cursor-pointer capitalize hover:text-primary transition-colors">
+                      {messages.navbar.allJobs}
+                    </span>
+                  </Link>
                   <Link href="/about" className="mx-2">
                     <span className="font-semibold text-sm cursor-pointer capitalize hover:text-primary transition-colors">
                       {messages.navbar.aboutUs}
@@ -571,6 +576,15 @@ const Navbar = memo(function Navbar({ initialCategories }: NavbarProps) {
             >
               <span className="font-semibold cursor-pointer capitalize hover:text-primary transition-colors">
                 {messages.navbar.allProducts}
+              </span>
+            </Link>
+            <Link
+              href="/jobs"
+              className="px-3 py-2"
+              onClick={() => setIsOpen(false)}
+            >
+              <span className="font-semibold cursor-pointer capitalize hover:text-primary transition-colors">
+                {messages.navbar.allJobs}
               </span>
             </Link>
             <Link

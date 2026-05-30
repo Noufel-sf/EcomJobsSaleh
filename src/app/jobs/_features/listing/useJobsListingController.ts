@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Job } from "@/lib/DatabaseTypes";
 
-type SortBy = "featured" | "newest" | "salary-asc" | "salary-desc";
+type SortBy =   "newest" | "salary-asc" | "salary-desc";
 
 function parseCsvParam(value: string | null): string[] {
   if (!value) return [];
@@ -14,11 +14,11 @@ function parseCsvParam(value: string | null): string[] {
 }
 
 function sanitizeSort(value: string | null): SortBy {
-  const allowed: SortBy[] = ["featured", "newest", "salary-asc", "salary-desc"];
+  const allowed: SortBy[] = ["newest", "salary-asc", "salary-desc"];
   if (value && allowed.includes(value as SortBy)) {
     return value as SortBy;
   }
-  return "featured";
+  return "newest";
 }
 
 export function useJobsListingController({
@@ -153,18 +153,7 @@ export function useJobsListingController({
         { resetPage: true },
       );
     },
-    setSortBy: (sort: SortBy) => {
-      updateUrl(
-        (params) => {
-          if (sort === "featured") {
-            params.delete("sort");
-          } else {
-            params.set("sort", sort);
-          }
-        },
-        { resetPage: true },
-      );
-    },
+   
     clearFilters: () => {
       updateUrl(
         (params) => {

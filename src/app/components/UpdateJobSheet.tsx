@@ -220,15 +220,6 @@ function UpdateJobSheetForm({
         return;
       }
 
-      if (
-        requiredSkills.length === 0 ||
-        responsibilities.length === 0 ||
-        whoYouAre.length === 0 ||
-        niceToHaves.length === 0
-      ) {
-        toast.error("Please add at least one point in each list field");
-        return;
-      }
 
       try {
         const payload = {

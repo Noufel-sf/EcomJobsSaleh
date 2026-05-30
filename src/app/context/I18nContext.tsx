@@ -19,6 +19,7 @@ type NavbarMessages = {
   searchResultsLabel: string;
   noProductsFound: string;
   allProducts: string;
+  allJobs: string;
   aboutUs: string;
   helpCenter: string;
   categories: string;
@@ -185,6 +186,7 @@ const translations: Record<Language, TranslationMessages> = {
       searchResultsLabel: 'Search results',
       noProductsFound: 'No products found',
       allProducts: 'All Products',
+      allJobs: 'All Jobs',
       aboutUs: 'About Us',
       helpCenter: 'Help Center',
       categories: 'Categories',
@@ -357,6 +359,7 @@ const translations: Record<Language, TranslationMessages> = {
       searchResultsLabel: 'Resultats de recherche',
       noProductsFound: 'Aucun produit trouve',
       allProducts: 'Tous les produits',
+      allJobs: 'Tous les emplois',
       aboutUs: 'A propos',
       helpCenter: "Centre d'aide",
       categories: 'Categories',
@@ -529,6 +532,7 @@ const translations: Record<Language, TranslationMessages> = {
       searchResultsLabel: 'نتائج البحث',
       noProductsFound: 'لم يتم العثور على منتجات',
       allProducts: 'كل المنتجات',
+      allJobs: 'كل الوظائف',
       aboutUs: 'من نحن',
       helpCenter: 'مركز المساعدة',
       categories: 'الفئات',

@@ -9,10 +9,23 @@ import { FiltersPanel } from "./_features/catalog/components/FiltersPanel";
 import { ProductsGrid } from "./_features/catalog/components/ProductsGrid";
 import { ProductsToolbar } from "./_features/catalog/components/ProductsToolbar";
 import { useI18n } from "@/context/I18nContext";
+import type { Product } from "@/lib/DatabaseTypes";
 
 const ITEMS_PER_PAGE = 12;
 
-function AllProductsClientContent() {
+function AllProductsClientContent({
+  initialProducts,
+  initialCategories,
+  initialTotalFiltered,
+  initialCurrentPage,
+  initialTotalPages,
+}: {
+  initialProducts?: Product[];
+  initialCategories?: { id: string; name: string }[];
+  initialTotalFiltered?: number;
+  initialCurrentPage?: number;
+  initialTotalPages?: number;
+}) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const { language } = useI18n();
   const labels = {
@@ -52,7 +65,13 @@ function AllProductsClientContent() {
     setSearchQuery,
     setSortBy,
     clearFilters,
-  } = useCatalogController();
+  } = useCatalogController({
+    products: initialProducts,
+    categories: initialCategories,
+    totalPages: initialTotalPages,
+    currentPage: initialCurrentPage,
+    totalFiltered: initialTotalFiltered,
+  });
 
   return (
     <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">

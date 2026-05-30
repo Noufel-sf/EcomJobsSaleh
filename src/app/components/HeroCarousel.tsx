@@ -18,9 +18,13 @@ interface HeroCarouselProps {
   sponsors: HeroSponsor[];
 }
 
-const HeroCarousel = memo(function HeroCarousel({ sponsors }: HeroCarouselProps) {
+const HeroCarousel = memo(function HeroCarousel({
+  sponsors,
+}: HeroCarouselProps) {
   if (sponsors.length === 0) {
-    return <div className="rounded-sm shadow-lg flex-1 bg-muted animate-pulse" />;
+    return (
+      <div className="rounded-sm shadow-lg flex-1 bg-muted animate-pulse" />
+    );
   }
 
   return (
@@ -42,12 +46,17 @@ const HeroCarousel = memo(function HeroCarousel({ sponsors }: HeroCarouselProps)
 
         return (
           <SwiperSlide key={`${imageSrc}-${index}`}>
-            <div className="relative h-[180px] w-full overflow-hidden rounded-sm sm:h-[240px] lg:h-[320px]">
-              <Link href={href} target="_blank" rel="noopener noreferrer" className="absolute inset-0 block">
+            <div className="relative h-[200px] w-full overflow-hidden rounded-sm sm:h-[240px] lg:h-[480px]">
+              <Link
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute inset-0 block"
+              >
                 <Image
                   src={imageSrc}
                   alt={sponsor.description || `Sponsor banner ${index + 1}`}
-                  className="cursor-pointer object-cover"
+                  className="cursor-pointer object-cover transition-transform duration-300 hover:scale-105"
                   fill
                   priority={index === 0}
                   fetchPriority={index === 0 ? "high" : "auto"}

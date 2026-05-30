@@ -246,7 +246,7 @@ const ProductDetailsClient = ({
           </li>
           <li>
             <Link
-              href="/allproducts"
+              href="/products"
               className="hover:text-foreground transition"
             >
               {copy.categories}

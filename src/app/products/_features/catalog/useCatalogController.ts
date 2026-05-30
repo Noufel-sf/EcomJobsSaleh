@@ -113,7 +113,13 @@ function sortProducts(items: Product[], sortBy: SortBy): Product[] {
   return sorted;
 }
 
-export function useCatalogController() {
+export function useCatalogController(initial?: {
+  products?: Product[];
+  categories?: { id: string; name: string }[];
+  totalPages?: number;
+  currentPage?: number;
+  totalFiltered?: number;
+}) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const router = useRouter();
   const pathname = usePathname();
@@ -158,16 +164,15 @@ export function useCatalogController() {
     dispatch({ type: "SET_CATEGORIES", payload: categoryIdsFromUrl });
   }, [categoryIdsFromUrl]);
 
-  const products = useMemo(
-    () => productsData?.content ?? [],
-    [productsData?.content],
-  );
+  const products = useMemo(() => {
+    if (initial?.products) return initial.products;
+    return productsData?.content ?? [];
+  }, [productsData?.content, initial]);
 
-  const categories = useMemo<CatalogCategory[]>(
-    () =>
-      (categoriesData?.content ?? []).map((c) => ({ id: c.id, name: c.name })),
-    [categoriesData?.content],
-  );
+  const categories = useMemo<CatalogCategory[]>(() => {
+    if (initial?.categories) return initial.categories;
+    return (categoriesData?.content ?? []).map((c) => ({ id: c.id, name: c.name }));
+  }, [categoriesData?.content, initial]);
 
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -182,15 +187,18 @@ export function useCatalogController() {
     return sortProducts(result, state.sortBy);
   }, [products, state.searchQuery, state.sortBy]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredProducts.length / ITEMS_PER_PAGE),
-  );
+  const totalPages = useMemo(() => {
+    if (typeof initial?.totalPages === "number") return Math.max(1, initial.totalPages);
+    return Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+  }, [filteredProducts.length, initial]);
 
-  const paginatedProducts = filteredProducts.slice(
-    (state.currentPage - 1) * ITEMS_PER_PAGE,
-    state.currentPage * ITEMS_PER_PAGE,
-  );
+  const paginatedProducts = useMemo(() => {
+    if (initial?.products) return initial.products;
+    return filteredProducts.slice(
+      (state.currentPage - 1) * ITEMS_PER_PAGE,
+      state.currentPage * ITEMS_PER_PAGE,
+    );
+  }, [filteredProducts, state.currentPage, initial]);
 
   const updateClassificationInUrl = (nextSelected: string[]) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
@@ -208,17 +216,24 @@ export function useCatalogController() {
     });
   };
 
+  // If initial data for pagination was provided, prefer those values for totals/current page
+  const currentPage = initial?.currentPage ?? state.currentPage;
+  const totalFiltered = initial?.totalFiltered ?? filteredProducts.length;
+
   return {
-    isLoading: isProductsLoading,
+    isLoading: initial?.products ? false : isProductsLoading,
     categories,
     filteredProducts,
     paginatedProducts,
     totalPages,
-    currentPage: state.currentPage,
+    currentPage,
+    totalFiltered,
     selectedCategories: state.selectedCategories,
     searchQuery: state.searchQuery,
     sortBy: state.sortBy,
-    setPage: (page: number) => dispatch({ type: "SET_PAGE", payload: page }),
+    setPage: (page: number) => {
+      dispatch({ type: "SET_PAGE", payload: page });
+    },
     toggleCategory: (categoryId: string) => {
       const exists = state.selectedCategories.includes(categoryId);
       const nextSelected = exists ? [] : [categoryId];
