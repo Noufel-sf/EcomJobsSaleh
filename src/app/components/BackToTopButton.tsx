@@ -29,7 +29,7 @@ export default function BackToTopButton() {
   return (
     <Button
       type="button"
-      variant="primary"
+      variant="secondary"
       size="icon"
       onClick={scrollToTop}
       aria-label="Back to top"

@@ -55,19 +55,7 @@ export function FiltersPanel({
 
   return (
     <div className="space-y-6 px-6">
-      <div>
-        <Label htmlFor="search" className="text-sm font-semibold mb-2 block">
-          {t.searchProducts}
-        </Label>
-        <Input
-          id="search"
-          type="text"
-          placeholder={t.searchPlaceholder}
-          value={searchQuery}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)}
-          aria-label={t.searchAria}
-        />
-      </div>
+
 
       <Separator className="" />
 

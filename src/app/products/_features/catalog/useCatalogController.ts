@@ -1,10 +1,5 @@
 import { useEffect, useMemo, useReducer } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { skipToken } from "@reduxjs/toolkit/query";
-import {
-  useGetAllProductsQuery,
-  useGetProductsByClassificationQuery,
-} from "@/Redux/Services/ProductsApi";
 import { useGetAllClassificationsQuery } from "@/Redux/Services/ClassificationApi";
 import type { Product } from "@/lib/DatabaseTypes";
 
@@ -15,7 +10,7 @@ type CatalogCategory = {
 
 const ITEMS_PER_PAGE = 12;
 
-type SortBy = "featured" | "newest" | "price-asc" | "price-desc" | "rating";
+type SortBy = "newest" | "price-asc" | "price-desc";
 
 type CatalogState = {
   currentPage: number;
@@ -36,8 +31,23 @@ const initialState: CatalogState = {
   currentPage: 1,
   selectedCategories: [],
   searchQuery: "",
-  sortBy: "featured",
+  sortBy: "newest",
 };
+
+function parseSortParam(value: string | null): SortBy {
+  switch (value) {
+    case "price,asc":
+    case "price-asc":
+      return "price-asc";
+    case "price,desc":
+    case "price-desc":
+      return "price-desc";
+    case "id,desc":
+    case "newest":
+    default:
+      return "newest";
+  }
+}
 
 function reducer(state: CatalogState, action: CatalogAction): CatalogState {
   switch (action.type) {
@@ -78,39 +88,11 @@ function reducer(state: CatalogState, action: CatalogAction): CatalogState {
         currentPage: 1,
         selectedCategories: [],
         searchQuery: "",
-        sortBy: "featured",
+        sortBy: "newest",
       };
     default:
       return state;
   }
-}
-
-function getAverageRating(product: Product): number {
-  const candidate = product as Product & { averageRating?: number };
-  return candidate.averageRating ?? 0;
-}
-
-function sortProducts(items: Product[], sortBy: SortBy): Product[] {
-  const sorted = [...items];
-
-  switch (sortBy) {
-    case "price-asc":
-      sorted.sort((a, b) => a.price - b.price);
-      break;
-    case "price-desc":
-      sorted.sort((a, b) => b.price - a.price);
-      break;
-    case "rating":
-      sorted.sort((a, b) => getAverageRating(b) - getAverageRating(a));
-      break;
-    case "newest":
-      sorted.sort((a, b) => b.id.localeCompare(a.id));
-      break;
-    default:
-      break;
-  }
-
-  return sorted;
 }
 
 export function useCatalogController(initial?: {
@@ -124,25 +106,7 @@ export function useCatalogController(initial?: {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeClassification = state.selectedCategories[0];
-
-  const allProductsQuery = useGetAllProductsQuery(
-    activeClassification ? skipToken : undefined,
-  );
-
-  const classifiedProductsQuery = useGetProductsByClassificationQuery(
-    activeClassification
-      ? { classificationID: activeClassification }
-      : skipToken,
-  );
-
-  const productsData = activeClassification
-    ? classifiedProductsQuery.data
-    : allProductsQuery.data;
-
-  const isProductsLoading = activeClassification
-    ? classifiedProductsQuery.isLoading || classifiedProductsQuery.isFetching
-    : allProductsQuery.isLoading || allProductsQuery.isFetching;
+  const searchParamsString = searchParams?.toString() ?? "";
 
   const { data: categoriesData } = useGetAllClassificationsQuery(undefined);
 
@@ -164,41 +128,45 @@ export function useCatalogController(initial?: {
     dispatch({ type: "SET_CATEGORIES", payload: categoryIdsFromUrl });
   }, [categoryIdsFromUrl]);
 
-  const products = useMemo(() => {
-    if (initial?.products) return initial.products;
-    return productsData?.content ?? [];
-  }, [productsData?.content, initial]);
+  const searchQuery = searchParams?.get("search") ?? "";
+  const sortBy = parseSortParam(searchParams?.get("sort") ?? null);
+
+  const updateUrl = (
+    updater: (params: URLSearchParams) => void,
+    options?: { resetPage?: boolean },
+  ) => {
+    const params = new URLSearchParams(searchParamsString);
+
+    updater(params);
+
+    if (options?.resetPage) {
+      params.delete("page");
+    }
+
+    const query = params.toString();
+    const safePathname = pathname ?? "/products";
+
+    router.replace(query ? `${safePathname}?${query}` : safePathname, {
+      scroll: false,
+    });
+  };
+
+  const products = useMemo(() => initial?.products ?? [], [initial]);
 
   const categories = useMemo<CatalogCategory[]>(() => {
     if (initial?.categories) return initial.categories;
     return (categoriesData?.content ?? []).map((c) => ({ id: c.id, name: c.name }));
   }, [categoriesData?.content, initial]);
 
-  const filteredProducts = useMemo(() => {
-    let result = products;
-
-    if (state.searchQuery.trim()) {
-      const query = state.searchQuery.toLowerCase();
-      result = result.filter((product) =>
-        product.name.toLowerCase().includes(query),
-      );
-    }
-
-    return sortProducts(result, state.sortBy);
-  }, [products, state.searchQuery, state.sortBy]);
-
+  // Use server-provided products directly. Server handles filtering/pagination/sorting.
   const totalPages = useMemo(() => {
-    if (typeof initial?.totalPages === "number") return Math.max(1, initial.totalPages);
-    return Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
-  }, [filteredProducts.length, initial]);
+    if (typeof initial?.totalPages === "number") {
+      return Math.max(1, initial.totalPages);
+    }
+    return Math.max(1, Math.ceil(products.length / ITEMS_PER_PAGE));
+  }, [products.length, initial]);
 
-  const paginatedProducts = useMemo(() => {
-    if (initial?.products) return initial.products;
-    return filteredProducts.slice(
-      (state.currentPage - 1) * ITEMS_PER_PAGE,
-      state.currentPage * ITEMS_PER_PAGE,
-    );
-  }, [filteredProducts, state.currentPage, initial]);
+  const paginatedProducts = useMemo(() => products, [products]);
 
   const updateClassificationInUrl = (nextSelected: string[]) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
@@ -216,23 +184,27 @@ export function useCatalogController(initial?: {
     });
   };
 
-  // If initial data for pagination was provided, prefer those values for totals/current page
   const currentPage = initial?.currentPage ?? state.currentPage;
-  const totalFiltered = initial?.totalFiltered ?? filteredProducts.length;
+  const totalFiltered = initial?.totalFiltered ?? products.length;
 
   return {
-    isLoading: initial?.products ? false : isProductsLoading,
+    isLoading: false,
     categories,
-    filteredProducts,
+    filteredProducts: products,
     paginatedProducts,
     totalPages,
     currentPage,
     totalFiltered,
     selectedCategories: state.selectedCategories,
-    searchQuery: state.searchQuery,
-    sortBy: state.sortBy,
+    searchQuery,
+    sortBy,
     setPage: (page: number) => {
-      dispatch({ type: "SET_PAGE", payload: page });
+      updateUrl(
+        (params) => {
+          params.set("page", String(page));
+        },
+        { resetPage: false },
+      );
     },
     toggleCategory: (categoryId: string) => {
       const exists = state.selectedCategories.includes(categoryId);
@@ -240,12 +212,37 @@ export function useCatalogController(initial?: {
       dispatch({ type: "SET_CATEGORIES", payload: nextSelected });
       updateClassificationInUrl(nextSelected);
     },
-    setSearchQuery: (query: string) =>
-      dispatch({ type: "SET_SEARCH", payload: query }),
-    setSortBy: (sort: SortBy) => dispatch({ type: "SET_SORT", payload: sort }),
+    setSearchQuery: (query: string) => {
+      updateUrl(
+        (params) => {
+          const next = query.trim();
+          if (next) {
+            params.set("search", next);
+          } else {
+            params.delete("search");
+          }
+        },
+        { resetPage: true },
+      );
+    },
+    setSortBy: (sort: SortBy) => {
+      updateUrl(
+        (params) => {
+          const backendSort =
+            sort === "price-asc"
+              ? "price,asc"
+              : sort === "price-desc"
+                ? "price,desc"
+                : "id,desc";
+          params.set("sort", backendSort);
+        },
+        { resetPage: true },
+      );
+    },
     clearFilters: () => {
       dispatch({ type: "CLEAR_FILTERS" });
-      updateClassificationInUrl([]);
+      const safePathname = pathname ?? "/products";
+      router.replace(safePathname, { scroll: false });
     },
   };
 }

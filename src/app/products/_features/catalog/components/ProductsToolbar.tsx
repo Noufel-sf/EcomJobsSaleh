@@ -19,7 +19,7 @@ import {
 import { FiltersPanel } from "./FiltersPanel";
 import { useI18n } from "@/context/I18nContext";
 
-type SortBy = "featured" | "newest" | "price-asc" | "price-desc" | "rating";
+type SortBy = "newest" | "price-asc" | "price-desc";
 
 export function ProductsToolbar({
   totalFiltered,
@@ -61,11 +61,9 @@ export function ProductsToolbar({
       filterProductsDescription: "Filter products by category, price, and more",
       sortProductsBy: "Sort products by",
       sortBy: "Sort by",
-      featured: "Featured",
       newest: "Newest",
       priceLowToHigh: "Price: Low to High",
       priceHighToLow: "Price: High to Low",
-      highestRated: "Highest Rated",
     },
     fr: {
       allProducts: "Tous les produits",
@@ -78,11 +76,9 @@ export function ProductsToolbar({
       filterProductsDescription: "Filtrer les produits par categorie, prix et plus",
       sortProductsBy: "Trier les produits par",
       sortBy: "Trier par",
-      featured: "En vedette",
       newest: "Plus recent",
       priceLowToHigh: "Prix: croissant",
       priceHighToLow: "Prix: decroissant",
-      highestRated: "Mieux notes",
     },
     ar: {
       allProducts: "كل المنتجات",
@@ -95,11 +91,9 @@ export function ProductsToolbar({
       filterProductsDescription: "تصفية المنتجات حسب الفئة والسعر والمزيد",
       sortProductsBy: "ترتيب المنتجات حسب",
       sortBy: "ترتيب حسب",
-      featured: "مميزة",
       newest: "الاحدث",
       priceLowToHigh: "السعر: من الاقل للاعلى",
       priceHighToLow: "السعر: من الاعلى للاقل",
-      highestRated: "الاعلى تقييما",
     },
   } as const;
   const t = labels[language] ?? labels.en;
@@ -156,11 +150,9 @@ export function ProductsToolbar({
             <SelectValue placeholder={t.sortBy} />
           </SelectTrigger>
           <SelectContent className="">
-            <SelectItem value="featured" className="">{t.featured}</SelectItem>
             <SelectItem value="newest" className="">{t.newest}</SelectItem>
             <SelectItem value="price-asc" className="">{t.priceLowToHigh}</SelectItem>
             <SelectItem value="price-desc" className="">{t.priceHighToLow}</SelectItem>
-            <SelectItem value="rating" className="">{t.highestRated}</SelectItem>
           </SelectContent>
         </Select>
       </div>

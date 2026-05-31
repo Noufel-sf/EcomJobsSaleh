@@ -7,8 +7,6 @@ const API_URL =
   "https://wadkniss-r6ar.onrender.com/api/v1";
 const ITEMS_PER_PAGE = 9;
 
-type SortBy = "featured" | "newest" | "salary-asc" | "salary-desc";
-
 type ExperienceKey =
   | "NO_EXPERIENCE"
   | "LESS_THAN_ONE_YEAR"
@@ -43,20 +41,6 @@ function getSingleParam(value?: string | string[]): string | undefined {
   return value;
 }
 
-function parseSalary(raw: string | number | null | undefined): number {
-  if (typeof raw === "number") {
-    return Number.isFinite(raw) ? raw : 0;
-  }
-
-  if (raw == null) {
-    return 0;
-  }
-
-  const normalized = String(raw).replace(/[^0-9.-]/g, "");
-  const parsed = Number.parseFloat(normalized);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
 function parseCsvParam(value?: string): string[] {
   if (!value) return [];
 
@@ -80,32 +64,17 @@ function sanitizeExperienceParam(value?: string): ExperienceKey[] {
   );
 }
 
-function sanitizeSort(value?: string): SortBy {
-  const allowed: SortBy[] = ["featured", "newest", "salary-asc", "salary-desc"];
-  if (value && allowed.includes(value as SortBy)) {
-    return value as SortBy;
-  }
-  return "featured";
-}
-
-function sortJobs(items: Job[], sortBy: SortBy): Job[] {
-  const sorted = [...items];
-
-  switch (sortBy) {
+function normalizeSortParam(value?: string): string | undefined {
+  switch (value) {
     case "salary-asc":
-      sorted.sort((a, b) => parseSalary(a.salary) - parseSalary(b.salary));
-      break;
+      return "salary,asc";
     case "salary-desc":
-      sorted.sort((a, b) => parseSalary(b.salary) - parseSalary(a.salary));
-      break;
+      return "salary,desc";
     case "newest":
-      sorted.sort((a, b) => b.id.localeCompare(a.id));
-      break;
+      return "jobPostedOn,desc";
     default:
-      break;
+      return value;
   }
-
-  return sorted;
 }
 
 async function fetchJobsByCategory(categoryId: string): Promise<Job[]> {
@@ -244,7 +213,7 @@ export default async function AllJobsPage({
   const selectedExperiences = sanitizeExperienceParam(rawExperience);
   const selectedLocation = rawLocation?.trim() ?? "";
   const searchQuery = rawSearch?.trim() ?? "";
-  const sortBy = sanitizeSort(rawSort);
+  const normalizedSort = normalizeSortParam(rawSort);
 
   const selectedCategoryId = getSingleParam(params.category);
   const jobsQuery = buildJobsQuery({
@@ -256,7 +225,7 @@ export default async function AllJobsPage({
     postedFrom: rawPostedFrom?.trim(),
     postedTo: rawPostedTo?.trim(),
     search: searchQuery,
-    sort: rawSort,
+    sort: normalizedSort,
     page: rawPage,
   });
 
@@ -267,113 +236,7 @@ export default async function AllJobsPage({
       : fetchJobsWithQuery(jobsQuery),
   ]);
 
-  let filteredJobs = jobs;
-
-  if (selectedLocation) {
-    const locationQuery = selectedLocation.toLowerCase();
-    filteredJobs = filteredJobs.filter((job) =>
-      job.location?.toLowerCase().includes(locationQuery),
-    );
-  }
-
-  const parseJobDate = (value: string | null | undefined): number | null => {
-    if (!value) return null;
-    const parsed = Date.parse(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  };
-
-  const postedFromDate = parseJobDate(rawPostedFrom);
-  const postedToDate = parseJobDate(rawPostedTo);
-
-  if (postedFromDate != null || postedToDate != null) {
-    filteredJobs = filteredJobs.filter((job) => {
-      const jobPostedOnDate = parseJobDate(job.jobPostedOn);
-      const applyBeforeDate = parseJobDate(job.applyBefore);
-
-      if (postedFromDate != null) {
-        if (jobPostedOnDate == null || jobPostedOnDate < postedFromDate) {
-          return false;
-        }
-      }
-
-      if (postedToDate != null) {
-        if (applyBeforeDate == null || applyBeforeDate > postedToDate) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }
-
-  if (selectedTypes.length > 0) {
-    filteredJobs = filteredJobs.filter((job) => selectedTypes.includes(job.type));
-  }
-
-  if (selectedExperiences.length > 0) {
-    function extractYears(value: string | number | null | undefined): number | null {
-      if (value == null) return null;
-      const s = String(value).toLowerCase();
-      // try to extract first integer
-      const m = s.match(/(\d+)/);
-      if (m) {
-        const n = Number.parseInt(m[1], 10);
-        return Number.isFinite(n) ? n : null;
-      }
-      return null;
-    }
-
-    filteredJobs = filteredJobs.filter((job) => {
-      const years = extractYears(job.experience);
-      const normalizedExperience = String(job.experience ?? "").toLowerCase();
-
-      // Match the canonical backend values first, then fall back to a text check.
-      return selectedExperiences.some((range) => {
-        if (range === "NO_EXPERIENCE") {
-          if (years != null) return years === 0;
-          return normalizedExperience.includes("no experience");
-        }
-        if (range === "LESS_THAN_ONE_YEAR") {
-          if (years != null) return years < 1;
-          return (
-            normalizedExperience.includes("less than one year") ||
-            normalizedExperience.includes("less than 1") ||
-            normalizedExperience.includes("under 1")
-          );
-        }
-        if (range === "ONE_TO_FIVE_YEARS") {
-          if (years != null) return years >= 1 && years <= 5;
-          return normalizedExperience.includes("1 - 5") || normalizedExperience.includes("1-5");
-        }
-        if (range === "FIVE_TO_TEN_YEARS") {
-          if (years != null) return years > 5 && years <= 10;
-          return normalizedExperience.includes("5 - 10") || normalizedExperience.includes("5-10");
-        }
-        if (range === "MORE_THAN_TEN_YEARS") {
-          if (years != null) return years > 10;
-          return (
-            normalizedExperience.includes("more than 10") ||
-            normalizedExperience.includes("10+")
-          );
-        }
-
-        return false;
-      });
-    });
-  }
-
-  if (searchQuery) {
-    const query = searchQuery.toLowerCase();
-    filteredJobs = filteredJobs.filter(
-      (job) =>
-        job.title.toLowerCase().includes(query) ||
-        job.company.toLowerCase().includes(query),
-    );
-  }
-
-  const sortedJobs = sortJobs(filteredJobs, sortBy);
-
-  const totalFiltered = sortedJobs.length;
+  const totalFiltered = jobs.length;
   const totalPages = Math.max(1, Math.ceil(totalFiltered / ITEMS_PER_PAGE));
   const parsedPage = Number.parseInt(rawPage ?? "1", 10);
   const currentPage =
@@ -381,7 +244,7 @@ export default async function AllJobsPage({
       ? Math.min(parsedPage, totalPages)
       : 1;
 
-  const paginatedJobs = sortedJobs.slice(
+  const paginatedJobs = jobs.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );

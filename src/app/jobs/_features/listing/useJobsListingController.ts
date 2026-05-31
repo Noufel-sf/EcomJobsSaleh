@@ -23,6 +23,33 @@ export const EXPERIENCE_OPTIONS: Array<{ value: ExperienceKey; label: string }> 
 
 const EXPERIENCE_VALUES = new Set(EXPERIENCE_OPTIONS.map((option) => option.value));
 
+function parseSortParam(value: string | null): SortBy {
+  switch (value) {
+    case "salary,asc":
+    case "salary-asc":
+      return "salary-asc";
+    case "salary,desc":
+    case "salary-desc":
+      return "salary-desc";
+    case "jobPostedOn,desc":
+    case "newest":
+    default:
+      return "newest";
+  }
+}
+
+function toBackendSort(value: SortBy): string {
+  switch (value) {
+    case "salary-asc":
+      return "salary,asc";
+    case "salary-desc":
+      return "salary,desc";
+    case "newest":
+    default:
+      return "jobPostedOn,desc";
+  }
+}
+
 type JobsListingControllerResult = {
   isLoading: boolean;
   categories: Array<{ id: string; label: string }>;
@@ -65,14 +92,6 @@ function parseExperienceParam(value: string | null): ExperienceKey[] {
   return parseCsvParam(value).filter((item): item is ExperienceKey =>
     EXPERIENCE_VALUES.has(item as ExperienceKey),
   );
-}
-
-function sanitizeSort(value: string | null): SortBy {
-  const allowed: SortBy[] = ["newest", "salary-asc", "salary-desc"];
-  if (value && allowed.includes(value as SortBy)) {
-    return value as SortBy;
-  }
-  return "newest";
 }
 
 function sanitizeSalaryRange(
@@ -136,7 +155,7 @@ export function useJobsListingController({
   const selectedPostedTo = sanitizeDateValue(searchParams?.get("postedTo") ?? null);
 
   const searchQuery = searchParams?.get("search") ?? "";
-  const sortBy = sanitizeSort(searchParams?.get("sort") ?? null);
+  const sortBy = parseSortParam(searchParams?.get("sort") ?? null);
 
   const updateUrl = (
     updater: (params: URLSearchParams) => void,
@@ -300,11 +319,7 @@ export function useJobsListingController({
     setSortBy: (value: SortBy) => {
       updateUrl(
         (params) => {
-          if (value) {
-            params.set("sort", value);
-          } else {
-            params.delete("sort");
-          }
+          params.set("sort", toBackendSort(value));
         },
         { resetPage: true },
       );
