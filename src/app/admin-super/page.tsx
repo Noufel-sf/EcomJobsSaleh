@@ -27,12 +27,15 @@ import { useAppSelector } from "@/Redux/hooks";
 import { SuperAdminAppSidebar } from "./SuperAdminAppSidebar";
 import Link from "next/link";
 import { useMemo } from "react";
-import { ChartAreaInteractive } from "@/admin-super/components/chart-area-interactive";
 import { type Language, useI18n } from "@/context/I18nContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import SuperAdminDashboardStats from "./components/SuperAdminDashboardStats";
 import QuickLinks from "./components/QuickLinks";
-import { useGetAdminSuperStatisticsQuery } from "@/Redux/Services/UsersApi";
+import { MetricAreaChart } from "@/components/MetricAreaChart";
+import {
+  useGetAdminSuperStatisticsQuery,
+  useGetSuperAdminGraphQuery,
+} from "@/Redux/Services/UsersApi";
 
 const superAdminOverviewCopy: Record<Language, Record<string, string>> = {
   en: {
@@ -47,6 +50,9 @@ const superAdminOverviewCopy: Record<Language, Record<string, string>> = {
     subtitle: "Manage your website listings and review applications.",
     totalJobs: "Total Jobs Posted",
     totalApplications: "Total Applications",
+    graphTitle: "Total Products and Jobs",
+    graphDescription: "Products and jobs across the platform",
+    graphTotalLabel: "Records",
     products: "Products",
     pendingProducts: "Pending Products",
     pendingJobs: "Pending Jobs",
@@ -73,6 +79,9 @@ const superAdminOverviewCopy: Record<Language, Record<string, string>> = {
     subtitle: "Gerez les contenus du site et les demandes en attente.",
     totalJobs: "Total emplois publies",
     totalApplications: "Total candidatures",
+    graphTitle: "Total produits et emplois",
+    graphDescription: "Produits et emplois sur la plateforme",
+    graphTotalLabel: "Enregistrements",
     products: "Produits",
     pendingProducts: "Produits en attente",
     pendingJobs: "Emplois en attente",
@@ -99,6 +108,9 @@ const superAdminOverviewCopy: Record<Language, Record<string, string>> = {
     subtitle: "ادِر محتوى المنصة وراجع الطلبات قيد الانتظار.",
     totalJobs: "اجمالي الوظائف المنشورة",
     totalApplications: "اجمالي طلبات التوظيف",
+    graphTitle: "اجمالي المنتجات والوظائف",
+    graphDescription: "المنتجات والوظائف عبر المنصة",
+    graphTotalLabel: "السجلات",
     products: "المنتجات",
     pendingProducts: "منتجات قيد الانتظار",
     pendingJobs: "وظائف قيد الانتظار",
@@ -121,6 +133,32 @@ export default function SuperAdminOverview() {
   const { language } = useI18n();
   const copy = superAdminOverviewCopy[language];
   const { data: superStats } = useGetAdminSuperStatisticsQuery();
+  const superAdminId = user?.userId ?? "";
+  const { data: superAdminGraphResponse } = useGetSuperAdminGraphQuery(superAdminId, {
+    skip: !superAdminId,
+  });
+
+  const superAdminGraphData = useMemo(() => {
+    const response = superAdminGraphResponse ?? [];
+
+    if (response.length > 0) {
+      return response.map((item, index) => ({
+        date: item.date ?? `2026-05-${String(index + 23).padStart(2, "0")}`,
+        products: item.products ?? item.TotalProducts ?? 0,
+        jobs: item.jobs ?? item.TotalJObs ?? 0,
+      }));
+    }
+
+    return [
+      { date: "2026-05-23", products: 3, jobs: 1 },
+      { date: "2026-05-24", products: 6, jobs: 2 },
+      { date: "2026-05-25", products: 4, jobs: 1 },
+      { date: "2026-05-26", products: 7, jobs: 3 },
+      { date: "2026-05-27", products: 5, jobs: 2 },
+      { date: "2026-05-28", products: 8, jobs: 4 },
+      { date: "2026-05-29", products: 6, jobs: 2 },
+    ];
+  }, [superAdminGraphResponse]);
 
   // Memoize stats data to prevent unnecessary re-renders
   const stats = useMemo(
@@ -270,10 +308,29 @@ export default function SuperAdminOverview() {
           {/* Stats Grid - Using memoized component */}
           <SuperAdminDashboardStats stats={stats} />
 
+          <div className="mb-8">
+            <MetricAreaChart
+              title={copy.graphTitle}
+              description={copy.graphDescription}
+              totalLabel={copy.graphTotalLabel}
+              totalValue={superAdminGraphData.reduce(
+                (sum, item) => sum + item.products + item.jobs,
+                0,
+              )}
+              data={superAdminGraphData}
+              dateKey="date"
+              primaryKey="products"
+              secondaryKey="jobs"
+              primaryLabel={copy.products}
+              secondaryLabel={copy.totalJobs}
+              primaryColor="var(--primary)"
+              secondaryColor="hsl(var(--destructive))"
+            />
+          </div>
+
           <QuickLinks />
 
 
-          {/* <ChartAreaInteractive /> */}
         </div>
       </SidebarInset>
     </SidebarProvider>

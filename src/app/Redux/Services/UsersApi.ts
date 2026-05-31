@@ -1,12 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://wadkniss-r6ar.onrender.com/api/v1";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://wadkniss-r6ar.onrender.com/api/v1";
 
-
-export type AdminUserRole =
-  | "employer"
-  | "seller"
-  | string;
+export type AdminUserRole = "employer" | "seller" | string;
 export type AdminUserStatus = "active" | "suspended" | string;
 
 export interface AdminUser {
@@ -59,6 +57,14 @@ interface UpdateAdminUserStatusPayload {
   isActive: boolean;
 }
 
+export interface SuperAdminGraphPoint {
+  date?: string;
+  TotalProducts?: number;
+  TotalJObs?: number;
+  products?: number;
+  jobs?: number;
+}
+
 interface DeleteAdminUserResponse {
   message?: string;
 }
@@ -71,7 +77,10 @@ export const usersApi = createApi({
   }),
   tagTypes: ["Sellers", "Employers"],
   endpoints: (builder) => ({
-    getAllSellers: builder.query<PaginatedAdminUsersResponse, GetAdminUsersParams | void>({
+    getAllSellers: builder.query<
+      PaginatedAdminUsersResponse,
+      GetAdminUsersParams | void
+    >({
       query: (params) => ({
         url: "/users/sellers",
         params: params
@@ -81,11 +90,20 @@ export const usersApi = createApi({
             }
           : undefined,
       }),
-      providesTags: [
-        { type: "Sellers", id: "LIST" },
-      ],
+      providesTags: [{ type: "Sellers", id: "LIST" }],
     }),
-    getAllEmployers: builder.query<PaginatedAdminUsersResponse, GetAdminUsersParams | void>({
+
+    getSuperAdminGraph: builder.query<SuperAdminGraphPoint[], string>({
+      query: (id) => ({
+        url: `/superadmingraph/${id}`,
+      }),
+      providesTags: ["Sellers", "Employers"],
+    }),
+
+    getAllEmployers: builder.query<
+      PaginatedAdminUsersResponse,
+      GetAdminUsersParams | void
+    >({
       query: (params) => ({
         url: "/users/company",
         params: params
@@ -95,52 +113,56 @@ export const usersApi = createApi({
             }
           : undefined,
       }),
-      providesTags: [
+      providesTags: [{ type: "Employers", id: "LIST" }],
+    }),
+
+    getAdminSuperStatistics: builder.query<SuperAdminStasticsResponse, void>({
+      query: () => "/DashBoard",
+      providesTags: ["Sellers", "Employers"],
+    }),
+    getAdminSellerStatistics: builder.query<
+      AdminSellerStatisticsResponse,
+      void
+    >({
+      query: () => "/sellers/dashBoard",
+      providesTags: ["Sellers"],
+    }),
+    getAdminEmployerStatistics: builder.query<
+      AdminEmployerStatisticsResponse,
+      void
+    >({
+      query: () => "/companys/dashBoard",
+      providesTags: ["Employers"],
+    }),
+
+    updateAdminEmployersStatus: builder.mutation<
+      AdminUser,
+      UpdateAdminUserStatusPayload
+    >({
+      query: ({ id, isActive }) => ({
+        url: `/users/compnay`,
+        method: "PATCH",
+        body: { isActive, id },
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Employers", id: id },
         { type: "Employers", id: "LIST" },
       ],
     }),
-
-        getAdminSuperStatistics: builder.query<SuperAdminStasticsResponse, void>({
-          query: () => "/DashBoard",
-          providesTags: ["Sellers", "Employers"],
+    updateAdminSellersStatus: builder.mutation<
+      AdminUser,
+      UpdateAdminUserStatusPayload
+    >({
+      query: ({ id, isActive }) => ({
+        url: `/users/seller`,
+        method: "PATCH",
+        body: { isActive, id },
       }),
-        getAdminSellerStatistics: builder.query<AdminSellerStatisticsResponse, void>({
-          query: () => "/sellers/dashBoard",
-          providesTags: ["Sellers"],  
-      }),
-        getAdminEmployerStatistics: builder.query<AdminEmployerStatisticsResponse, void>({
-          query: () => "/companys/dashBoard",
-          providesTags: ["Employers"],
-       }),
-
-      updateAdminEmployersStatus: builder.mutation<
-        AdminUser,
-        UpdateAdminUserStatusPayload
-      >({
-        query: ({ id, isActive }) => ({
-          url: `/users/compnay`,
-          method: "PATCH",
-          body: { isActive , id },
-        }),
-        invalidatesTags: (_result, _error, { id }) => [
-          { type: "Employers", id: id },
-          { type: "Employers", id: "LIST" },
-        ],
-      }),
-      updateAdminSellersStatus: builder.mutation<
-        AdminUser,
-        UpdateAdminUserStatusPayload
-      >({
-        query: ({ id, isActive }) => ({
-          url: `/users/seller`,
-          method: "PATCH",
-          body: { isActive , id },
-        }),
-        invalidatesTags: (_result, _error, { id }) => [
-          { type: "Sellers", id: id },
-          { type: "Sellers", id: "LIST" },
-        ],
-      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Sellers", id: id },
+        { type: "Sellers", id: "LIST" },
+      ],
+    }),
 
     deleteAdminSeller: builder.mutation<DeleteAdminUserResponse, string>({
       query: (id) => ({
@@ -166,8 +188,6 @@ export const usersApi = createApi({
         { type: "Sellers", id: "LIST" },
       ],
     }),
-
-
   }),
 });
 
@@ -179,6 +199,7 @@ export const {
   useDeleteAdminSellerMutation,
   useDeleteAdminEmployerMutation,
   useGetAdminSuperStatisticsQuery,
+  useGetSuperAdminGraphQuery,
   useGetAdminSellerStatisticsQuery,
   useGetAdminEmployerStatisticsQuery,
 } = usersApi;
