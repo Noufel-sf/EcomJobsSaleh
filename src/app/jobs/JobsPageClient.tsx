@@ -4,7 +4,7 @@ import { memo, useState } from "react";
 import { Filter } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 import type { Job } from "@/lib/DatabaseTypes";
-import { JobsFiltersPanel } from "./_features/listing/components/JobsFiltersPanel";
+import { JobsFiltersSection } from "./_features/listing/components/JobsFiltersSection";
 import { JobsToolbar } from "./_features/listing/components/JobsToolbar";
 import { JobsGrid } from "./_features/listing/components/JobsGrid";
 import { useJobsListingController } from "./_features/listing/useJobsListingController";
@@ -59,12 +59,20 @@ function JobsPageClient({
     selectedCategories,
     selectedTypes,
     selectedExperiences,
+    selectedLocation,
+    selectedSalaryRange,
+    selectedPostedFrom,
+    selectedPostedTo,
     searchQuery,
     sortBy,
     setPage,
     toggleCategory,
     toggleType,
     toggleExperience,
+    setLocation,
+    setSalaryRange,
+    setPostedFrom,
+    setPostedTo,
     setSearchQuery,
     setSortBy,
     clearFilters,
@@ -88,16 +96,22 @@ function JobsPageClient({
               <Filter className="w-5 h-5" aria-hidden="true" />
               <h2 className="text-lg font-bold">{t.filters}</h2>
             </div>
-            <JobsFiltersPanel
-              searchQuery={searchQuery}
+            <JobsFiltersSection
               selectedCategories={selectedCategories}
               selectedTypes={selectedTypes}
               selectedExperiences={selectedExperiences}
+              selectedSalaryRange={selectedSalaryRange}
+              selectedPostedFrom={selectedPostedFrom}
+              selectedPostedTo={selectedPostedTo}
               categories={categories}
-              onSearchChange={setSearchQuery}
               onToggleCategory={toggleCategory}
               onToggleType={toggleType}
               onToggleExperience={toggleExperience}
+              selectedLocation={selectedLocation}
+              onLocationChange={setLocation}
+              onSalaryRangeChange={setSalaryRange}
+              onPostedFromChange={setPostedFrom}
+              onPostedToChange={setPostedTo}
               onClearFilters={clearFilters}
             />
           </div>
@@ -111,6 +125,10 @@ function JobsPageClient({
             selectedCategories={selectedCategories}
             selectedTypes={selectedTypes}
             selectedExperiences={selectedExperiences}
+            selectedLocation={selectedLocation}
+            selectedSalaryRange={selectedSalaryRange}
+            selectedPostedFrom={selectedPostedFrom}
+            selectedPostedTo={selectedPostedTo}
             searchQuery={searchQuery}
             sortBy={sortBy}
             mobileFiltersOpen={mobileFiltersOpen}
@@ -119,6 +137,10 @@ function JobsPageClient({
             onToggleCategory={toggleCategory}
             onToggleType={toggleType}
             onToggleExperience={toggleExperience}
+            onLocationChange={setLocation}
+            onSalaryRangeChange={setSalaryRange}
+            onPostedFromChange={setPostedFrom}
+            onPostedToChange={setPostedTo}
             onClearFilters={clearFilters}
             onSortChange={setSortBy}
           />

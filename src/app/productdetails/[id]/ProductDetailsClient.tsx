@@ -18,6 +18,53 @@ const ProductImageGallery = dynamic(() => import("./ProductImageGallery"), {
   ),
 });
 
+const INVALID_VARIANT_VALUES = new Set(["", "[]", "[ ]", "null", "undefined", "{}"]);
+
+function normalizeVariantOptions(options: unknown): string[] {
+  if (!options) return [];
+
+  const parsedValues = Array.isArray(options)
+    ? options
+    : typeof options === "string"
+      ? [options]
+      : [];
+
+  const normalized = parsedValues.flatMap((value) => {
+    if (typeof value !== "string") {
+      return [];
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return [];
+    }
+
+    if (
+      (trimmed.startsWith("[") && trimmed.endsWith("]")) ||
+      (trimmed.startsWith("{") && trimmed.endsWith("}"))
+    ) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed.map((entry) => String(entry));
+        }
+      } catch {
+        // Keep the raw value when JSON parsing fails.
+      }
+    }
+
+    return [trimmed];
+  });
+
+  return Array.from(
+    new Set(
+      normalized
+        .map((entry) => entry.trim())
+        .filter((entry) => !INVALID_VARIANT_VALUES.has(entry.toLowerCase())),
+    ),
+  );
+}
+
 type ProductDetailsClientProps = {
   initialProduct: Product | null;
 };
@@ -161,6 +208,8 @@ const ProductDetailsClient = ({
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [addToCart] = useAddToCartMutation();
   const singleProduct = initialProduct ?? undefined;
+  const availableSizes = normalizeVariantOptions(singleProduct?.sizes);
+  const availableColors = normalizeVariantOptions(singleProduct?.colors);
 
   const handleAddToCart = useCallback(async () => {
     if (!singleProduct) return;
@@ -197,8 +246,6 @@ const ProductDetailsClient = ({
     copy.failedToAddToCart,
     copy.differentSellerCartError,
   ]);
-  console.log(singleProduct);
-
   const productImages = singleProduct
     ? [singleProduct.mainImage, ...(singleProduct.extraImages ?? [])].filter(
         Boolean,
@@ -281,13 +328,13 @@ const ProductDetailsClient = ({
             <p className="text-muted-foreground">{singleProduct?.bigDesc}</p>
           </div>
 
-          {singleProduct?.sizes && singleProduct.sizes.length > 0 && (
+          {availableSizes.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">{copy.selectSize}</h3>
               <fieldset aria-label={copy.selectProductSize}>
                 <legend className="sr-only">{copy.availableSizes}</legend>
                 <div className="flex flex-wrap gap-2">
-                  {singleProduct.sizes.map((size: string) => (
+                  {availableSizes.map((size) => (
                     <button
                       key={size}
                       type="button"
@@ -307,7 +354,7 @@ const ProductDetailsClient = ({
             </div>
           )}
 
-          {singleProduct?.colors && singleProduct.colors.length > 0 && (
+          {availableColors.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">
                 {copy.selectColor}{" "}
@@ -321,7 +368,7 @@ const ProductDetailsClient = ({
               <fieldset aria-label={copy.selectProductColor}>
                 <legend className="sr-only">{copy.availableColors}</legend>
                 <div className="flex flex-wrap gap-3">
-                  {singleProduct.colors.map((color: string) => (
+                  {availableColors.map((color) => (
                     <button
                       key={color}
                       type="button"
